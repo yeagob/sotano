@@ -50,6 +50,9 @@ export interface EnemyDef {
   /** The pattern it stands for (shown in the inventory's bestiary later). */
   pattern: string;
   hp: number;
+  /** Bosses only: its life from your health in points as it materialises, instead of the boss formula of its
+   *  floor (`bossHp`), and no practice changes it at spawn (the Shadow: the same hearts as yours, SHADOW.md). */
+  life?(points: number): number;
   speed: number;
   /** Half-width and height of its box. */
   size: [number, number];
@@ -158,8 +161,13 @@ export interface EnemyCtx {
    *  creatures use it to keep you company. */
   near(e: Enemy): TargetView | null;
   /** The ids of the practices the player holds now, in the order gained. Read only: the Shadow takes them once,
-   *  when its fight starts, and mirrors them (content/bosses/mirror.ts). Nothing else of the player is exposed. */
+   *  when its fight starts, and mirrors them (content/bosses/mirror.ts). With `health` and `bombs`, the only
+   *  things of the player a behaviour can read. */
   practices(): readonly string[];
+  /** The player's health now, in points (hearts and layers). Read only: the Shadow scores its choices on it. */
+  health(): number;
+  /** The bombs the player carries now. Read only: the Shadow takes as many when its fight starts. */
+  bombs(): number;
   /** Horizontal distance to a target. */
   dist(e: Enemy, t: TargetView): number;
   /** Direction to walk towards a target inside the room (flow field), or straight at it. */

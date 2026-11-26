@@ -12,7 +12,7 @@ import { createWeapon, type Weapon, type WeaponHost } from '../combat/weapons';
 import { Missiles, MISSILE_RANGE, MISSILE_SPEED, muzzleBlocked } from '../combat/missiles';
 import { TouchRouter } from '../combat/touch-router';
 import { ENEMY_BUDGET, ENEMY_BY_ID, pickWave, waveBudget } from '../content/enemies';
-import { BOSS_BY_ID, bossFor, bossHp } from '../content/bosses';
+import { BOSS_BY_ID, bossFor, bossLife } from '../content/bosses';
 import { enemyText, materialName, partText } from '../i18n/content';
 import {gatherMoteColor, gatherMotesDue, OMEN_BREACH, OMEN_BREACH_COLOR, OMEN_GATHER, pickSpawnCell, SLAM_SHAKE, slamMotesPerDoor, spawnBlocked, splitWaves,
   type Cell, type Omen, waveDue } from './omens';
@@ -1712,6 +1712,9 @@ export class Game {
     this.player.hp = Math.min(this.player.hp, this.maxHp);
   }
 
+  /** The player's health now in points: the hearts and every layer over them. */
+  private playerHealth() { return this.player.hp + this.player.layers.reduce((a, l) => a + l.hp, 0); }
+
   /** The player's maximum health in points (heart containers × HEART). */
   get maxHp() { return Math.floor(this.stats.get('maxHearts')) * HEART; }
 
@@ -1964,6 +1967,8 @@ export class Game {
       },
       contact: (e: Enemy, t: Actor) => this.contact(e, t),
       practices: () => this.inventory.items.map(i => i.def.id),
+      health: () => this.playerHealth(),
+      bombs: () => this.player.bombs,
       projectileHit: (t: Actor, dmg: number, thrower: number, from?: HurtFrom) => { this.damageActor(t, dmg, 'projectile', 'judgement', thrower, 0, 0, undefined, from ?? null); },
       reflects: (t: Actor, x: number, y: number, z: number) => {
         if (t !== this.player || !this.berserkOn) return false;
@@ -2535,13 +2540,14 @@ export class Game {
     if (!def) return null;
     const id = this.actors.newId();
     const rooted = def.kind !== 'boss' && this.rng.fork('floor', r.floor, 'room', r.id % ROOM_ID_STRIDE, 'rooted', seq).chance(rootedChance(r.floor));
-    const hp = def.kind === 'boss' ? bossHp(r.floor) : rooted ? Math.round(def.hp * ROOTED_HP) : def.hp;
+    const hp = def.kind === 'boss' ? bossLife(def, r.floor, this.playerHealth()) : rooted ? Math.round(def.hp * ROOTED_HP) : def.hp;
     const tags = new Set(def.asleep ? ['asleep'] : []);
     if (rooted) tags.add('rooted');
     const ev = this.bus.emit('enemySpawn', { id, def: defId, hp, speed: def.speed, contactDamage: def.contactDamage, tags, x, y, z });
     if (ev.cancelled) return null;
     this.projectionSeq.set(id, seq);
-    const e = this.enemies.spawn(def, id, r.id, ev.x, ev.y, ev.z, ev.hp, ev.speed, ev.contactDamage, ev.tags);
+    // a boss with its own life (the Shadow: your health at entry) keeps it: no practice changes it at spawn
+    const e = this.enemies.spawn(def, id, r.id, ev.x, ev.y, ev.z, def.life ? hp : ev.hp, ev.speed, ev.contactDamage, ev.tags);
     this.actors.add(e);
     return e;
   }

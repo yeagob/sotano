@@ -720,7 +720,6 @@ export const ES: Catalog = {
     'boss.impostor.phase.2': 'El marco se rompe: la figura pequeña era lo único real',
     'boss.many-faces.phase.1': 'Cambia: las máscaras intercambian sus sitios, y solo una es real',
     'boss.many-faces.phase.2': 'Las máscaras caen: queda un rostro llano',
-    'boss.shadow.phase.1': 'Revela: las proyecciones que soltaste se alzan como sombras',
     'boss.shadow.phase.2': 'Deja de luchar: quédate quieto a su lado tres segundos',
     'toast.relapsed': 'Un aliado vuelve a ser hostil',
     'hud.polarity.positive': 'Buena intención (F para cambiar)',

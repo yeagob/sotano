@@ -51,6 +51,10 @@ export interface EnemyHost {
   contact(e: Enemy, target: Actor): void;
   /** The ids of the practices the player holds now, in the order gained (EnemyCtx.practices). */
   practices(): readonly string[];
+  /** The player's health now in points, hearts and layers (EnemyCtx.health). */
+  health(): number;
+  /** The bombs the player carries now (EnemyCtx.bombs). */
+  bombs(): number;
   /** A projectile reached an actor hostile to its thrower (`thrower` is the thrower's actor id). */
   projectileHit(target: Actor, damage: number, thrower: number, from?: { x: number; z: number }): void;
   reflects?(target: Actor, x: number, y: number, z: number): boolean;
@@ -300,6 +304,8 @@ export class Enemies {
       strike: (e, s: Strike) => this.hazards.add(e.id, e.faction, `enemy:${e.def}`, s),
       bolt: (e, dx, dy, dz, speed, damage, radius) => this.bolt(e, dx, dy, dz, speed, damage, radius),
       practices: () => host.practices(),
+      health: () => host.health(),
+      bombs: () => host.bombs(),
       safe: (e, x, y, z) => this.safeCell(e, x, y, z),
       centre: e => { const rm = host.room(e.room); return [(rm.hx ?? rm.x0) + ROOM_W / 2, (rm.hz ?? rm.z0) + ROOM_D / 2]; },
       quiet: e => this.blockingIn(e.room) === 0,

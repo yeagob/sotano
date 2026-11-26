@@ -43,3 +43,7 @@ export function bossFor(floor: number, rng: Rng, used: ReadonlySet<string>): str
 }
 
 export const bossHp = (floor: number) => Math.round(140 * Math.pow(1000 / 140, (Math.max(1, floor) - 1) / 8));
+
+/** A boss's life as it materialises: its own `life` from your health in points (the Shadow, exempt from the
+ *  formula), or the formula of its floor. */
+export const bossLife = (def: EnemyDef, floor: number, points: number) => (def.life ? def.life(points) : bossHp(floor));

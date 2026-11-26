@@ -1,53 +1,101 @@
 import { describe, expect, it } from 'vitest';
-import { BOSSES } from '../src/content/bosses';
+import { BASE_STATS, computeStats, type StatMod } from '../src/core/stats';
+import { BOSSES, bossHp, bossLife } from '../src/content/bosses';
 import {
-  BEAT, BOLT_RADIUS, BOLT_SPEED, MAX_DPS, MAX_STRANDS, MIRROR_RULES, MOVE, STRAND_DAMAGE, VOLLEY_RATE, mirrorOf, type Mirror,
+  BEAT, BOMB, LIFE_PER_POINT, MIN_IDLE, MIRROR_RULES, POINTS_PER_DAMAGE, VOLLEY_SHOTS, mirrorOf, shadowLife,
 } from '../src/content/bosses/mirror';
-import { STILLNESS_TAG } from '../src/content/bosses/shadow';
-import { ITEMS } from '../src/content/items';
+import { STILLNESS_TAG, shadowState } from '../src/content/bosses/shadow';
+import { ITEMS, ITEM_BY_ID } from '../src/content/items';
+import { HEART } from '../src/entities/actors';
 import type { Strike } from '../src/enemies/attacks';
 import type { Enemy, EnemyCtx } from '../src/enemies/types';
 
-// Issue #339: the Shadow mirrors the practices the player holds when its fight starts
-// (docs/design/built/bosses/SHADOW.md, "The mirror").
+// Issue #339: the Shadow is your equal. Its life is your health at entry, it copies the practices you hold then,
+// and it fights by choosing, every frame, the best action for the moment (docs/design/built/bosses/SHADOW.md).
 
 const DT = 1 / 60;
 const SHADOW = BOSSES.find(b => b.id === 'shadow')!;
 const FALLBACK = mirrorOf([]);
-const dps = (m: Mirror) => m.shot.damage * m.shot.strands.reduce((a, k) => a + k, 0) * m.shot.rate;
+const GRAVITY = 26;
 
 interface Bolt { t: number; damage: number; speed: number; radius: number }
 
-/** The Shadow in a fake room, in one phase, with you standing still `dist` blocks away. */
-function fight(held: string[], stage: number, dist = 6) {
-  const hp = [100, 60, 30][stage];
+interface Opts {
+  held?: string[];
+  /** Its health share (1: full; a third or less opens the stillness ending). */
+  share?: number;
+  /** Where you are at time t (a scripted player), and your velocity. */
+  you?: (t: number) => { x: number; z: number; vx: number; vz: number };
+  bombs?: number | (() => number);
+  health?: number;
+  /** Seconds between two of your hits on it (1 point each), 0: you never hit it. */
+  hits?: number;
+}
+
+const still = (x: number) => () => ({ x, z: 0, vx: 0, vz: 0 });
+/** A scripted player that runs a circle of five blocks round the room's centre, three blocks a second. */
+const circling = (t: number) => ({ x: 5 * Math.cos(t * 0.6), z: 5 * Math.sin(t * 0.6), vx: -3 * Math.sin(t * 0.6), vz: 3 * Math.cos(t * 0.6) });
+
+/** The Shadow in a fake room of 20 by 20 blocks with a floor at y = 0, its body moved by its wish and gravity. */
+function fight(o: Opts = {}) {
+  const held = o.held ?? [];
+  const maxHp = shadowLife(o.health ?? 48);
   const e = {
-    id: 7, hp, maxHp: 100, stage, hold: 0, state: 'move', timer: 0, seq: 0, armed: true, hidden: false,
+    id: 7, hp: maxHp * (o.share ?? 1), maxHp, stage: 0, hold: 0, state: 'move', timer: 0, seq: 0, armed: true, hidden: false,
     wishX: 0, wishZ: 0, pulse: 0, flyY: -1, move: -1, act: 0, speed: SHADOW.speed, clock: 0, aimX: 0, aimZ: 0, volley: 0,
-    body: { x: 0, y: 0, z: 0, vx: 0, vy: 0, vz: 0, hw: SHADOW.size[0], h: SHADOW.size[1], onGround: true },
+    body: { x: -6, y: 0, z: 0, vx: 0, vy: 0, vz: 0, hw: SHADOW.size[0], h: SHADOW.size[1], onGround: true },
     tags: new Set<string>(), room: 0, faction: 'projection', spec: SHADOW, def: SHADOW.id,
   } as unknown as Enemy;
-  let t = 0, killed = false;
-  const bolts: Bolt[] = [], strikes: { t: number; s: Strike }[] = [];
-  const you = { id: 1, x: dist, y: 0, z: 0, vx: 0, vz: 0 };
+  let t = 0, killed = false, walked = 0;
+  const bolts: Bolt[] = [], strikes: { t: number; s: Strike }[] = [], rains: number[] = [];
+  const where = o.you ?? still(6);
+  const you = () => { const p = where(t); return { id: 1, x: p.x, y: 0, z: p.z, vx: p.vx, vz: p.vz }; };
   const ctx = {
-    dt: DT, target: () => you, near: () => you, practices: () => held,
+    dt: DT, target: you, near: you, practices: () => held, health: () => o.health ?? 48, bombs: () => (typeof o.bombs === 'function' ? o.bombs() : o.bombs ?? 0),
     dist: (_e: Enemy, p: { x: number; z: number }) => Math.hypot(p.x - e.body.x, p.z - e.body.z),
-    toward: () => [1, 0], bounds: () => [-10, -10, 10, 10], centre: () => [0, 0],
+    toward: (_e: Enemy, p: { x: number; z: number }) => { const dx = p.x - e.body.x, dz = p.z - e.body.z, l = Math.hypot(dx, dz) || 1; return [dx / l, dz / l]; },
+    bounds: () => [-10, -10, 9, 9], centre: () => [0, 0],
     bolt: (_e: Enemy, _dx: number, _dy: number, _dz: number, speed: number, damage: number, radius?: number) => { bolts.push({ t, damage, speed, radius: radius ?? 0.12 }); },
     strike: (_e: Enemy, s: Strike) => { strikes.push({ t, s }); },
-    shootAt: () => {}, rain: () => {}, rockfall: () => {}, summon: () => {}, quake: () => {}, cue: () => {}, crash: () => {}, fx: () => {},
+    rain: () => { rains.push(t); },
+    shootAt: () => {}, rockfall: () => {}, summon: () => {}, quake: () => {}, cue: () => {}, crash: () => {}, fx: () => {},
     arena: () => {}, burst: () => {}, quiet: () => false, others: () => [], safe: () => true, hide: () => {},
     kill: () => { killed = true; },
   } as unknown as EnemyCtx;
   return {
-    e, bolts, strikes, you,
+    e, bolts, strikes, rains,
     get killed() { return killed; },
-    run(seconds: number) { for (let k = 0; k < Math.round(seconds / DT); k++) { SHADOW.behaviour.update(e, ctx); t += DT; if (killed) break; } },
+    get walked() { return walked; },
+    bombs: () => strikes.filter(k => k.s.lead === BOMB.fuse),
+    run(seconds: number) {
+      for (let k = 0; k < Math.round(seconds / DT); k++) {
+        if (o.hits && k > 0 && k % Math.round(o.hits / DT) === 0) e.hp -= 1;
+        SHADOW.behaviour.update(e, ctx);
+        const b = e.body;
+        b.vx = e.wishX * e.speed; b.vz = e.wishZ * e.speed;
+        const x = Math.min(9.6, Math.max(-9.6, b.x + b.vx * DT)), z = Math.min(9.6, Math.max(-9.6, b.z + b.vz * DT));
+        walked += Math.hypot(x - b.x, z - b.z);
+        b.x = x; b.z = z;
+        b.vy -= GRAVITY * DT; b.y += b.vy * DT;
+        if (b.y <= 0) { b.y = 0; b.vy = Math.max(0, b.vy); b.onGround = true; } else b.onGround = false;
+        t += DT;
+        if (killed) break;
+      }
+    },
   };
 }
 
-describe('the Shadow mirrors your practices: every practice is classified', () => {
+/** Shot times grouped into volleys: shots closer than a second belong to one. */
+function volleys(times: number[]): number[][] {
+  const out: number[][] = [];
+  for (const t of [...new Set(times)].sort((a, b) => a - b)) {
+    const last = out[out.length - 1];
+    if (last && t - last[last.length - 1] < 1) last.push(t); else out.push([t]);
+  }
+  return out;
+}
+
+describe('the Shadow: every practice is classified', () => {
   it('every practice in src/content/items has a rule, in the catalogue or not, and every rule is a practice', () => {
     const files = import.meta.glob<{ default?: { id?: string; effect?: string } }>('../src/content/items/*.ts', { eager: true });
     const ids = [...new Set([
@@ -66,117 +114,172 @@ describe('the Shadow mirrors your practices: every practice is classified', () =
       else expect({ ...m, practices: [] }, id).not.toEqual(FALLBACK);
     }
   });
+
+  it('meals, potions, crafting, loot and the miracles that are neither shots nor movement are skipped', () => {
+    const skipped = (id: string) => MIRROR_RULES[id].how === 'skipped';
+    for (const { id, tags } of ITEMS) if (tags?.includes('nourish')) expect(skipped(id), id).toBe(true);
+    for (const id of ['apprenticeship', 'bookofsecrets', 'gratitude', 'omens', 'kairos', 'luciddream', 'solvecoagula']) expect(skipped(id), id).toBe(true);
+    // the missile, the dash and the jumps are fight verbs: copied
+    for (const id of ['drlauncher', 'irimi', 'triple-jump', 'mindset', 'pressurevalve']) expect(MIRROR_RULES[id].how, id).toBe('copied');
+  });
 });
 
-describe('the Shadow mirrors your practices: the spec', () => {
-  it('a player with no practices meets the fallback: half a heart a strand, about one volley a second', () => {
-    expect(FALLBACK).toEqual({
-      practices: [], weapon: 'intent', harmless: false, move: 1, dash: false, charge: 1,
-      shot: { damage: 4, rate: 2.7 * 0.35, strands: [1], speed: 9, radius: 0.12 },
-    });
-    expect(dps(FALLBACK)).toBeLessThan(4);
+describe('the Shadow: its life is your health at entry', () => {
+  it('its starting life equals your health, heart for heart, for two different healths', () => {
+    for (const points of [48, 24]) {
+      const lifeNow = bossLife(SHADOW, 9, points);
+      expect(lifeNow).toBe(shadowLife(points));
+      // the same hearts as yours: a heart of yours (8 points) is 7 of its life
+      expect(lifeNow / (HEART * LIFE_PER_POINT)).toBe(points / HEART);
+    }
+    expect(bossLife(SHADOW, 9, 48)).not.toBe(bossLife(SHADOW, 9, 24));
+    expect(shadowLife(48)).toBe(42);
   });
 
-  it('a fixed strong build gives the documented spec, inside every cap', () => {
-    const m = mirrorOf(['meditations', 'selfreliance', 'triangulation', 'stoic', 'flow', 'breakingbread', 'kairos']);
-    expect(m.practices).toEqual(['meditations', 'selfreliance', 'triangulation', 'stoic', 'flow']);
-    expect(m.weapon).toBe('intent');
-    expect(m.shot.strands).toEqual([1, 0.6, 0.6]);
-    expect(m.shot.rate).toBe(VOLLEY_RATE[1]);
-    expect(m.shot.damage).toBeCloseTo(MAX_DPS / (2.2 * 1.6), 9);
-    expect(m.shot.speed).toBe(9);
-    expect(m.shot.radius).toBeCloseTo(0.12 * 1.4, 9);
-    expect(m.move).toBeCloseTo(1.3, 9);
-    expect(dps(m)).toBeCloseTo(MAX_DPS, 9);
+  it('is exempt from the boss formula: any other boss keeps the life of its floor', () => {
+    expect(bossLife(SHADOW, 9, 48)).not.toBe(bossHp(9));
+    for (const b of BOSSES.filter(x => x.id !== 'shadow')) expect(bossLife(b, 9, 48), b.id).toBe(bossHp(9));
   });
 
-  it('weapons: the blade, the beam, and both as the great cut', () => {
+  it('both sides need the same hits: your base shots to end it equal its base strands to end you', () => {
+    for (const points of [48, 24, 72]) expect(shadowLife(points) / BASE_STATS.damage).toBeCloseTo(points / FALLBACK.shot.damage, 9);
+    expect(FALLBACK.shot.damage).toBeCloseTo(BASE_STATS.damage * POINTS_PER_DAMAGE, 9);
+  });
+});
+
+describe('the Shadow: the mirror', () => {
+  it('a player with no practices meets the fallback: half a heart a strand, at your fire interval', () => {
+    expect(FALLBACK.practices).toEqual([]);
+    expect(FALLBACK.weapon).toBe('intent');
+    expect(FALLBACK.shot.damage).toBe(4);
+    expect(FALLBACK.shot.interval).toBeCloseTo(1 / 2.7, 9);
+    expect(FALLBACK.shot.strands).toEqual([1]);
+    expect(FALLBACK).toMatchObject({ harmless: false, move: 1, airJumps: 0, dash: false, missile: false });
+    expect(FALLBACK.bomb.radius).toBe(BASE_STATS.bombRadius);
+  });
+
+  it('no cap beyond your own power: a strong build gives its damage, converted, and its speed', () => {
+    const m = mirrorOf(['meditations', 'breakingbread', 'kairos']);
+    expect(m.practices).toEqual(['meditations']);
+    const yours = computeStats(ITEM_BY_ID.get('meditations')!.stats!.map(s => ({ ...s, source: 'meditations' }) as StatMod));
+    expect(yours.damage).toBeCloseTo((3.5 + 2) * 3, 9);
+    expect(m.shot.damage).toBeCloseTo(yours.damage * POINTS_PER_DAMAGE, 9);
+    const fast = mirrorOf(['selfreliance', 'triangulation', 'stoic', 'flow']);
+    expect(fast.shot.strands).toEqual([1, 0.6, 0.6]);
+    expect(fast.shot.radius).toBeCloseTo(0.12 * 1.4, 9);
+    expect(fast.move).toBeCloseTo(1.3, 9);
+    expect(fast.shot.interval).toBeLessThan(FALLBACK.shot.interval / 2);
+  });
+
+  it('carries your burdens: Deep Focus lowers its damage as it lowers yours', () => {
+    expect(mirrorOf(['deepfocus']).shot.damage).toBeCloseTo(FALLBACK.shot.damage * 0.8, 9);
+  });
+
+  it('weapons, missiles, dash and jumps', () => {
     expect(mirrorOf(['occamsrazor']).weapon).toBe('blade');
     expect(mirrorOf(['kiai']).weapon).toBe('beam');
     expect(mirrorOf(['kiai', 'occamsrazor']).weapon).toBe('greatcut');
-    expect(mirrorOf(['kiai', 'selfreliance']).charge).toBe(0.8);
-  });
-
-  it('movement: speed within its bounds, running raises it, a dash becomes its dodge', () => {
-    expect(mirrorOf(['fartlek']).move).toBeCloseTo(1.45, 9);
-    expect(mirrorOf(['fartlek', 'flow', 'satori']).move).toBe(MOVE[1]);
+    expect(mirrorOf(['drlauncher']).missile).toBe(true);
     expect(mirrorOf(['irimi']).dash).toBe(true);
-  });
-
-  it('every mirrored practice at once still stays inside every cap', () => {
-    const all = Object.entries(MIRROR_RULES).filter(([, r]) => r.how !== 'skipped').map(([id]) => id).filter(id => id !== 'boundaries');
-    const m = mirrorOf(all);
-    expect(m.shot.strands.length).toBeLessThanOrEqual(MAX_STRANDS);
-    expect(m.shot.damage).toBeGreaterThanOrEqual(STRAND_DAMAGE[0]);
-    expect(m.shot.damage).toBeLessThanOrEqual(STRAND_DAMAGE[1]);
-    expect(m.shot.rate).toBeLessThanOrEqual(VOLLEY_RATE[1]);
-    expect(dps(m)).toBeLessThanOrEqual(MAX_DPS + 1e-9);
-    expect(m.shot.speed).toBeLessThanOrEqual(BOLT_SPEED[1]);
-    expect(m.shot.radius).toBeLessThanOrEqual(BOLT_RADIUS[1]);
-    expect(m.move).toBeLessThanOrEqual(MOVE[1]);
+    expect(mirrorOf(['triple-jump']).airJumps).toBe(2);
+    expect(mirrorOf(['mindset']).jump).toBeGreaterThan(FALLBACK.jump);
+    expect(mirrorOf(['pressurevalve']).bomb.radius).toBeCloseTo(BASE_STATS.bombRadius + 0.8, 9);
+    expect(mirrorOf(['fartlek']).move).toBeCloseTo(1.45, 9);
   });
 });
 
-describe('the Shadow mirrors your practices: in the fight', () => {
-  it('fires your volley a beat later, with the mirrored spec (fixed build, fixed boss)', () => {
-    const held = ['triangulation', 'stoic', 'visualization'];
-    const m = mirrorOf(held);
-    const f = fight(held, 0);
-    f.run(4);
-    expect(f.bolts.length).toBeGreaterThan(0);
-    // its first volley: after its first breath (1.5 s) and the beat
-    expect(f.bolts[0].t).toBeGreaterThanOrEqual(1.5 + BEAT - DT);
-    const first = f.bolts.filter(b => b.t === f.bolts[0].t);
-    expect(first.map(b => b.damage)).toEqual(m.shot.strands.map(k => m.shot.damage * k));
-    for (const b of first) { expect(b.speed).toBe(m.shot.speed); expect(b.radius).toBe(m.shot.radius); }
-    // the same build and the same boss give the same fight
-    const again = fight(held, 0);
-    again.run(4);
-    expect(again.bolts).toEqual(f.bolts);
+describe('the Shadow: it fights like a player', () => {
+  const held = ['irimi', 'triple-jump', 'triangulation', 'drlauncher'];
+
+  it('with a fixed build and a scripted player it moves, jumps, dashes and uses bombs', () => {
+    const f = fight({ held, bombs: 4, you: circling, hits: 0.8 });
+    f.run(40);
+    const acts = shadowState(f.e)!.acts;
+    expect(f.walked).toBeGreaterThan(30);
+    expect(acts.jump).toBeGreaterThan(0);
+    expect(acts.dash).toBeGreaterThan(0);
+    expect(acts.bomb + acts.missile).toBeGreaterThan(0);
+    expect(f.bombs().length + f.rains.length).toBe(acts.bomb + acts.missile);
+    expect(shadowState(f.e)!.bombs).toBe(4 - acts.bomb - acts.missile);
+    expect(acts.volley).toBeGreaterThan(0);
   });
 
-  it('takes its snapshot when the fight starts: a practice gained later changes nothing', () => {
-    const held = ['stoic'];
-    const f = fight(held, 0);
-    f.run(0.1);
-    held.push('triangulation', 'meditations');
-    f.run(3);
-    const first = f.bolts.filter(b => b.t === f.bolts[0].t);
-    expect(first).toHaveLength(1);
-    expect(first[0].damage).toBe(mirrorOf(['stoic']).shot.damage);
-  });
-
-  it('with no practices the fight is fair: one strand at a time, under four points a second', () => {
-    const f = fight([], 0);
-    f.run(20);
-    const dealt = f.bolts.reduce((a, b) => a + b.damage, 0);
-    expect(f.bolts.every(b => b.damage === 4)).toBe(true);
-    expect(dealt / 20).toBeLessThan(4);
-  });
-
-  it('the beam and the great cut replace its shot and are always telegraphed', () => {
-    for (const held of [['kiai'], ['kiai', 'occamsrazor']]) {
-      const f = fight(held, 0);
-      f.run(10);
-      expect(f.bolts).toEqual([]);
-      expect(f.strikes.length).toBeGreaterThan(0);
-      for (const { s } of f.strikes) { expect(s.lead).toBeGreaterThanOrEqual(0.8); expect(s.damage).toBeLessThanOrEqual(8); }
+  it('its fire is not continuous: volleys of a few shots, at least MIN_IDLE apart', () => {
+    const f = fight({ held, bombs: 4, you: circling, hits: 0.8 });
+    f.run(40);
+    const groups = volleys(f.bolts.map(b => b.t));
+    expect(groups.length).toBeGreaterThan(3);
+    for (const g of groups) expect(g.length).toBeLessThanOrEqual(VOLLEY_SHOTS);
+    for (let k = 1; k < groups.length; k++) {
+      const gap = groups[k][0] - groups[k - 1][groups[k - 1].length - 1];
+      expect(gap, `gap before volley ${k}`).toBeGreaterThanOrEqual(MIN_IDLE + BEAT - 2 * DT);
     }
   });
 
-  it('the blade strokes when you are close and keeps the shot', () => {
-    const f = fight(['occamsrazor'], 0, 2);
-    f.run(6);
-    expect(f.strikes.length).toBeGreaterThan(0);
-    expect(f.bolts.length).toBeGreaterThan(0);
+  it('the same build and the same moves give the same fight', () => {
+    const a = fight({ held, bombs: 4, you: circling, hits: 0.8 }), b = fight({ held, bombs: 4, you: circling, hits: 0.8 });
+    a.run(15); b.run(15);
+    expect(b.bolts).toEqual(a.bolts);
+    expect(shadowState(b.e)).toEqual(shadowState(a.e));
   });
 
-  it('the stillness ending still works with a strong build: no attack, and three seconds beside it ends the fight', () => {
-    const f = fight(['meditations', 'selfreliance', 'triangulation', 'kiai', 'occamsrazor', 'irimi'], 2, 2);
-    f.run(3.5);
+  it('chooses from the moment: close, it bombs; far, with the missile, it launches one', () => {
+    const near = fight({ bombs: 3, you: still(-4.5) });
+    near.run(4);
+    expect(near.bombs().length).toBeGreaterThan(0);
+    const far = fight({ held: ['drlauncher'], bombs: 3, you: still(9) });
+    far.run(6);
+    expect(far.rains.length).toBeGreaterThan(0);
+  });
+
+  it('takes its snapshot when the fight starts: practices and bombs gained later change nothing', () => {
+    const held = ['stoic'];
+    let bombs = 0;
+    const f = fight({ held, bombs: () => bombs, you: still(6) });
+    const g = fight({ held: ['stoic'], you: still(6) });
+    f.run(0.1); g.run(0.1);
+    held.push('triangulation', 'meditations'); bombs = 5;
+    f.run(4); g.run(4);
+    expect(f.bolts).toEqual(g.bolts);
+    expect(f.bolts[0].damage).toBe(mirrorOf(['stoic']).shot.damage);
+    expect(shadowState(f.e)!.bombs).toBe(0);
+  });
+
+  it('with no practices and no bombs the fight is fair: one strand a shot, half a heart each', () => {
+    const f = fight({ you: circling });
+    f.run(20);
+    expect(f.bolts.length).toBeGreaterThan(0);
+    expect(f.bolts.every(b => b.damage === 4)).toBe(true);
+    expect(f.bolts.reduce((a, b) => a + b.damage, 0) / 20).toBeLessThan(6);
+  });
+
+  it('the beam and the great cut replace its shot and are always telegraphed', () => {
+    for (const w of [['kiai'], ['kiai', 'occamsrazor']]) {
+      const f = fight({ held: w, you: still(-3) });
+      f.run(10);
+      expect(f.bolts).toEqual([]);
+      expect(f.strikes.length).toBeGreaterThan(0);
+      for (const { s } of f.strikes) expect(s.lead).toBeGreaterThanOrEqual(0.8);
+    }
+  });
+});
+
+describe('the Shadow: the stillness ending', () => {
+  it('with its health at a third, three seconds still beside it end the fight, and it does not attack', () => {
+    const f = fight({ held: ['meditations', 'selfreliance', 'triangulation', 'kiai', 'occamsrazor', 'irimi'], share: 0.3, bombs: 3, you: still(-4) });
+    f.run(8);
     expect(f.bolts).toEqual([]);
     expect(f.strikes).toEqual([]);
     expect(f.killed).toBe(true);
     expect(f.e.tags.has(STILLNESS_TAG)).toBe(true);
+  });
+
+  it('it does not yield while you move, nor while its health is above a third', () => {
+    const moving = fight({ share: 0.3, you: circling });
+    moving.run(8);
+    expect(moving.killed).toBe(false);
+    const strong = fight({ share: 0.5, you: still(-4) });
+    strong.run(8);
+    expect(strong.killed).toBe(false);
   });
 });
