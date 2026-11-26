@@ -12,7 +12,7 @@ export type StatName =
   | 'moveSpeed' | 'jump' | 'airJumps' | 'reach'
   | 'carry' | 'kick' | 'throw' | 'crush' | 'headbutt'
   | 'maxHearts' | 'invuln' | 'bombRadius' | 'bombDamage' | 'breath' | 'missile' | 'dash' | 'run' | 'crouch' | 'lavaWalk'
-  | 'twinCast' | 'triad' | 'spiral' | 'recipes';
+  | 'twinCast' | 'triad' | 'spiral' | 'recipes' | 'magnet';
 
 export type StatLayer = 'add' | 'mul' | 'final';
 
@@ -57,6 +57,7 @@ export const BASE_STATS: Stats = {
   triad: 0,        // 1 = each intention flies as three strands in a widening triangle (Rule of Three)
   spiral: 0,       // 1 = each intention flies as three strands on a turning helix (Spiral Growth)
   recipes: 0,      // 1 = the Recipe Book opens (Book of Secrets, src/game/recipe-book.ts; 0 = its key and tab do nothing)
+  magnet: 0,
 };
 
 export const STAT_LIMITS: Partial<Record<StatName, [number, number]>> = {
@@ -78,6 +79,7 @@ export const STAT_LIMITS: Partial<Record<StatName, [number, number]>> = {
   maxHearts: [1, 12],
   invuln: [0.2, 5],
   bombRadius: [1, 8],
+  magnet: [0, 8],
   bombDamage: [5, 500],
   breath: [1, 120],
   missile: [0, 1],
@@ -116,6 +118,7 @@ const STAT_FMT: Record<StatName, (v: number) => string> = {
   maxHearts: v => fmtNum(Math.floor(v), 0),
   invuln: v => t('unit.seconds', { n: fmtNum(v, 1) }),
   bombRadius: v => blocks(v, 1),
+  magnet: v => (v <= 0 ? t('unit.crushNone') : blocks(v, 1)),
   bombDamage: v => fmtNum(v, 0),
   breath: v => t('unit.seconds', { n: fmtNum(v, 1) }),
   missile: v => (v < 1 ? t('unit.crushNone') : t('unit.missileOn')),
