@@ -30,6 +30,7 @@ Changes to the tutorial and to the book are listed without their content, so not
 - Every being in water in the sky, and in the water of Like Water, moves at half speed (#357).
 
 ### Changed
+- The shield takes the wind in the air, and the wind now blows over the Totality, the climb to the Sun, not over the tree's stars route (#373).
 - The sky deities have more life: the panda 240 (10 times its former 24), then each deity double the one before, up to the horse at 3840 (#357).
 - Every freeze is one family: after a freeze ends, nothing can freeze that being again for 3 s; the lion's roar and Thought Stopping included (#357).
 - A challenge room's three waves run once: after the third is cleared the room stays open and does not start again.
