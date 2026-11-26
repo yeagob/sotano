@@ -11,9 +11,9 @@ Phones and tablets, **always in landscape**. The game detects a touch device (`p
 | cast (hold) | the bead of light, the largest button, bottom right. Its panel takes the loaded intention's colour: a gold-lit panel for a good intention, a charred one for a bad one (DECISIONS §14.1) |
 | launch a missile (with Dr. Launcher) | a quick double tap on the bead of light (within 0.3 s) |
 | polarity | **a half turn of the phone (180 degrees)**, like a steering wheel: each turn switches between good and bad intentions (its ring shows which: gold for good, ember for bad, a 6 px ring on a 92 % panel so it reads on a phone; issue #105, DECISIONS §14.1). The ring also shows the loaded intention's power: it thickens from 6 to 12 px and gains a glow of the same colour as damage rises, one step per doubling (issue #111, DECISIONS §7.1.1) |
-| dash | a swipe on the left side of the screen, starting right of the stick's zone, at least 60 px within 0.25 s: up is forward, down back (see [DASH](../../design/built/practices/DASH.md)) |
+| dash | the **body button** (§1.1); also a swipe on the left side of the screen, starting right of the stick's zone, at least 60 px within 0.25 s: up is forward, down back (see [DASH](../../design/built/practices/DASH.md)) |
 | run (Fartlek) | the left stick pushed past 95 % of its radius; released when it comes back in (see [RUN-AND-CROUCH](../../design/built/practices/RUN-AND-CROUCH.md)) |
-| crouch (Child's Pose) | a swipe down that starts at the bottom twelfth of the right side, right of the middle: toggles the crouch and takes back the look it turned. No button, so the seven-button limit holds |
+| crouch (Child's Pose) | the **body button** (§1.1), a toggle; also a swipe down that starts at the bottom twelfth of the right side, right of the middle (it toggles and takes back the look it turned) |
 | choose the active carried item (`pick`, and `previous` / `next` by the same tap) | **a tap on a slot of the hand** (bottom centre, in play): that carried item becomes the active one. In the inventory the tab button opens, a tap on a hand slot or on an item chooses it. A tap that drags does nothing, and it never places a block |
 | jump (hold to swim up; with air jumps, again in the air) | the arrow |
 | place | **a tap on the world**: the block under the finger is where the block in your hand goes |
@@ -46,6 +46,38 @@ The owner does not want the screen covered with buttons. The touch controls are 
 
 Gestures (the dash and crouch swipes, the stick edge for run, the half turn for polarity, the tap to place, the hand slots) are unchanged and need no button on screen.
 
+### 1.2 The body button (issue #377)
+
+One **context button** for the two body verbs a practice gives: the crouch (Child's Pose, Walk Slowly, the Folding Tincture) and the dash (Irimi). It is shown only while one of them is held, in the right thumb's arc above the clock ring (its `body` slot in `src/input/touch-layout.ts`, §1.1; 14 vmin, never under 48 px). A press does the verb that applies now (`bodyChoice` in `src/input/context-button.ts`, in this order):
+
+| State at the press | The press |
+|---|---|
+| crouched | stands you up |
+| the dash held, and the stick pushed past 30 % (or no crouch held) | dashes the way the stick points; forward when it rests |
+| the crouch held | kneels |
+
+So with both practices the button kneels while you stand still and dashes while you move, as a slide comes out of a run in the phone shooters. Its glyph is the practice the press would use (Child's Pose's icon to kneel or stand, Irimi's to dash), and while crouched it is ringed in gold. Both swipes stay as a second way in (`touch.gesture: 'swipe'`). On keyboard and gamepad nothing changes.
+
+**The touch layout table (#376 owns where the controls sit and when they fade, §1.1).** Which control every play action has on touch:
+
+| Control on screen | Actions | When it is shown |
+|---|---|---|
+| floating stick (left 42 %) | move; run at its edge | always in play |
+| drag on the right | look (also dragging cast) | always (no widget) |
+| the bead of light, bottom right, largest | cast; missile by double tap | always |
+| the arrow, left of the bead | jump, air jumps | always |
+| the bomb, left of the arrow | bomb | while there is a seed to place (§1.1) |
+| the flying block, above the bead | throw | while a block or flask is in the hand (§1.1) |
+| the flask, above throw | drink | only with a flask on top of the hand |
+| the clock ring | miracle | only while Kairos is held |
+| **the body button**, above the clock ring | crouch and dash (shared) | only while a crouch or dash practice is held |
+| the tab button, top bar | inventory, pause, map, recipes (through the screen) | always |
+| the hand slots, bottom centre | pick, previous, next | always |
+| a tap on the world | place | no widget |
+| a half turn of the phone | polarity | no widget |
+
+**The button count.** With no conditional button the play screen shows five buttons (cast, jump, bomb, throw, the tab button); the drink, the clock ring and the body button appear only in their state. With a flask on top, Kairos and a body practice at once it is eight, past the seven-button rule of `sotano-controls`: open for the owner (fold the drink into a tap on the active hand slot, or accept eight in that rare case). `tests/controls.test.ts` pins both counts.
+
 ## 2. The layer
 
 `TouchControls` puts a full-screen layer above the game canvas and below every card. It is shown only on a touch device while playing (or with a banner open), and its buttons wake and fade as §1.1 says (`TouchPresence`, the `awake` class on `#touch`). Each button is placed by the inline style its slot gives (`place`, `slotStyle`), with the safe-area insets. Every touch is tracked by its identifier: a stick touch, a look touch, or a button touch (several at once). Leaving play, losing the window or switching device clears every track, so nothing stays held.
@@ -70,7 +102,7 @@ Resuming asks for fullscreen and locks the orientation to landscape where the br
 
 ## 6. Glyphs and feedback
 
-The button glyphs are 12 × 12 pixel strings in `src/content/hud-icons.ts` (`touchCast`, `touchJump`, `touchThrow`, `touchInventory`; the bomb uses `seed`, or `seedLove` for a good intention, chosen by `bombGlyph` in `src/input/touch.ts`), drawn from palette tokens (`sotano-art`). Buttons that cannot act are hidden, not dimmed (§1.1), and shrink while pressed. Screen shake vibrates the phone (`navigator.vibrate`).
+The button glyphs are 12 × 12 pixel strings in `src/content/hud-icons.ts` (`touchCast`, `touchJump`, `touchThrow`, `touchInventory`; the bomb uses `seed`, or `seedLove` for a good intention, chosen by `bombGlyph` in `src/input/touch.ts`), drawn from palette tokens (`sotano-art`). The drink and the body button take an item's own icon instead (the flask on top; Child's Pose or Irimi). Buttons that cannot act are hidden, not dimmed (§1.1), and shrink while pressed. Screen shake vibrates the phone (`navigator.vibrate`).
 
 ## 7. Why these controls
 

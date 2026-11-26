@@ -51,9 +51,9 @@ Game code never reads a key code, a button index or a touch. It asks `input.held
 | drink | press | play | G | X | the flask in your hand (shown only while one is in the hand) |
 | bomb | press | play | E | RB | the bomb |
 | polarity | press | play | F | LB | a half turn of the phone |
-| dash | press | play | double tap of a movement key (W A S D or arrows) | double flick of the left stick | swipe on the left side of the screen (a gesture, no button) |
+| dash | press | play | double tap of a movement key (W A S D or arrows) | double flick of the left stick | the body button while the stick moves (shared with crouch, TOUCH §1.1); the swipe on the left side still dashes |
 | run | hold | play | hold Shift (left or right) | L3 (toggles until the left stick returns to centre; the left stick at its edge also runs) | the left stick pushed past 95 % of its radius |
-| crouch | hold | play | C switches it, Control holds it | R3 (toggles) | a swipe down from the bottom twelfth of the right side (toggles; no button) |
+| crouch | hold | play | C switches it, Control holds it | R3 (toggles) | the body button (toggles; shared with dash, kneels while the stick rests); the swipe down from the bottom of the right side still toggles |
 | previous | press | play | mouse wheel up | d-pad left | none of its own: tap the item in the inventory |
 | next | press | play | mouse wheel down | d-pad right | none of its own: tap the item in the inventory |
 | pick | press | play, inventory | 1 to 9; Enter in the inventory | A in the inventory | tap an item in the inventory |
@@ -66,13 +66,42 @@ Game code never reads a key code, a button index or a touch. It asks `input.held
 | confirm | press | prompt, paused, dead, toll, meditation | click / Enter | A | tap |
 | navigate | axis | inventory, toll, paused, meditation, prompt | arrows | d-pad | tap a tile; on the menu, drag the field-of-view bar or tap − and + |
 
-**The choice card (prompt).** A presence's question with up to four answers (`Hud.presenceChoiceCard`) reads `navigate` to move the selection (left and right, or up and down, wrap at the ends); confirm picks the selected answer; back, or Not now, answers nothing. A tap on an answer picks it. Owed in a browser: the gamepad and touch paths were not checked (see ELDER.md and CARTOGRAPHER.md).
 | back | press | inventory, toll, meditation; prompt (keyboard/gamepad) | Esc | B | ✕ (in a sitting, the Leave button); offer card buttons |
 | skip | press | meditation | N | RB | the Next part button |
 | mute | press | meditation | M | X | the Sound button |
 | calm | press | meditation | C | Y | the Calm visuals button |
 | voice | press | meditation | V | LB | the Voice button (the Sanctuary's spoken guidance) |
 | miracle | press | play | V | D-pad Up | the clock ring, shown only while Kairos is held (its charge fills the ring) |
+
+**The choice card (prompt).** A presence's question with up to four answers (`Hud.presenceChoiceCard`) reads `navigate` to move the selection (left and right, or up and down, wrap at the ends); confirm picks the selected answer; back, or Not now, answers nothing. A tap on an answer picks it. Owed in a browser: the gamepad and touch paths were not checked (see ELDER.md and CARTOGRAPHER.md).
+
+### 3.1 The touch audit (issue #377)
+
+Every verb the player has, against each device, including the verbs that are a new meaning of an action (a practice, a weapon, the laboratory). Read with the table above: an action there is a row here only when the audit adds something. `tests/controls.test.ts` reads the table above and fails on an action without a row or with an empty cell; it also pins the keyboard, mouse and gamepad mappings to `tests/controls.keyboard-gamepad.json`, so a touch change cannot move them.
+
+| Verb | Comes from | Keyboard and mouse | Gamepad | Touch | Touch before #377 |
+|---|---|---|---|---|---|
+| move, look, jump, cast, place, throw, drink, bomb | always (drink: a flask on top) | as above | as above | as above | had it |
+| intention polarity | always | F | LB | half turn of the phone | had it |
+| air jumps | Double Jump, Triple Jump, Wall Jump | Space again in the air | A again | the arrow again | had it |
+| launch a missile | Dr. Launcher (`missile`) | double click | double RT | double tap on the bead | had it |
+| run | Fartlek, Stride Tonic (`run`) | Shift | L3 | stick at its edge | had it |
+| **crouch** | Child's Pose, Walk Slow, Folding Tincture (`crouch`) | C / Control | R3 | **the body button** (+ the swipe) | **gap**: only a hidden swipe at the bottom edge, where the phone's home gesture lives |
+| **dash** | Irimi (`dash`) | double tap a direction | double flick | **the body button** (+ the swipe) | **gap**: only a hidden swipe, no visible control |
+| slow time | Walk Slow | crouch on the ground | crouch | the body button | gap (through crouch) |
+| miracle | Kairos | V | D-pad Up | the clock ring | had it |
+| recipe book | Book of Secrets (`recipes`) | J | D-pad Down | Recipes tab of the screen | had it |
+| brew at the alembic | the laboratory | cast at it | RT | the bead | had it (a meaning of cast) |
+| take a flask, pick up | the world | walk over it | walk over it | walk over it | passive |
+| choose a carried item | always | 1-9, wheel | d-pad left / right | tap a hand slot | had it |
+| inventory, pause, map | always | Tab / I, Esc, M | Y, Menu, View | the tab button; the map tab | had it |
+| restart, book | menus | R, H | View, X | buttons of the card | had it |
+| confirm, navigate, back | menus | Enter / click, arrows, Esc | A, d-pad, B | tap, tap, ✕ / Keep | had it |
+| the Sanctuary (skip, mute, calm, voice) | the Boundary | N, M, C, V | RB, X, Y, LB | its bar's buttons | had it |
+
+Count: 29 actions in `BINDINGS`, plus 5 verbs that are a new meaning of one (air jumps, missile, slow time, brewing, polarity's half turn). Before #377 two actions (crouch, dash) and the slow time that rides on crouch had no visible touch control; after it, none.
+
+**Shared touch buttons.** One: the **body button**, for crouch and dash (`touch.shared: 'body'`, `SHARED_TOUCH` in `bindings.ts`, the rule in `src/input/context-button.ts`). They share because both are body verbs given by a practice, and most runs hold only one of them, so one place on screen is enough; with both, the stick decides: still kneels, moving dashes (TOUCH §1.1). No other touch control is shared; the test lists every clash and allows only this one.
 
 **Air jumps** (with the Triple Jump, [built/player/TRIPLE-JUMP.md](../../design/built/player/TRIPLE-JUMP.md)). No new action: while you are off the ground, a second press of jump is the next air jump (the Triple Jump gives two, the Double Jump one). It is the same button, the same press on every device, and it needs no `BINDINGS` change. The words for jump name the air jumps (`controls.jump`, every device's row). References: Minecraft (a double jump is the same jump button, pressed again in the air), Noita (the levitate key is held, not a new key), Isaac (a practice changes what the one button does, never adds a button).
 

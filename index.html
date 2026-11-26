@@ -538,6 +538,9 @@
     .tb[hidden] { display: none; }
     .tb-drink { background-color: color-mix(in srgb, var(--ui-panel) 92%, transparent); box-shadow: inset 0 0 0 4px var(--liquid, var(--ui-gold)), 0 0 0 1px var(--ui-line); }
     .tb.sys { width: max(48px, 11vmin); height: max(48px, 11vmin); top: calc(10px + env(safe-area-inset-top)); }
+    /* the body button (#377): the crouch and the dash share it, shown only with their practices (context-button.ts);
+       its place is the body slot of touch-layout.ts (#376); ringed in gold while the crouch is on */
+    .tb-body.crouched { box-shadow: inset 0 0 0 4px var(--ui-gold), 0 0 0 1px var(--ui-line); }
     /* the return to fullscreen (#161): the top bar, left of the inventory; above the rotate card so it works in portrait too */
     #fullscreen { --glyph: none; z-index: 61;
       display: flex; align-items: center; justify-content: center; color: var(--ui-text); }
