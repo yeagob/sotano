@@ -7,7 +7,7 @@ Every intention, weapon stroke and blast that meets a sky creature reaches it, a
 ## What the player sees and feels
 
 - **A shot or a stroke** (an intention, the blade, the beam, the great cut) that touches a deity or a minion lands at its body. A positive one is one positive hit: a gold mark where it landed and the animal's own sign of progress ([guardians](../guardians/README.md)). A beam counts once per stroke, not once per tick.
-- **A negative touch is a puff**: a small pale cloud, and nothing changes: no hit, no harm, no change of side. The first puff of a run shows the toast "Only a good intention lands here. The rest puffs away." once.
+- **A negative touch is a puff**: a small pale cloud, and nothing changes: no hit, no harm, no change of side. The first puff of a run shows the toast "Only a good intention lands here. The rest puffs away." once. After that, a puff shows "Only good intentions reach it." at most once every 4 seconds.
 - **A blast** gives every sky creature in its reach one touch. A negative blast (a black bomb, a negative missile) is one puff on each. A **love explosion** (a white bomb or a positive missile, [BOMBS](../../blocks/BOMBS.md)) is one warm positive touch on each creature in its sphere, whatever its radius.
 - **A missile** that meets a deity stops at it. A negative missile goes off as a bomb (one puff); a positive one is the love explosion alone, with no direct hit as well ([Dr. Launcher](../../practices/milagros/DR-LAUNCHER.md)).
 - A creature that has left its floor (parked) is not touched by anything.

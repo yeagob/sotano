@@ -300,7 +300,7 @@ export class Deity implements DeityApi {
     // The touch carries no weapon id here; R2 may pass one later (only a rule's worth reads it).
     const hit: PositiveHit = { x: p.x, y: p.y, z: p.z, cell: -1, actor: this.actor.id, weapon: 'intent', warm };
     this.actor.hits = Math.min(this.def.hits, this.actor.hits + this.worth(hit));
-    this.host.fx('gold', p.x, p.y, p.z);
+    this.host.fx('gold', p.x, p.y, p.z, 12);
     this.host.cue('core.gold', p.x, p.y, p.z);
     this.hurtLeft = HURT;
     if (this.actor.hits >= this.def.hits) {

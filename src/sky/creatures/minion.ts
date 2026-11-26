@@ -153,7 +153,7 @@ export class Minion implements MinionApi {
     if (polarity === 'negative') { this.deps.puff.at(p); return; }
     const a = this.actor;
     if (!warm || a.state === SPAWNING || a.state === FADING) return;
-    this.host.fx('gold', p.x, p.y, p.z);
+    this.host.fx('gold', p.x, p.y, p.z, 12);
     this.host.cue('core.gold', p.x, p.y, p.z);
     if (a.side === 'ally') return;
     a.hits = Math.min(this.def.hitsToTurn, a.hits + 1);
