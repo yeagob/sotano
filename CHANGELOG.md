@@ -6,6 +6,11 @@ Changes to the tutorial and to the book are listed without their content, so not
 
 ## Unreleased
 
+## 0.3.0-alpha.f1 · 2026-11-27
+
+### Fixed
+- The meditations' spoken guidance plays again in the sitting after you leave the Sanctuary.
+
 ## 0.3.0-alpha · 2026-11-27
 
 ### Added
