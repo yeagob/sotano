@@ -2,6 +2,7 @@
 
 import { fx } from '../core/fx';
 import { FREEZE_CADENCE } from '../core/freeze';
+import { tickFearRest } from '../core/fear';
 import * as THREE from 'three';
 import { pal } from '../content/palette';
 import { ROOM_D, ROOM_W } from '../content/rooms';
@@ -279,7 +280,7 @@ export class Enemies {
       spawning: SPAWN_TIME, targetId: -1, retarget: 0, state: 'move', armed: true, timer: 1 + (id % 3) * 0.4, wishX: 0, wishZ: 0, flash: 0, pulse: 0, alive: true,
       tier, climb: m.climb, power: m.damage,
       elemSpeed: 1, inElement: null, elemT: 0,
-      hidden: false, stage: 0, hold: 0, frozen: 0, thaw: 0, fear: 0, aimX: 0, aimZ: 0, flyY: -1, hover: -1, ghost: false, seq: 0, clock: 0, volley: 2, move: -1, act: 0,
+      hidden: false, stage: 0, hold: 0, frozen: 0, thaw: 0, fear: 0, fearRest: 0, aimX: 0, aimZ: 0, flyY: -1, hover: -1, ghost: false, seq: 0, clock: 0, volley: 2, move: -1, act: 0,
     };
     this.list.push(e);
     this.views.set(id, this.buildView(def, tier));
@@ -501,6 +502,7 @@ export class Enemies {
         b.vx = 0; b.vz = 0; this.draw(e); continue;
       }
       if (e.frozen <= 0 && e.thaw > 0) e.thaw = Math.max(0, e.thaw - dt);
+      tickFearRest(e, dt);
       if (e.frozen > 0) {
         e.frozen -= dt; e.wishX = 0; e.wishZ = 0;
         if (e.frozen <= 0) { e.frozen = 0; e.thaw = FREEZE_CADENCE; }
