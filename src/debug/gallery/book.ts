@@ -15,6 +15,7 @@ import { pal, palCss } from '../../content/palette';
 import type { Device } from '../../input/bindings';
 import { materialCanvas } from '../../render/atlas';
 import { STONE_PX, carvePageStone } from '../../render/page-stone';
+import { carveMasteryStone, masteryStonePx } from '../../render/mastery-stone';
 import { PANEL_H, PANEL_W, panelImageIds, panelMount } from '../../render/panel-layout';
 import { carvePanel, panelImages, type PanelReport, type PanelVoice } from '../../render/tablets';
 import type { GalleryKit } from '../gallery';
@@ -158,6 +159,16 @@ export async function bookGallery(kit: GalleryKit, params: URLSearchParams) {
     c.width = c.height = STONE_PX;
     carvePageStone(c.getContext('2d')!, page);
     kit.fig(sr, c, `page ${page}`);
+  }
+  kit.head('The mastery stone (levels 0, 4, 9, 40, 88 and 100), ×0.5');
+  const mr = kit.row();
+  for (const level of [0, 4, 9, 40, 88, 100]) {
+    const c = document.createElement('canvas');
+    const px = masteryStonePx(level);
+    c.width = px.w; c.height = px.h;
+    carveMasteryStone(c.getContext('2d')!, level);
+    c.style.width = `${px.w / 2}px`;
+    kit.fig(mr, c, `level ${level}`);
   }
 }
 
