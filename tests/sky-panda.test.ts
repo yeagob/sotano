@@ -99,6 +99,7 @@ function rig(def: DeityDef = pandaDeity, at = SPOT) {
     update() {},
     canDrain: () => canDrain && !held && now - lastDrain >= 6,
     drain: (n: number) => { if (!(canDrain && !held && now - lastDrain >= 6)) return false; drains.push(n); lastDrain = now; return true; },
+    contact: () => false,
   };
   const deps: CreatureDeps = { actors, runner, effects, puff: new Puff(host), knock: {} as TowerKnockApi, spirit };
   const creatures = new SkyCreatures(new THREE.Group(), host, deps);

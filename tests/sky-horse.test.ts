@@ -258,7 +258,7 @@ describe('the horse deity: special attacks and the spirit gate', () => {
     r.body.z = b.z + (r.deity.body.vz || 0) * 0.3;
     r.body.y = r.deity.body.y;
     r.step(40);
-    expect(r.log.drains).toEqual([GALLOP_SPIRIT]);
+    expect(r.log.drains.filter(n => n === GALLOP_SPIRIT)).toEqual([GALLOP_SPIRIT]);
   });
 
   it('Snaking captures a player who stays inside the circle (3 s, one practice), 0.5 s after the floor’s telegraph', () => {

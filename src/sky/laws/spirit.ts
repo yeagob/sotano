@@ -46,10 +46,21 @@ export class SpiritLaw implements SpiritApi {
   drain(n: number): boolean {
     if (!this.canDrain()) return false;
     this.drainedAt = this.host.time();
+    this.land(n);
+    return true;
+  }
+
+  contact(n: number): boolean {
+    const pl = this.host.player();
+    if (pl.held || pl.shielded || this.host.time() - this.heldAt < DRAIN_CALM) return false;
+    this.land(n);
+    return true;
+  }
+
+  private land(n: number): void {
     this.host.drainSpirit(n);
     if (this.host.spirit() <= 0 && !this.owed) this.owed = this.host.fork('sky', 'underground', this.falls++);
     this.settleFall();
-    return true;
   }
 
   /** Sends the owed fall when the host takes it. Spirit above zero again means the zero is over, and nothing is owed. */

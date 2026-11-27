@@ -11,7 +11,7 @@ import type { Body } from '../src/physics/voxel-collide';
 import { BOB, DRIFT_RADIUS, MIN_TELEGRAPH, TELEPORT_MIN, aimOf, reachOf, stageOf } from '../src/sky/creatures/deity';
 import { DEITIES } from '../src/sky/creatures/deities';
 import { Puff } from '../src/sky/creatures/puff';
-import { SkyCreatures } from '../src/sky/creatures/system';
+import { CONTACT_SPIRIT, SkyCreatures } from '../src/sky/creatures/system';
 import { linksOf, nearest, placeById, route } from '../src/sky/floors/graph';
 import { SkyRealm } from '../src/sky/sky-realm';
 import { SkyWorld } from '../src/sky/world/sky-world';
@@ -76,7 +76,7 @@ function rig(over: Partial<DeityDef> = {}, places: Place[] = []): Rig {
   } as unknown as HindranceRunnerApi;
   const deps: CreatureDeps = {
     actors, runner, effects: {} as SkyEffectsApi, puff: new Puff(h.host), knock: {} as TowerKnockApi,
-    spirit: { update() {}, canDrain: () => true, drain: () => true },
+    spirit: { update() {}, canDrain: () => true, drain: () => true, contact: () => true },
   };
   const seat: Place = { id: 0, kind: 'seat', x: SEAT.x, y: SEAT.y, z: SEAT.z, w: 3, d: 3, tag: 0 };
   const graph: FloorGraph = { places: [seat, ...places], links: [] };
@@ -434,7 +434,10 @@ describe('the floor graph (SKY.md §5.6)', () => {
 });
 
 /** A sky realm headless: a real layout and world, the player well away, and the host calls the realm makes as no-ops. */
+let lastDrains: number[] = [];
+
 function newRealm(seed = 1): SkyRealm {
+  lastDrains = [];
   const actors = new ActorRegistry();
   actors.setRealm('sky');
   const noop = () => {};
@@ -448,7 +451,7 @@ function newRealm(seed = 1): SkyRealm {
     debris: () => ({ spawn: () => 0, max: 0 }),
     fork: (...path: (string | number)[]) => new Rng(path.length * 7 + seed),
     fx: noop, cue: noop, toast: noop, card: noop, bar: noop, place: noop, gift: noop, travel: noop,
-    drainSpirit: noop, spirit: () => 100, refillSpirit: noop, takeRandomPractice: () => null, sendUnderground: noop,
+    drainSpirit: (n: number) => { lastDrains.push(n); }, spirit: () => 100, refillSpirit: noop, takeRandomPractice: () => null, sendUnderground: noop,
   } as unknown as SkyHost;
   return SkyRealm.create(host, new THREE.Group(), layout => ({ kind: 'sky', world: (world = new SkyWorld(layout)) } as unknown as SkyRealmSet));
 }
@@ -528,5 +531,25 @@ describe('the puff (law 3.3)', () => {
     puff.at(p);
     expect(h.log.toasts).toHaveLength(2);
     expect(h.log.fx.filter(k => k === 'puff')).toHaveLength(5);
+  });
+});
+
+describe('contact drains spirit', () => {
+  it('a hostile creature touching the player drains CONTACT_SPIRIT through the gate, once per cooldown; an ally does not', () => {
+    const realm = newRealm();
+    realm.creatures.update(DT, 1);
+    const [a] = realm.creatures.all();
+    a.body.x = 6; a.body.y = 10; a.body.z = 0;
+    realm.creatures.update(DT, 1);
+    expect(lastDrains).toEqual([CONTACT_SPIRIT]);
+    realm.creatures.update(DT, 1);
+    expect(lastDrains).toEqual([CONTACT_SPIRIT]);
+    const other = newRealm();
+    other.creatures.update(DT, 1);
+    const ally = other.creatures.all()[0];
+    ally.side = 'ally';
+    ally.body.x = 6; ally.body.y = 10; ally.body.z = 0;
+    other.creatures.update(DT, 1);
+    expect(lastDrains).toEqual([]);
   });
 });
