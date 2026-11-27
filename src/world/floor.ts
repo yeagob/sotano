@@ -428,7 +428,7 @@ export function carveFloor(w: VoxelWorld, rr: RunRandom, k: number, plan: FloorP
         if (inChest && guarded) chests.push({ room: gid(pr.id), x, y: y0, z, keys: 0, item: null, guard: true });
         else if (inChest) chests.push({
           room: gid(pr.id), x, y: y0, z, keys: meditationChest ? 0 : CHEST_LOCK.roll(chestRng, { floor: k })!,
-          item, ...(meditationChest ? { meditation: true } : {}),
+          item: meditationChest ? null : item, ...(meditationChest ? { meditation: true } : {}),
         });
         pedestals.push({ room: gid(pr.id), x, y: y0 + 1, z, item: guarded ? null : item, boss, chest: inChest });
       }
