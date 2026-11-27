@@ -38,4 +38,6 @@ export interface VoxelSpace {
   outerChunksNear?(x: number, z: number, radius: number): [number, number, number][];
   /** True when a chunk is all air with no element (the sky is mostly air). */
   emptyChunk?(cx: number, cy: number, cz: number): boolean;
+  breakable?(x: number, y: number, z: number): boolean;
+  damageKey?(x: number, y: number, z: number): number;
 }
