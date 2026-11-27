@@ -1,6 +1,6 @@
 # The Roots' mastery level
 
-Up: [progression](README.md) · Status: built (issue #147, owner's decision 8). The level is shown in the achievement notice; a screen that lists it is not built ([pending](../../not-built/progression/README.md)).
+Up: [progression](README.md) · Status: built (issue #147, owner's decision 8). The level is shown in the achievement notice and on the mastery stone of the Roots (issue #397); a screen that lists it is not built ([pending](../../not-built/progression/README.md)).
 
 The Roots have a mastery level: **the number of achievements unlocked, capped at 100**. It is kept between runs. Each achievement adds one level, in any order. The level decides what the Roots lay on their floor ([REWARDS](../levels/roots/REWARDS.md)): at 0 the floor is poorer; at 100 it prepares a well-equipped player.
 
@@ -17,6 +17,7 @@ The Roots have a mastery level: **the number of achievements unlocked, capped at
 
 ## Where the player sees it
 
+- On the Roots' wall: the way-down room carries the level the run started with in Roman numerals (`N` for 0), in sight of the spawn ([MASTERY-STONE](../levels/roots/MASTERY-STONE.md), issue #397).
 - In the achievement notice: "Mastery of the Roots: 5 of 100" ([ACHIEVEMENTS §4](ACHIEVEMENTS.md#4-the-notice)).
 - In the depths: more projections in a room, and more of them Yellow and Red, as the level rises ([DIFFICULTY](DIFFICULTY.md)).
 - In the Roots themselves: more on the floor, an extra practice from level 10 (always Fartlek, the run) and a second from level 25 (always Child's Pose, the crouch; issue #277), a third from level 30 (always the Book of Secrets, which opens the Recipe Book), the Roots' call from level 50 (half of the mastery: at every run start what the Roots lay flies to the player, all but the Sanctuary's practice; issue #295, [CALL](../levels/roots/CALL.md)), an altar in the start room from level 80, a second Boundary at 100. The two practices the Roots offer (the Sanctuary chest and the way-down pedestal) are the same at every level.

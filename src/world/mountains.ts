@@ -20,11 +20,16 @@
 // every ledge and every ridge can be reached by jumping.
 
 import { AIR, MAT } from '../content/materials';
+import { elemByte, EL_LAVA, EL_WATER, SOURCE } from '../content/elements';
 import { hash3, type Rng } from '../core/rng';
 import { ExceptionKind } from '../sky/types';
 import { ChunkCache, type SkyChunk } from '../sky/world/cache';
 import { TREE_ZONES } from './tree';
 import { CHUNK } from './world';
+import {
+  BEDROCK, LAVA_FLOOR, LAVA_TOP, ROOT_BUSH, ROOT_CHANCE, ROOT_NONE, SEA, SHAFT_HALF,
+  TRAP_DEPTH, TREE_REACH, canopyAt, groundHeight, reliefRamp, rootOf, rootRoll, topMaterial, trunkOf,
+} from './void';
 
 /** The tree's height above the grass (the top of its canopy): nothing on the surface is taller. */
 export const PEAK = TREE_ZONES.heaven;
@@ -54,7 +59,6 @@ const PEAK_W = 128;
 const GRASS_LINE = 56;
 /** How far under the grass the terrain's ground goes (a skirt: nothing below it is ever seen). */
 export const DEPTH = 6;
-const NONE = -1;
 
 /** Chunk columns whose heights are kept (each 18 × 18 heights and 16 × 16 tops, under 1 KB). */
 export const COLUMN_CAP = 1024;
@@ -65,6 +69,8 @@ const C3 = CHUNK * CHUNK * CHUNK;
 const W = CHUNK + 2;
 /** The shared all-air chunk (never written). */
 const EMPTY: SkyChunk = { blocks: new Uint8Array(C3), elem: null };
+const LAVA_CELL = elemByte(EL_LAVA, SOURCE) << 8;
+const WATER_CELL = elemByte(EL_WATER, SOURCE) << 8;
 /** Chunk coordinates are biased so a numeric key holds negative chunks (±16 384 blocks). */
 const BIAS = 1024;
 const colKey = (cx: number, cz: number) => (cx + BIAS) + 2048 * (cz + BIAS);
@@ -79,7 +85,11 @@ export interface Ridge {
 }
 
 /** A chunk column's ground: heights with a one-column border, the top block of each inner column. */
-interface Column { heights: Int16Array; tops: Uint8Array; lo: number; hi: number; ground: boolean }
+interface Column { heights: Int16Array; tops: Uint8Array; voids: Uint8Array; lo: number; hi: number }
+
+interface RootInfo { top: number; kind: number; trunk: number }
+
+const soil = (y: number, top: number, m: number) => (y === top ? m : m !== MAT.stone && y >= top - 3 ? MAT.dirt : MAT.stone);
 
 export interface TerrainStats {
   /** Bytes of the formula's parameters (passes, ridges, phases, stairs, summits). */
@@ -152,10 +162,10 @@ export class Mountains {
     return s >= 0 && Math.abs(angleDiff(a, this.stairs[s])) * r <= STAIR_HALF ? s : -1;
   }
 
-  /** The formula: height above the grass of the column (x, z), NONE past the edge. Pure. */
+  /** The formula: height above the grass of the column (x, z). Pure. */
   heightOf(x: number, z: number): number {
     const dx = x - this.cx, dz = z - this.cz, r = Math.hypot(dx, dz);
-    if (r > EDGE_R) return NONE;
+    if (r > EDGE_R) return groundHeight(this.noise, x, z, reliefRamp(r, EDGE_R));
     if (r <= PLAIN_R || r >= FOOT_R) return 0;
     for (const [sx, sz] of this.summits) if (sx === x && sz === z) return PEAK;
     const a = Math.atan2(dz, dx);
@@ -187,35 +197,30 @@ export class Mountains {
     const key = colKey(ccx, ccz);
     let c = this.columns.get(key);
     if (c) { this.columns.delete(key); this.columns.set(key, c); return c; }
-    const heights = new Int16Array(W * W), tops = new Uint8Array(CHUNK * CHUNK);
+    const heights = new Int16Array(W * W), tops = new Uint8Array(CHUNK * CHUNK), voids = new Uint8Array(CHUNK * CHUNK);
     const x0 = ccx * CHUNK - 1, z0 = ccz * CHUNK - 1;
-    let lo = Infinity, hi = -Infinity, ground = false;
+    let lo = Infinity, hi = -Infinity;
     for (let j = 0; j < W; j++) for (let i = 0; i < W; i++) {
-      const h = this.heightOf(x0 + i, z0 + j);
+      const x = x0 + i, z = z0 + j, h = this.heightOf(x, z);
       heights[i + W * j] = h;
-      // next to a column with no ground the edge shows its whole skirt
-      const top = this.surfaceY + Math.max(0, h);
-      lo = Math.min(lo, h === NONE ? this.surfaceY - DEPTH - 1 : top - 1); hi = Math.max(hi, top + 1);
-      if (h !== NONE) ground = true;
+      lo = Math.min(lo, this.voidAt(x, z) ? this.surfaceY + BEDROCK : this.surfaceY - DEPTH - 1);
+      hi = Math.max(hi, this.surfaceY + h + 1, this.surfaceY + SEA);
     }
     for (let j = 1; j <= CHUNK; j++) for (let i = 1; i <= CHUNK; i++) {
-      const h = heights[i + W * j];
-      if (h === NONE) continue;
-      if (this.onStair(x0 + i, z0 + j)) { tops[(i - 1) + CHUNK * (j - 1)] = MAT.dirt; continue; }
+      const h = heights[i + W * j], x = x0 + i, z = z0 + j, k = (i - 1) + CHUNK * (j - 1);
+      const v = this.voidAt(x, z);
+      voids[k] = v ? 1 : 0;
+      if (this.onStair(x, z)) { tops[k] = MAT.dirt; continue; }
       let steep = 0;
-      for (const [di, dj] of NEIGHBOURS) {
-        const hn = heights[i + di + W * (j + dj)];
-        if (hn !== NONE) steep = Math.max(steep, Math.abs(hn - h));
-      }
-      tops[(i - 1) + CHUNK * (j - 1)] = h <= GRASS_LINE && steep <= 1 ? MAT.grass : MAT.stone;
+      for (const [di, dj] of NEIGHBOURS) steep = Math.max(steep, Math.abs(heights[i + di + W * (j + dj)] - h));
+      tops[k] = v ? topMaterial(h, steep <= 1) : h <= GRASS_LINE && steep <= 1 ? MAT.grass : MAT.stone;
     }
-    c = { heights, tops, lo, hi, ground };
+    c = { heights, tops, voids, lo, hi };
     this.columns.set(key, c);
     if (this.columns.size > COLUMN_CAP) this.columns.delete(this.columns.keys().next().value as number);
     return c;
   }
 
-  /** Height above the grass of the column (x, z), or -1 where there is no ground (past the edge). */
   height(x: number, z: number): number {
     const ccx = Math.floor(x / CHUNK), ccz = Math.floor(z / CHUNK);
     return this.column(ccx, ccz).heights[(x - ccx * CHUNK + 1) + W * (z - ccz * CHUNK + 1)];
@@ -223,45 +228,121 @@ export class Mountains {
 
   // ───────────── chunks (the sky's cache: formula, then exceptions) ─────────────
 
+  private at(x: number, y: number, z: number): SkyChunk {
+    const k = chunkNum(x >> 4, y >> 4, z >> 4), c = this.cache;
+    return k === c.lastKey ? c.last! : this.chunk(x >> 4, y >> 4, z >> 4, k);
+  }
+
   /** The block at a cell (the world asks only for cells outside its array). */
   block(x: number, y: number, z: number): number {
-    const k = chunkNum(x >> 4, y >> 4, z >> 4), c = this.cache;
-    return (k === c.lastKey ? c.last! : this.chunk(x >> 4, y >> 4, z >> 4, k)).blocks[localOf(x, y, z)];
+    return this.at(x, y, z).blocks[localOf(x, y, z)];
+  }
+
+  elemAt(x: number, y: number, z: number): number {
+    return this.at(x, y, z).elem?.[localOf(x, y, z)] ?? 0;
+  }
+
+  private cell(col: Column, lx: number, lz: number, y: number): number {
+    const i = lx + CHUNK * lz, h = col.heights[(lx + 1) + W * (lz + 1)], top = this.surfaceY + h, d = y - this.surfaceY;
+    if (col.voids[i]) {
+      if (d === BEDROCK) return MAT.bedrock;
+      if (d >= LAVA_FLOOR && d <= LAVA_TOP) return LAVA_CELL;
+      if (y <= top) return d > LAVA_TOP ? soil(y, top, col.tops[i]) : AIR;
+      return d <= SEA ? WATER_CELL : AIR;
+    }
+    if (y < this.surfaceY - DEPTH || y > top) return AIR;
+    return soil(y, top, col.tops[i]);
+  }
+
+  private rootAt(rx: number, rz: number): RootInfo | null {
+    if (Math.hypot(rx - this.cx, rz - this.cz) <= EDGE_R + TREE_REACH) return null;
+    const roll = rootRoll(this.noise, rx, rz);
+    if (roll >= ROOT_CHANCE) return null;
+    const h = this.height(rx, rz);
+    let steep = 0;
+    for (const [di, dj] of NEIGHBOURS) steep = Math.max(steep, Math.abs(this.height(rx + di, rz + dj) - h));
+    const kind = rootOf(roll, h, steep);
+    return kind === ROOT_NONE ? null : { top: this.surfaceY + h, kind, trunk: trunkOf(this.noise, rx, rz) };
+  }
+
+  private rootBlock(rx: number, rz: number, root: RootInfo, x: number, y: number, z: number): number {
+    const dy = y - root.top;
+    if (root.kind === ROOT_BUSH) return x === rx && z === rz && dy === 1 ? MAT.leaves : AIR;
+    if (x === rx && z === rz && dy >= 1 && dy <= root.trunk) return MAT.log;
+    return canopyAt(x - rx, y - (root.top + root.trunk), z - rz) ? MAT.leaves : AIR;
+  }
+
+  private paintTrees(blocks: Uint8Array, x0: number, oy: number, z0: number) {
+    for (let rz = z0 - TREE_REACH; rz < z0 + CHUNK + TREE_REACH; rz++) for (let rx = x0 - TREE_REACH; rx < x0 + CHUNK + TREE_REACH; rx++) {
+      const root = this.rootAt(rx, rz);
+      if (!root) continue;
+      const yTop = Math.min(oy + CHUNK - 1, root.top + root.trunk + 1), yBottom = Math.max(oy, root.top + 1);
+      for (let y = yBottom; y <= yTop; y++) for (let z = Math.max(z0, rz - TREE_REACH); z <= Math.min(z0 + CHUNK - 1, rz + TREE_REACH); z++)
+        for (let x = Math.max(x0, rx - TREE_REACH); x <= Math.min(x0 + CHUNK - 1, rx + TREE_REACH); x++) {
+          const i = (x - x0) + CHUNK * ((y - oy) + CHUNK * (z - z0));
+          if (blocks[i] === AIR) blocks[i] = this.rootBlock(rx, rz, root, x, y, z);
+        }
+    }
   }
 
   private chunk(ccx: number, ccy: number, ccz: number, k: number): SkyChunk {
     const hit = this.cache.get(k);
     if (hit) return hit;
     const col = this.column(ccx, ccz), edits = this.edits.get(k), oy = ccy * CHUNK;
-    if (!edits && (!col.ground || oy > col.hi || oy + CHUNK - 1 < this.surfaceY - DEPTH)) { this.cache.remember(k, EMPTY); return EMPTY; }
+    if (!edits && (oy > col.hi || oy + CHUNK - 1 < col.lo)) { this.cache.remember(k, EMPTY); return EMPTY; }
     const blocks = new Uint8Array(C3);
-    for (let lz = 0; lz < CHUNK; lz++) for (let lx = 0; lx < CHUNK; lx++) {
-      const h = col.heights[(lx + 1) + W * (lz + 1)];
-      if (h === NONE) continue;
-      const top = this.surfaceY + h, m = col.tops[lx + CHUNK * lz];
-      const y0 = Math.max(oy, this.surfaceY - DEPTH), y1 = Math.min(oy + CHUNK - 1, top);
-      for (let y = y0; y <= y1; y++)
-        blocks[lx + CHUNK * ((y - oy) + CHUNK * lz)] = y === top ? m : m !== MAT.stone && y >= top - 3 ? MAT.dirt : MAT.stone;
+    let elem: Uint8Array | null = null;
+    for (let lz = 0; lz < CHUNK; lz++) for (let lx = 0; lx < CHUNK; lx++) for (let ly = 0; ly < CHUNK; ly++) {
+      const v = this.cell(col, lx, lz, oy + ly), li = lx + CHUNK * (ly + CHUNK * lz);
+      blocks[li] = v & 255;
+      if (v >> 8) { if (!elem) elem = new Uint8Array(C3); elem[li] = v >> 8; }
     }
-    if (edits) for (const [li, v] of edits) blocks[li] = v & 255;
-    const out: SkyChunk = { blocks, elem: null };
+    this.paintTrees(blocks, ccx * CHUNK, oy, ccz * CHUNK);
+    if (edits) for (const [li, v] of edits) { blocks[li] = v & 255; if (elem && (v & 255) !== AIR) elem[li] = 0; }
+    const out: SkyChunk = { blocks, elem };
     this.cache.put(k, out);
     return out;
   }
 
   /** The formula alone at a cell, ignoring exceptions. */
   base(x: number, y: number, z: number): number {
-    const h = this.height(x, z);
-    if (h === NONE || y < this.surfaceY - DEPTH) return AIR;
-    const top = this.surfaceY + h;
-    if (y > top) return AIR;
     const ccx = Math.floor(x / CHUNK), ccz = Math.floor(z / CHUNK);
-    const m = this.column(ccx, ccz).tops[(x - ccx * CHUNK) + CHUNK * (z - ccz * CHUNK)];
-    return y === top ? m : m !== MAT.stone && y >= top - 3 ? MAT.dirt : MAT.stone;
+    const b = this.cell(this.column(ccx, ccz), x - ccx * CHUNK, z - ccz * CHUNK, y) & 255;
+    if (b !== AIR) return b;
+    for (let rz = z - TREE_REACH; rz <= z + TREE_REACH; rz++) for (let rx = x - TREE_REACH; rx <= x + TREE_REACH; rx++) {
+      const root = this.rootAt(rx, rz);
+      const m = root ? this.rootBlock(rx, rz, root, x, y, z) : AIR;
+      if (m !== AIR) return m;
+    }
+    return AIR;
+  }
+
+  voidAt(x: number, z: number): boolean {
+    return Math.hypot(x - this.cx, z - this.cz) > EDGE_R;
+  }
+
+  voidMix(x: number, z: number): number {
+    return reliefRamp(Math.hypot(x - this.cx, z - this.cz), EDGE_R);
+  }
+
+  breakable(x: number, y: number, z: number): boolean {
+    return this.voidAt(x, z) && y - this.surfaceY > LAVA_TOP;
+  }
+
+  trapped(x: number, y: number, z: number): boolean {
+    const fx = Math.floor(x), fz = Math.floor(z);
+    return this.voidAt(fx, fz) && Math.floor(y) <= this.surfaceY + this.height(fx, fz) - TRAP_DEPTH;
+  }
+
+  shaft(x: number, y: number, z: number): [number, number, number][] {
+    const cx = Math.floor(x), cz = Math.floor(z), top = Math.floor(y), out: [number, number, number][] = [];
+    for (let dz = -SHAFT_HALF; dz <= SHAFT_HALF; dz++) for (let dx = -SHAFT_HALF; dx <= SHAFT_HALF; dx++)
+      for (let yy = top; yy > this.surfaceY + LAVA_TOP; yy--) if (this.breakable(cx + dx, yy, cz + dz)) out.push([cx + dx, yy, cz + dz]);
+    return out;
   }
 
   /** Records an exception (WORLD-STORAGE §5.1): a cell set back to its formula keeps none, unless it
-   *  was placed. Not reached by the game yet: the mountains cannot be broken or built on (decision 8). */
+   *  was placed. The game reaches it only in the Outer Void (decision 8 of WORLD-STORAGE, amended by OUTER-VOID.md). */
   except(x: number, y: number, z: number, m: number, placing = false) {
     const k = chunkNum(x >> 4, y >> 4, z >> 4), li = localOf(x, y, z), b = this.base(x, y, z);
     let e = this.edits.get(k);
@@ -271,7 +352,7 @@ export class Mountains {
     if (kind) { if (!e) { e = new Map(); this.edits.set(k, e); } e.set(li, m | kind << 8); }
     else if (e) { e.delete(li); if (!e.size) this.edits.delete(k); }
     const c = this.cache.peek(k);
-    if (c) c.blocks[li] = m; else this.cache.forget(k);
+    if (c) { c.blocks[li] = m; if (c.elem && m !== AIR) c.elem[li] = 0; } else this.cache.forget(k);
   }
 
   stats(): TerrainStats {
@@ -279,7 +360,7 @@ export class Mountains {
     for (const e of this.edits.values()) exceptions += e.size;
     const formula = 8 * (this.passes.length + 3 * this.ridges.length + this.phase.length + this.stairs.length + 2 * this.summits.length) + 4;
     const exceptionBytes = exceptions * 4 + this.edits.size * 16;
-    const cacheBytes = this.columns.size * (W * W * 2 + CHUNK * CHUNK) + this.cache.size * C3;
+    const cacheBytes = this.columns.size * (W * W * 2 + 2 * CHUNK * CHUNK) + this.cache.size * C3 * 2;
     return { formula, exceptions, exceptionBytes, columns: this.columns.size, chunks: this.cache.size, cacheBytes, bytes: formula + exceptionBytes + cacheBytes };
   }
 
@@ -295,15 +376,11 @@ export class Mountains {
   chunksNear(x: number, z: number, radius: number): [number, number, number][] {
     const out: [number, number, number, number][] = [];
     const rc = Math.ceil(radius / CHUNK), pcx = Math.floor(x / CHUNK), pcz = Math.floor(z / CHUNK);
-    const lim = Math.ceil((EDGE_R + CHUNK) / CHUNK);
     for (let cz = pcz - rc; cz <= pcz + rc; cz++) for (let cx = pcx - rc; cx <= pcx + rc; cx++) {
       if (!this.outside(cx, cz)) continue;
       const d = Math.hypot(cx * CHUNK + 8 - x, cz * CHUNK + 8 - z);
       if (d > radius + CHUNK) continue;
-      // past the edge there is no ground at all: skip without computing the column
-      if (Math.abs(cx - Math.floor(this.cx / CHUNK)) > lim || Math.abs(cz - Math.floor(this.cz / CHUNK)) > lim) continue;
       const col = this.column(cx, cz);
-      if (!col.ground) continue;
       for (let cy = Math.floor(col.lo / CHUNK); cy <= Math.floor(col.hi / CHUNK); cy++) out.push([cx, cy, cz, d]);
     }
     out.sort((a, b) => a[3] - b[3]);

@@ -1,6 +1,8 @@
 // The run's checkpoint (Waymark, docs/design/built/practices/will/WAYMARK.md): the place the player last knew
 // themselves. The rules are pure, so the game and the tests share them.
 
+import type { FloorResult } from '../world/floor';
+
 /** Every checkpoint item carries this tag: the checkpoint lasts while one is held. */
 export const CHECKPOINT_TAG = 'checkpoint';
 /** Seconds of invulnerability after a revive. */
@@ -43,4 +45,12 @@ export const arrivalOf = (spawn: readonly [number, number, number]): Spot => ({ 
 /** The rooms whose doors must open after the player is moved: every live room but the one the player now stands in. */
 export function releasedRooms(live: readonly number[], here: number | null): number[] {
   return live.filter(id => id !== here);
+}
+
+export function arrivalYaw(f: Pick<FloorResult, 'spawn' | 'rooms' | 'doors'>): number {
+  const start = f.rooms.find(r => r.type === 'start'), way = f.rooms.find(r => r.type === 'boss');
+  const door = start && way ? f.doors.find(d => d.rooms.includes(start.id) && d.rooms.includes(way.id)) : undefined;
+  if (!door) return 0;
+  const dx = (door.x0 + door.x1 + 1) / 2 - f.spawn[0], dz = (door.z0 + door.z1 + 1) / 2 - f.spawn[2];
+  return Math.atan2(-dx, -dz);
 }
