@@ -167,6 +167,7 @@ import type { Rng } from '../core/rng';
 import { CourseRunner } from '../world/course';
 import { branchGifts, holdsAllBranchPractices, walkSlowSpot, WALK_SLOW_ITEM } from './branch-gifts';
 import { freezeProjection } from '../core/freeze';
+import { frightenProjection } from '../core/fear';
 import { FreezeSpheres, SPHERE_FREEZE, sphereRadius, type SphereTarget } from '../combat/freeze-sphere';
 import { TempWater } from '../world/temp-water';
 import { WATER_PACE } from '../sky/laws/water';
@@ -1704,8 +1705,8 @@ export class Game {
       nearestProjection: (x, y, z, r, except) => this.nearestProjection(x, y, z, r, except),
       actorAt: id => { const a = this.actors.get(id); return a ? { x: a.body.x, y: a.body.y + a.body.h / 2, z: a.body.z } : null; },
       shove: (id, dx, dz, s) => this.shove(id, dx, dz, s),
-      freeze: (id, s) => this.affectProjection(id, 'frozen', s),
-      frighten: (id, s) => this.affectProjection(id, 'fear', s),
+      freeze: (id, s) => this.freezeAt(id, s),
+      frighten: id => this.frighten(id),
       igniteArea: (x, y, z, r) => this.igniteArea(x, y, z, r),
       shieldFire: (x, y, z, r, s) => this.shieldFire(x, y, z, r, s),
       convertFluid: (x, y, z, from, to, cap, src) => this.convertFluid(x, y, z, from, to, cap, src),
@@ -3170,7 +3171,7 @@ export class Game {
 
   private freezeBySphere(id: number) {
     if (this.inSky) { this.sky?.creatures.freeze(id, SPHERE_FREEZE); return; }
-    this.affectProjection(id, 'frozen', SPHERE_FREEZE);
+    this.freezeAt(id, SPHERE_FREEZE);
   }
 
   private updateSpheres(dt: number) {
@@ -3188,14 +3189,22 @@ export class Game {
     }
   }
 
-  private affectProjection(id: number, field: 'frozen' | 'fear', seconds: number) {
+  private freezeAt(id: number, seconds: number) {
     const e = this.enemies.get(id);
     if (!e || e.faction !== 'projection') return;
-    if (field === 'frozen' && !freezeProjection(e, seconds)) return;
-    if (field === 'fear') e.fear = Math.max(e.fear, seconds);
+    if (!freezeProjection(e, seconds)) return;
     const b = e.body;
     this.particles.burst(b.x, b.y + b.h * 0.6, b.z, pal('cold.body'), 10, 1.4, 0.06);
-    spatial.cue(field === 'frozen' ? 'field' : 'chirp', b.x, b.y, b.z);
+    spatial.cue('field', b.x, b.y, b.z);
+  }
+
+  private frighten(id: number) {
+    const e = this.enemies.get(id);
+    if (!e || e.faction !== 'projection') return;
+    if (!frightenProjection(e, () => this.rng.stream('ai').next())) return;
+    const b = e.body;
+    this.particles.burst(b.x, b.y + b.h * 0.6, b.z, pal('cold.body'), 10, 1.4, 0.06);
+    spatial.cue('chirp', b.x, b.y, b.z);
   }
 
   /** Sets alight every flammable block whose cell lies within `r` blocks of (x, y, z). Offsets are whole cells, so a

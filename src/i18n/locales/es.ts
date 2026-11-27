@@ -1504,7 +1504,7 @@ export const ES: Catalog = {
       selfefficacy: {
         name: 'Autoeficacia',
         description: 'Creer que puedes subir hace posible la subida.',
-        effect: 'Una proyección golpeada por una intención huye de ti durante 3 segundos en lugar de atacar. Alcance +1 bloque.',
+        effect: 'Una proyección golpeada por una intención huye de ti durante 3 segundos en lugar de atacar, y luego no puede volver a asustarse durante 5 a 10 segundos. Alcance +1 bloque.',
         inspiredBy: 'la autoeficacia (Albert Bandura, 1977)',
       },
       selfcompassion: {
