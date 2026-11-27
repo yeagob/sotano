@@ -34,7 +34,7 @@ The folder holds the practices whose first path tag is mind. Practices that also
 
 | Practice | Quality | First path | Found in |
 |---|---|---|---|
-| [Meditations](../will/MEDITATIONS.md) | 4 | Will (first) | treasure rooms, vault rooms |
+| [Daily Meditation](../will/MEDITATIONS.md) | 4 | Will (first) | treasure rooms, vault rooms |
 | [Satori](../body/SATORI.md) | 4 | Body (first) | treasure rooms, vault rooms |
 | [Nothing Personal](../emotion/NOTHING-PERSONAL.md) | 2 | Emotion (first) | treasure rooms |
 | [Systemic Constellation](../emotion/SYSTEMIC-CONSTELLATION.md) | 3 | Emotion (first) | treasure rooms |

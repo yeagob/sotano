@@ -3,10 +3,10 @@ import { defineItem } from '../../items/types';
 
 export default defineItem({
   id: 'meditations',
-  name: 'Meditations',
-  description: 'Notes to yourself on what is in your control. Every intention lands with enormous weight.',
+  name: 'Daily Meditation',
+  description: 'Sitting with yourself every day. Every intention lands with enormous weight.',
   effect: 'Damage ×3, then +2. The strongest damage boost in the game.',
-  inspiredBy: 'Marcus Aurelius, Meditations (public domain)',
+  inspiredBy: 'Santiago Dopazo, on daily meditation; the Eastern meditation traditions',
   pools: { treasure: 1, vault: 2 },
   tags: ['will', 'mind', 'intent'],
   color: pal('path.will.glow'),

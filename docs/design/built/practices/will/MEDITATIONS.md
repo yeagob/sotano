@@ -1,4 +1,4 @@
-# Meditations
+# Daily Meditation
 
 Up: [Will folder](README.md) · [all practices](../README.md) · [built design](../../README.md)
 
@@ -7,12 +7,12 @@ Up: [Will folder](README.md) · [all practices](../README.md) · [built design](
 | Path | Will; also Mind |
 | Quality | 4 of 4 |
 | Found in | treasure rooms, vault rooms |
-| Inspired by | Marcus Aurelius, Meditations (public domain) |
+| Inspired by | Santiago Dopazo, on daily meditation; the Eastern meditation traditions |
 | Code | `src/content/items/meditations.ts` |
 
 ## What it means
 
-Notes to yourself on what is in your control. Every intention lands with enormous weight.
+Sitting with yourself every day. Every intention lands with enormous weight.
 
 ## What it does
 
