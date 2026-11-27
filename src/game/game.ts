@@ -93,6 +93,8 @@ import { Wind } from './wind';
 import { AirForces } from '../physics/air-forces';
 import { currentVoice, panelImages, Tablets } from '../render/tablets';
 import { PageStone } from '../render/page-stone';
+import { MasteryStone } from '../render/mastery-stone';
+import { masteryStoneBlocks } from '../render/mastery-layout';
 import { loadBook } from '../content/book';
 import { locale, onLocaleChange, t, type MessageKey } from '../i18n';
 import {
@@ -589,6 +591,8 @@ export class Game {
   /** The page stone's block (x, y, z) and whether it was broken this run: the stone goes until the next run (PAGES §4). */
   private stoneBlock: [number, number, number] | undefined;
   private stoneGone = false;
+  private masteryStone!: MasteryStone;
+  private masteryBlocks: [number, number, number][] = [];
   private readonly walls: WallSink = {
     show: (room, side, panel, page) => this.tablets.show(room, side, panel, page),
     stone: page => this.setStone(page),
@@ -750,6 +754,9 @@ export class Game {
     this.pageStone?.dispose();
     this.pageStone = new PageStone(this.dungeonRoot);
     this.stoneGone = false; this.stoneBlock = undefined;
+    this.masteryStone?.dispose();
+    this.masteryStone = new MasteryStone(this.dungeonRoot);
+    this.masteryBlocks = [];
     // the walls exist before floor 0 is carved: the page the run starts on decides its layout (EASY-LAYOUT §7)
     this.roots = openRoots(sandbox !== null, {
       record: this.meta,
@@ -1012,6 +1019,10 @@ export class Game {
         // the wall block behind the stone: the stone is its face (pageStoneMount sits 0.015 in front of z0)
         this.stoneBlock = [r.hx + 6, r.y0 + 2, r.hz - 1];
       }
+      if (r.type === 'boss') {
+        this.masteryStone.mount(r.hx, r.y0, r.hz, this.runMastery);
+        this.masteryBlocks = masteryStoneBlocks(r.hx, r.y0, r.hz, this.runMastery);
+      }
     }
     const token = ++this.wallsToken;
     this.wallsLoading = true;
@@ -1031,6 +1042,10 @@ export class Game {
     if (b && !this.stoneGone && !this.solid(b[0], b[1], b[2])) {
       this.stoneGone = true;
       this.pageStone.hide();
+    }
+    if (this.masteryBlocks.some(([x, y, z]) => !this.solid(x, y, z))) {
+      this.masteryBlocks = [];
+      this.masteryStone.hide();
     }
   }
 
