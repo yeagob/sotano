@@ -6,6 +6,8 @@ Changes to the tutorial and to the book are listed without their content, so not
 
 ## Unreleased
 
+## 0.2.10-alpha · 2026-11-27
+
 ### Added
 - Every hostile sky guardian and minion that touches you drains your spirit (4 at a time, at most once every 1.5 s).
 - A new body practice, the Double Jump: one more jump in the air (#293).
