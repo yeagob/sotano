@@ -271,4 +271,6 @@ THE ROOTS is licensed under the **GNU General Public License v3.0**. You may use
 
 ## Credits
 
+Created by Santiago Dopazo ([yeagob](https://github.com/yeagob)).
+
 Born from a voxel gift game made for a friend who finished *The Binding of Isaac*. Inspired by *Minecraft* (Mojang), *The Binding of Isaac* (Edmund McMillen / Nicalis) and *Noita* (Nolla Games). Practices draw on the works and techniques credited in the [source library](docs/lore/SOURCES.md). THE ROOTS is not affiliated with or endorsed by any of them.

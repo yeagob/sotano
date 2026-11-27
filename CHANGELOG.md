@@ -48,6 +48,7 @@ Changes to the tutorial and to the book are listed without their content, so not
 - The practice card scrolls, and closes only on a tap, never a drag (#375).
 - Contextual touch controls: the buttons show when they can act and fade when not touched; one use button acts on what the hand holds (#376).
 - The controls list shows only the rows of what you hold (#349).
+- The Meditations practice is now Daily Meditation, with a new line about meditating every day.
 - While the star heart's untouchable time lasts, a projection that touches you takes your damage, every half second.
 - Self-Efficacy scares a projection once per rest: after it runs away it cannot be scared again for 5 to 10 seconds, so it turns and attacks again, bosses included.
 - A finished meditation at the Roots' Sanctuary gives a tier 3 practice, never a tier 1: the chest no longer keeps a fixed practice from the tutorial.
