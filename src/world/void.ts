@@ -18,7 +18,7 @@ export const ROOT_NONE = 0;
 export const ROOT_TREE = 1;
 export const ROOT_BUSH = 2;
 
-function vnoise(seed: number, x: number, z: number): number {
+export function vnoise(seed: number, x: number, z: number): number {
   const xi = Math.floor(x), zi = Math.floor(z), xf = x - xi, zf = z - zi;
   const u = xf * xf * (3 - 2 * xf), v = zf * zf * (3 - 2 * zf);
   const a = hash3(seed, xi, 0, zi), b = hash3(seed, xi + 1, 0, zi), c = hash3(seed, xi, 0, zi + 1), d = hash3(seed, xi + 1, 0, zi + 1);
@@ -41,11 +41,14 @@ export function reliefRamp(r: number, edge: number): number {
   return smooth(edge, edge + RELIEF_RAMP, r);
 }
 
-export function groundHeight(seed: number, x: number, z: number, ramp: number): number {
+export function groundRelief(seed: number, x: number, z: number, ramp: number): number {
   const n = fbm(seed, x * 0.012 + 3.1, z * 0.012 - 7.7);
   const m = fbm(seed ^ 0x51, x * 0.045, z * 0.045);
-  const h = ramp * ((n - 0.42) * 20 + (m - 0.5) * 3);
-  return Math.max(RELIEF_LOW, Math.min(RELIEF_HIGH, Math.round(h)));
+  return ramp * ((n - 0.42) * 20 + (m - 0.5) * 3);
+}
+
+export function groundHeight(seed: number, x: number, z: number, ramp: number): number {
+  return Math.max(RELIEF_LOW, Math.min(RELIEF_HIGH, Math.round(groundRelief(seed, x, z, ramp))));
 }
 
 export function rootRoll(seed: number, x: number, z: number): number {

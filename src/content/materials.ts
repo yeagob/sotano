@@ -139,6 +139,7 @@ const DEFS: Def[] = [
   { id: 55, key: 'palebough', name: 'Pale bough', tier: 3, hp: 60, armor: 3, ramp: 'palebough', pattern: 'platebark', concept: 'the side you lean on now' },
   { id: 56, key: 'shadebough', name: 'Shade bough', tier: 3, hp: 60, armor: 3, ramp: 'shadebough', pattern: 'platebark', concept: 'the side that waits for its turn' },
   { id: 57, key: 'breathleaf', name: 'Breath leaves', tier: 3, hp: 60, armor: 3, ramp: 'breathleaf', pattern: 'leaves', concept: 'what comes and goes with the breath' },
+  { id: 58, key: 'sand', name: 'Sand', tier: 0, hp: 2, armor: 0, ramp: 'palestone', pattern: 'earth', concept: 'what the years ground fine, still keeping every footprint' },
 ];
 
 export const MATERIALS: MaterialDef[] = DEFS.map(d => {

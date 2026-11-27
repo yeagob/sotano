@@ -5,6 +5,7 @@ import { RunRandom } from '../src/core/rng';
 import { SURFACE_Y, WORLD_SIZE } from '../src/world/floor';
 import { COLUMN_CAP, EDGE_R, Mountains, TERRAIN_CHUNKS } from '../src/world/mountains';
 import { VoxelWorld } from '../src/world/world';
+import { BIOME_R, PEAK_HIGH } from '../src/world/biomes';
 import { BEDROCK, LAVA_FLOOR, LAVA_TOP, RELIEF_HIGH, RELIEF_LOW, SEA, TRAP_DEPTH } from '../src/world/void';
 
 const CX = WORLD_SIZE.sx >> 1, CZ = WORLD_SIZE.sz >> 1;
@@ -12,15 +13,25 @@ const make = (seed: number) => new Mountains(new RunRandom(seed).fork('mountains
 const at = (a: number, r: number): [number, number] => [Math.round(CX + Math.cos(a) * r), Math.round(CZ + Math.sin(a) * r)];
 
 describe('the Outer Void: endless procedural ground past the initial zone', () => {
-  it('is deterministic and finite: the same seed gives the same ground far out, within the relief', () => {
+  it('is deterministic and finite: the same seed gives the same ground far out, within the relief short of the biomes', () => {
     const a = make(0xBEEF), b = make(0xBEEF);
     for (let k = 0; k < 1500; k++) {
-      const ang = k * 0.731, r = EDGE_R + 1 + ((k * 977) % 7000);
+      const ang = k * 0.731, r = EDGE_R + 1 + ((k * 977) % (BIOME_R - EDGE_R));
       const [x, z] = at(ang, r);
       const h = a.height(x, z);
       expect(h).toBe(b.height(x, z));
       expect(h).toBeGreaterThanOrEqual(RELIEF_LOW);
       expect(h).toBeLessThanOrEqual(RELIEF_HIGH);
+    }
+  });
+
+  it('past the biomes the ground stays finite: from the deepest sea to the highest summit', () => {
+    const m = make(0xBEEF);
+    for (let k = 0; k < 1500; k++) {
+      const [x, z] = at(k * 0.731, BIOME_R + ((k * 977) % 7000));
+      const h = m.height(x, z);
+      expect(h).toBeGreaterThanOrEqual(RELIEF_LOW);
+      expect(h).toBeLessThanOrEqual(PEAK_HIGH);
     }
   });
 
