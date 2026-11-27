@@ -16,11 +16,12 @@ Believing you can climb makes the climb possible.
 
 ## What it does
 
-A projection hit by an intention runs away from you for 3 seconds instead of attacking. Reach +1 block.
+A projection hit by an intention runs away from you for 3 seconds instead of attacking, then cannot be scared again for 5 to 10 seconds (a random rest, drawn when it is scared). Reach +1 block.
 
 ## Stats and events
 
-- when an intention hits a projection: it runs away for 3 seconds
+- when an intention hits a projection: it runs away for 3 seconds, unless it is running or still resting from its last scare; the rest starts when the run ends and is 5 to 10 seconds at random (`src/core/fear.ts`, the `ai` stream)
+- bosses and every other projection share the rule
 - reach: +1 block (`reach` add 1; starting reach 4, so 5 while held)
 
 ## Why reach fits
