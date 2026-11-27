@@ -1782,7 +1782,7 @@ export class Game {
         if (this.stroke.polarity === 'negative') return true;
         // law 3.2: a positive stroke that takes a placed block removes it, as a positive shot does
         if (this.skyPositiveBlock(x, y, z, this.stroke.weapon)) return true;
-        return this.world.damaged.has(this.world.idx(x, y, z));
+        return this.world.damaged.has(this.damageKey(x, y, z));
       },
       // a clean cut: far more than any block's HP, so armor never saves it (hooks still may)
       cut: (x, y, z, source) => {
@@ -2860,20 +2860,24 @@ export class Game {
   /** Damages a block through the shared pipeline (`amount` is block damage, before armor). Returns true if it breaks. */
   damageBlock(x: number, y: number, z: number, amount: number, kind: DamageKind, source: string, debris = true): boolean {
     const id = this.world.get(x, y, z);
-    // the mountains outside the array are a formula: nothing breaks them (issue #10)
-    if (id === AIR || !this.world.inside(x, y, z)) return false;
+    // the mountains outside the array are a formula: only the Outer Void's soil breaks (issues #10, #330)
+    if (id === AIR || !(this.world.inside(x, y, z) || this.world.breakable?.(x, y, z))) return false;
     const m = mat(id);
     const ev = this.bus.emit('blockDamage', { x, y, z, material: id, amount: blockDamage(amount, m), kind, source });
     if (ev.cancelled || ev.amount <= 0) return false;
     const hp = this.world.hp(x, y, z) - ev.amount;
     if (hp > 1e-6) {
-      this.world.damaged.set(this.world.idx(x, y, z), hp);
+      this.world.damaged.set(this.damageKey(x, y, z), hp);
       return false;
     }
     return this.breakBlock(x, y, z, kind, source, debris);
   }
 
   /** `debris = false` starts the event with no loose cube (hooks may still ask for one). */
+  private damageKey(x: number, y: number, z: number): number {
+    return this.world.damageKey?.(x, y, z) ?? this.world.idx(x, y, z);
+  }
+
   breakBlock(x: number, y: number, z: number, kind: DamageKind, source: string, debris = true): boolean {
     if (!this.world.inside(x, y, z) && !this.world.breakable?.(x, y, z)) return false;
     const id = this.world.get(x, y, z);
@@ -3213,7 +3217,7 @@ export class Game {
   private repairBlock(x: number, y: number, z: number, amount: number): boolean {
     const id = this.world.get(x, y, z);
     if (id === AIR) return false;
-    const full = mat(id).hp, i = this.world.idx(x, y, z), hp = this.world.damaged.get(i);
+    const full = mat(id).hp, i = this.damageKey(x, y, z), hp = this.world.damaged.get(i);
     if (hp === undefined || !isFinite(full)) return false;
     const next = Math.min(full, hp + amount);
     if (next >= full - 1e-6) this.world.damaged.delete(i); else this.world.damaged.set(i, next);

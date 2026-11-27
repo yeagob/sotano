@@ -39,6 +39,10 @@ export class VoxelWorld implements VoxelSpace {
   inside(x: number, y: number, z: number) {
     return x >= 0 && y >= 0 && z >= 0 && x < this.sx && y < this.sy && z < this.sz;
   }
+  damageKey(x: number, y: number, z: number): number {
+    if (this.inside(x, y, z)) return this.idx(x, y, z);
+    return -1 - ((x + 16384) + 32768 * (y + 1024 * (z + 16384)));
+  }
   idx(x: number, y: number, z: number) { return x + this.sx * (y + this.sy * z); }
   /** The cell of a voxel index (the inverse of `idx`). */
   coords(i: number): [number, number, number] {
@@ -63,6 +67,7 @@ export class VoxelWorld implements VoxelSpace {
   set(x: number, y: number, z: number, m: number) {
     if (!this.inside(x, y, z)) {
       if (!this.breakable(x, y, z) || this.get(x, y, z) === m) return;
+      this.damaged.delete(this.damageKey(x, y, z));
       this.terrain!.except(x, y, z, m, m !== AIR);
       this.version++;
       this.markDirty(x, y, z);
@@ -156,9 +161,7 @@ export class VoxelWorld implements VoxelSpace {
 
   /** Current HP of a block (its maximum if it has never been damaged). */
   hp(x: number, y: number, z: number): number {
-    if (!this.inside(x, y, z)) return mat(this.get(x, y, z)).hp;
-    const i = this.idx(x, y, z);
-    return this.damaged.get(i) ?? mat(this.data[i]).hp;
+    return this.damaged.get(this.damageKey(x, y, z)) ?? mat(this.get(x, y, z)).hp;
   }
 
   /** Copies a chunk plus a 1-voxel border from its neighbours, for meshing in a worker

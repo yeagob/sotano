@@ -121,6 +121,22 @@ describe('the Outer Void: endless procedural ground past the initial zone', () =
     expect(w.get(px, py, pz)).toBe(MAT.grass);
   });
 
+  it('blows accumulate on the Void\'s soil, and its damage never shares a key with a cell of the array', () => {
+    const terrain = make(0xBEEF);
+    const w = new VoxelWorld(WORLD_SIZE.sx, WORLD_SIZE.sy, WORLD_SIZE.sz);
+    w.terrain = terrain;
+    const [x, z] = at(0.9, EDGE_R + 30);
+    const y = SURFACE_Y + terrain.height(x, z);
+    const full = w.hp(x, y, z);
+    expect(full).toBeGreaterThan(1);
+    w.damaged.set(w.damageKey(x, y, z), 1);
+    expect(w.hp(x, y, z)).toBe(1);
+    expect(w.damageKey(x, y, z)).toBeLessThan(0);
+    for (let i = 0; i < w.sx * w.sy * w.sz; i += 997) expect(w.damageKey(...w.coords(i))).toBe(w.idx(...w.coords(i)));
+    w.set(x, y, z, AIR);
+    expect(w.damaged.has(w.damageKey(x, y, z))).toBe(false);
+  });
+
   it('the trap opens when the feet are ten blocks under the local ground, and the shaft reaches the lava', () => {
     const m = make(0xBEEF);
     const [x, z] = at(2.2, EDGE_R + 50);
