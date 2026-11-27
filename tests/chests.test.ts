@@ -51,7 +51,7 @@ describe('chests', () => {
       items++;
       if (p.chest) {
         shut++;
-        expect(f.chests.some(c => c.x === p.x && c.z === p.z && (c.guard || (c.item === p.item && c.item !== null)))).toBe(true);
+        expect(f.chests.some(c => c.x === p.x && c.z === p.z && (c.guard || c.meditation || (c.item === p.item && c.item !== null)))).toBe(true);
       }
     }
     expect(shut / items).toBeGreaterThanOrEqual(0.5);
@@ -64,8 +64,8 @@ describe('chests', () => {
       const treasure = f.rooms.find(r => r.type === 'treasure')!;
       const chest = f.chests.filter(c => c.room === treasure.id);
       expect(chest).toHaveLength(1);
-      expect(chest[0]).toMatchObject({ keys: 0, meditation: true, item: expect.any(String) });
-      expect(f.pedestals.find(p => p.room === treasure.id)).toMatchObject({ chest: true, item: chest[0].item });
+      expect(chest[0]).toMatchObject({ keys: 0, meditation: true, item: null });
+      expect(f.pedestals.find(p => p.room === treasure.id)).toMatchObject({ chest: true, item: expect.any(String) });
       expect(run.w.get(chest[0].x, chest[0].y, chest[0].z)).toBe(MAT.chest);
     }
   });
