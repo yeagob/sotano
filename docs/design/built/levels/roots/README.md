@@ -31,7 +31,7 @@ The plan is `TUTORIAL_LAYOUT` (`src/world/floorplan.ts`) with one template per c
 
 | Cell | Room key (template) | Grid (x, z) | Exercise it holds | Doors |
 |---|---|---|---|---|
-| S | `roots-hall` | (3, 5) | The start: the spawn, facing north | W, E, S |
+| S | `roots-hall` | (3, 5) | The start: the spawn, facing south toward the way down (B) | W, E, S |
 | a | `roots-step` | (4, 5) | Two-high brick walls: build a step and climb | W, N |
 | b | `roots-dig` (flipped north–south) | (4, 4) | A full-height brick wall with a dirt plug between you and the north door | S, N |
 | c | `roots-mend` | (4, 3) | An open room with dirt blocks to crack and mend | S, N |

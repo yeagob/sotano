@@ -8,6 +8,7 @@ Changes to the tutorial and to the book are listed without their content, so not
 
 ### Added
 - The way-down room of the Roots carries your mastery level cut in stone, in Roman numerals, in sight of where you wake (#397).
+- You now wake facing the way-down room, where that stone is (#397).
 - The Outer Void: past the initial zone the land goes on, endless, with trees, lakes and a sea of lava under the ground that takes whoever digs ten blocks down (#330).
 - Every hostile sky guardian and minion that touches you drains your spirit (4 at a time, at most once every 1.5 s).
 - A new body practice, the Double Jump: one more jump in the air (#293).

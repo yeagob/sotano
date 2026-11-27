@@ -141,7 +141,7 @@ import { ActorRegistry, ContactGate, HALF_HEART, HEART, QUARTER_HEART, hostile, 
 import { createBus, WEAPONS_KEEPING_SHOT, type Cause, type GameBus, type IntentSpec, type Owner, type PickupKind, type WeaponId } from './events';
 import { attachDevlog, carriedName, cell, devlog } from '../debug/devlog';
 import { Hud, floorLabel } from './hud';
-import { CHECKPOINT_TAG, arrivalOf, releasedRooms, standingSpot, type Spot } from './checkpoint';
+import { CHECKPOINT_TAG, arrivalOf, arrivalYaw, releasedRooms, standingSpot, type Spot } from './checkpoint';
 import { CheckpointMark } from './checkpoint-mark';
 import { CloudLayer } from './cloud-layer';
 import { PHASE_STATUS, PHASE_WARN_S, phasedSolid, roomBox, roomInterior, fallbackBox, rescueSpot, inBox, type CellBox, type RescueArea } from './phase';
@@ -866,7 +866,7 @@ export class Game {
     this.branchGifts = box ? [] : this.placeBranchGifts();
     this.carve(FIRST_FLOOR + 1);
     p.spawnAt(...this.floors.get(k)!.spawn);
-    p.yaw = 0; p.pitch = 0;
+    p.yaw = box ? 0 : arrivalYaw(this.floors.get(k)!); p.pitch = 0;
     this.stream();
     this.depth = this.maxDepth = this.groundBand = k;
     this.room = -1;

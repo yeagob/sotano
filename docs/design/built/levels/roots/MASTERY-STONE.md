@@ -2,7 +2,7 @@
 
 Up: [the Roots](README.md) · Status: built (issue #397). The mastery level itself is in [MASTERY](../../progression/MASTERY.md).
 
-The way-down room carries the Roots' mastery level cut in stone, in Roman numerals. A player standing on the spawn of the start room who turns round sees it through the two open doors, above the way-down pedestal. Nothing explains it: the number is the only word on the stone.
+The way-down room carries the Roots' mastery level cut in stone, in Roman numerals. The player wakes on the spawn of the start room facing it, and sees it at the first frame through the two open doors, above the way-down pedestal. Nothing explains it: the number is the only word on the stone.
 
 ## What the player sees
 
@@ -15,9 +15,11 @@ The way-down room carries the Roots' mastery level cut in stone, in Roman numera
 
 ## Seen from the spawn
 
-The spawn is the `P` of `roots-hall`, facing north; the way-down room is south of it, through the start room's south door and the way-down room's north door, which stand open on the Roots. From the spawn eye (1.62 blocks over the floor) the far wall can be seen through the doors between columns 3.1 and 9.9 and up to about `y0 + 4.75` (the lintel of the door). The tablet stays inside that window, and above the practice floating over the pedestal (whose icon tops out near `y0 + 2`). The narrow tablet at level 100 also keeps clear of the Boundary that stands over the second Sanctuary at that level.
+The spawn is the `P` of `roots-hall`; the way-down room is south of it, through the start room's south door and the way-down room's north door, which stand open on the Roots. From the spawn eye (1.62 blocks over the floor) the far wall can be seen through the doors between columns 3.1 and 9.9 and up to about `y0 + 4.75` (the lintel of the door). The tablet stays inside that window, and above the practice floating over the pedestal (whose icon tops out near `y0 + 2`). The narrow tablet at level 100 also keeps clear of the Boundary that stands over the second Sanctuary at that level.
 
-`tests/mastery-stone.test.ts` proves it on the carved floor: for levels 0, 38, 88 and 100, in both layouts and six seeds, a ray from the spawn eye to 45 points across the tablet crosses only air, and no pickup, chest or Boundary. The same test closes the doorway and checks that every ray is then blocked.
+The player wakes facing it: at the start of a run the view turns toward the centre of the doorway between the start room and the way-down room (`arrivalYaw`, `src/game/checkpoint.ts`), which on the carved floor is due south, with the view level. The sandbox keeps facing north.
+
+`tests/mastery-stone.test.ts` proves it on the carved floor: for levels 0, 38, 88 and 100, in both layouts and six seeds, a ray from the spawn eye to 45 points across the tablet crosses only air, and no pickup, chest or Boundary. The same test closes the doorway and checks that every ray is then blocked, and it checks that the tablet's centre and both ends fall inside the first frame's view, from the spawn's facing, at the narrowest and widest field of view the settings allow (70 and 100 degrees) and at a square and a 16:9 screen.
 
 ## Code
 

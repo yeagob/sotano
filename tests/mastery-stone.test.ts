@@ -1,6 +1,9 @@
+import { PerspectiveCamera, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
 import { MAT } from '../src/content/materials';
 import { EYE_STAND } from '../src/entities/stance';
+import { arrivalYaw } from '../src/game/checkpoint';
+import { FOV_MAX, FOV_MIN } from '../src/game/settings';
 import { MASTERY_STONE, MASTERY_ZERO, masteryStoneBlocks, masteryStoneMount, masteryStoneWidth, romanNumeral } from '../src/render/mastery-layout';
 import { panelMount } from '../src/render/panel-layout';
 import type { FloorResult, RoomInfo } from '../src/world/floor';
@@ -84,6 +87,15 @@ function sightLines(w: VoxelWorld, f: FloorResult, level: number): string[] {
   return blocked;
 }
 
+function inView(f: FloorResult, target: V, fov: number, aspect: number): boolean {
+  const cam = new PerspectiveCamera(fov, aspect, 0.05, 200);
+  cam.position.set(f.spawn[0], f.spawn[1] + EYE_STAND, f.spawn[2]);
+  cam.rotation.set(0, arrivalYaw(f), 0, 'YXZ');
+  cam.updateMatrixWorld();
+  const n = new Vector3(...target).project(cam);
+  return Math.abs(n.x) < 1 && Math.abs(n.y) < 1 && n.z > -1 && n.z < 1;
+}
+
 describe('the mastery stone: its numeral', () => {
   it('cuts the level in Roman numerals, N for level 0', () => {
     const cases: [number, string][] = [[0, 'N'], [1, 'I'], [4, 'IV'], [9, 'IX'], [40, 'XL'], [90, 'XC'], [100, 'C']];
@@ -144,6 +156,26 @@ describe('the mastery stone: where it is cut', () => {
             expect(run.w.solid(x, y, z - 1), `air in front of ${x},${y},${z}`).toBe(false);
           }
           expect(sightLines(run.w, f, mastery)).toEqual([]);
+        }
+      });
+    }
+  }
+
+  for (const easyRoots of [false, true]) {
+    for (const mastery of [0, 38, 88, 100]) {
+      it(`is in front of the player at the first frame, in the ${easyRoots ? 'easy' : 'teaching'} layout at level ${mastery}`, () => {
+        for (const seed of [1, 2, 3, 7, 11, 0xBEEF]) {
+          const run = buildRun(seed, 1, undefined, { mastery, easyRoots });
+          const f = run.floors[0];
+          const way = f.rooms.find(r => r.type === 'boss')!;
+          const m = masteryStoneMount(way.hx, way.y0, way.hz, mastery);
+          const centre: V = [m.x, m.y, m.z];
+          const eye: V = [f.spawn[0], f.spawn[1] + EYE_STAND, f.spawn[2]];
+          expect(cellsAlong(eye, centre).filter(([x, y, z]) => run.w.solid(x, y, z))).toEqual([]);
+          for (const fov of [FOV_MIN, FOV_MAX]) for (const aspect of [1, 16 / 9]) {
+            for (const p of [centre, [m.x - m.w / 2, m.y, m.z] as V, [m.x + m.w / 2, m.y, m.z] as V])
+              expect(inView(f, p, fov, aspect), `seed ${seed}, fov ${fov}, aspect ${aspect.toFixed(2)}, point ${p.join(',')}`).toBe(true);
+          }
         }
       });
     }
