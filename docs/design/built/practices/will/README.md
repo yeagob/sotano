@@ -14,7 +14,7 @@ The folder holds the practices whose first path tag is will. Practices that also
 | [Controlled Burn](../BOMBS.md#2-controlled-burn-controlledburn) | 2 | none | treasure rooms |
 | [Kaizen](KAIZEN.md) | 2 | none | treasure rooms |
 | [Habit Stacking](HABIT-STACKING.md) | 3 | none | treasure rooms |
-| [Meditations](MEDITATIONS.md) | 4 | Mind | treasure rooms, vault rooms |
+| [Daily Meditation](MEDITATIONS.md) | 4 | Mind | treasure rooms, vault rooms |
 | [Self-Reliance](SELF-RELIANCE.md) | 4 | none | treasure rooms, vault rooms |
 | [Letters from a Stoic](LETTERS-FROM-A-STOIC.md) | 4 | Body | treasure rooms, vault rooms |
 | [Remember Breathing](REMEMBER-BREATHING.md) | 4 | none | boss rewards |

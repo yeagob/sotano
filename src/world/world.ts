@@ -39,6 +39,10 @@ export class VoxelWorld implements VoxelSpace {
   inside(x: number, y: number, z: number) {
     return x >= 0 && y >= 0 && z >= 0 && x < this.sx && y < this.sy && z < this.sz;
   }
+  damageKey(x: number, y: number, z: number): number {
+    if (this.inside(x, y, z)) return this.idx(x, y, z);
+    return -1 - ((x + 16384) + 32768 * (y + 1024 * (z + 16384)));
+  }
   idx(x: number, y: number, z: number) { return x + this.sx * (y + this.sy * z); }
   /** The cell of a voxel index (the inverse of `idx`). */
   coords(i: number): [number, number, number] {
@@ -55,9 +59,21 @@ export class VoxelWorld implements VoxelSpace {
   }
   solid(x: number, y: number, z: number) { return this.get(x, y, z) !== AIR; }
 
+  breakable(x: number, y: number, z: number): boolean {
+    return this.inside(x, y, z) || !!this.terrain?.breakable(x, y, z);
+  }
+
   /** Sets a block and marks its chunk for remeshing (plus neighbours when it sits on a border). */
   set(x: number, y: number, z: number, m: number) {
-    if (!this.inside(x, y, z)) return;
+    if (!this.inside(x, y, z)) {
+      if (!this.breakable(x, y, z) || this.get(x, y, z) === m) return;
+      this.damaged.delete(this.damageKey(x, y, z));
+      this.terrain!.except(x, y, z, m, m !== AIR);
+      this.version++;
+      this.markDirty(x, y, z);
+      this.onChange?.(x, y, z);
+      return;
+    }
     const i = this.idx(x, y, z);
     if (this.data[i] === m) return;
     this.data[i] = m;
@@ -74,7 +90,8 @@ export class VoxelWorld implements VoxelSpace {
 
   /** The element byte at a cell, 0 outside the world. */
   elemAt(x: number, y: number, z: number): number {
-    return this.inside(x, y, z) ? this.elem[this.idx(x, y, z)] : 0;
+    if (this.inside(x, y, z)) return this.elem[this.idx(x, y, z)];
+    return this.terrain && y >= 0 && y < this.sy ? this.terrain.elemAt(x, y, z) : 0;
   }
 
   /** Puts an element in an air cell (kind 0 clears it). Ignored inside solid blocks. */
@@ -102,6 +119,10 @@ export class VoxelWorld implements VoxelSpace {
   /** The terrain's chunks to mesh within `radius` blocks of (x, z), nearest first. */
   outerChunksNear(x: number, z: number, radius: number): [number, number, number][] {
     return this.terrain ? this.terrain.chunksNear(x, z, radius) : [];
+  }
+
+  outerVersion(): number {
+    return this.terrain ? this.terrain.editVersion : 0;
   }
 
   markElemDirty(x: number, y: number, z: number) {
@@ -144,9 +165,7 @@ export class VoxelWorld implements VoxelSpace {
 
   /** Current HP of a block (its maximum if it has never been damaged). */
   hp(x: number, y: number, z: number): number {
-    if (!this.inside(x, y, z)) return mat(this.get(x, y, z)).hp;
-    const i = this.idx(x, y, z);
-    return this.damaged.get(i) ?? mat(this.data[i]).hp;
+    return this.damaged.get(this.damageKey(x, y, z)) ?? mat(this.get(x, y, z)).hp;
   }
 
   /** Copies a chunk plus a 1-voxel border from its neighbours, for meshing in a worker
@@ -158,7 +177,7 @@ export class VoxelWorld implements VoxelSpace {
     const src = elem ? this.elem : this.data;
     for (let z = 0; z < P; z++) for (let y = 0; y < P; y++) for (let x = 0; x < P; x++) {
       const wx = x0 + x, wy = y0 + y, wz = z0 + z;
-      out[x + P * (y + P * z)] = this.inside(wx, wy, wz) ? src[this.idx(wx, wy, wz)] : elem ? 0 : this.get(wx, wy, wz);
+      out[x + P * (y + P * z)] = this.inside(wx, wy, wz) ? src[this.idx(wx, wy, wz)] : elem ? this.elemAt(wx, wy, wz) : this.get(wx, wy, wz);
     }
     return out;
   }

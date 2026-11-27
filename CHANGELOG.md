@@ -6,9 +6,13 @@ Changes to the tutorial and to the book are listed without their content, so not
 
 ## Unreleased
 
-## 0.2.10-alpha · 2026-11-27
+## 0.3.0-alpha · 2026-11-27
 
 ### Added
+- The way-down room of the Roots carries your mastery level cut in stone, in Roman numerals, in sight of where you wake (#397).
+- You now wake facing the way-down room, where that stone is (#397).
+- The Outer Void: past the initial zone the land goes on, endless, with trees, lakes and a sea of lava under the ground that takes whoever digs ten blocks down (#330).
+- Four biomes far out in the Outer Void: an open sea with a stilt village, a harbour and a boat to the east, a desert of dunes to the south, a mountain massif crowned by a temple to the west, and a frozen land to the north.
 - Every hostile sky guardian and minion that touches you drains your spirit (4 at a time, at most once every 1.5 s).
 - A new body practice, the Double Jump: one more jump in the air (#293).
 - A new body practice, the Wall Jump: one more jump in the air, taken from a wall beside you (#294).
@@ -47,6 +51,10 @@ Changes to the tutorial and to the book are listed without their content, so not
 - The practice card scrolls, and closes only on a tap, never a drag (#375).
 - Contextual touch controls: the buttons show when they can act and fade when not touched; one use button acts on what the hand holds (#376).
 - The controls list shows only the rows of what you hold (#349).
+- The Meditations practice is now Daily Meditation, with a new line about meditating every day.
+- While the star heart's untouchable time lasts, a projection that touches you takes your damage, every half second.
+- Self-Efficacy scares a projection once per rest: after it runs away it cannot be scared again for 5 to 10 seconds, so it turns and attacks again, bosses included.
+- A finished meditation at the Roots' Sanctuary gives a tier 3 practice, never a tier 1: the chest no longer keeps a fixed practice from the tutorial.
 
 ## 0.2.9-alpha.f5 · 2026-11-25
 

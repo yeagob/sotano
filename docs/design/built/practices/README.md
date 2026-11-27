@@ -88,7 +88,7 @@ A note on reach, the four practices that give a little of it back, and the cut t
 | [Kaizen](will/KAIZEN.md) | Will | 2 | treasure rooms |
 | [Kindling](will/KINDLING.md) | Will | 2 | treasure rooms |
 | [Letters from a Stoic](will/LETTERS-FROM-A-STOIC.md) | Will | 4 | treasure rooms, vault rooms |
-| [Meditations](will/MEDITATIONS.md) | Will | 4 | treasure rooms, vault rooms |
+| [Daily Meditation](will/MEDITATIONS.md) | Will | 4 | treasure rooms, vault rooms |
 | [Remember Breathing](will/REMEMBER-BREATHING.md) | Will | 4 | boss rewards |
 | [Self-Efficacy](will/SELF-EFFICACY.md) | Will | 3 | treasure rooms |
 | [Eye Contact](will/EYE-CONTACT.md) | Will | 3 | treasure rooms |

@@ -126,6 +126,7 @@ export interface Enemy extends Actor {
   frozen: number;
   thaw: number;
   fear: number;
+  fearRest: number;
   aimX: number; aimZ: number;
   flyY: number;
   /** Hover height over the surface below it, in blocks, or -1: a flyer that follows the terrain, keeps clear of the ceiling and steers round walls (Enemies.steerFlier). It sets flyY itself. */

@@ -36,6 +36,9 @@ export interface VoxelSpace {
   outerChunk?(cx: number, cz: number): boolean;
   /** The formula ground's chunks to mesh within `radius` blocks of (x, z), nearest first. */
   outerChunksNear?(x: number, z: number, radius: number): [number, number, number][];
+  outerVersion?(): number;
   /** True when a chunk is all air with no element (the sky is mostly air). */
   emptyChunk?(cx: number, cy: number, cz: number): boolean;
+  breakable?(x: number, y: number, z: number): boolean;
+  damageKey?(x: number, y: number, z: number): number;
 }
