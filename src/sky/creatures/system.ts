@@ -34,7 +34,7 @@ interface MinionEntry {
 const MINION_HW = 0.35;
 const MINION_H = 0.9;
 
-export const CONTACT_SPIRIT = 10;
+export const CONTACT_SPIRIT = 4;
 export const CONTACT_EVERY = 1.5;
 
 export class SkyCreatures implements SkyCreaturesApi {
@@ -209,19 +209,19 @@ export class SkyCreatures implements SkyCreaturesApi {
     this.view.update(dt, this.all());
   }
 
-  private readonly contactAt = new Map<number, number>();
+  private contactNext = -Infinity;
 
   private contactDrain() {
     const pb = this.host.player().body;
     const now = this.host.time();
+    if (now < this.contactNext) return;
     for (const a of this.all()) {
       const b = a.body;
       if (a.parked || a.side !== 'wild' || !b) continue;
-      if (now < (this.contactAt.get(a.id) ?? -Infinity)) continue;
       const reach = b.hw + pb.hw;
       if (Math.abs(b.x - pb.x) > reach || Math.abs(b.z - pb.z) > reach) continue;
       if (pb.y > b.y + b.h || pb.y + pb.h < b.y) continue;
-      if (this.deps.spirit.contact(CONTACT_SPIRIT)) this.contactAt.set(a.id, now + CONTACT_EVERY);
+      if (this.deps.spirit.contact(CONTACT_SPIRIT)) { this.contactNext = now + CONTACT_EVERY; return; }
     }
   }
 

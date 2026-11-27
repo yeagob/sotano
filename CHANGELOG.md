@@ -7,7 +7,7 @@ Changes to the tutorial and to the book are listed without their content, so not
 ## Unreleased
 
 ### Added
-- Every hostile sky guardian and minion that touches you drains your spirit (10 at a time, once every 1.5 s each).
+- Every hostile sky guardian and minion that touches you drains your spirit (4 at a time, at most once every 1.5 s).
 - A new body practice, the Double Jump: one more jump in the air (#293).
 - A new body practice, the Wall Jump: one more jump in the air, taken from a wall beside you (#294).
 - A new practice, Walk Slowly: while you crouch on the ground, the world slows down (#340).

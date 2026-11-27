@@ -544,11 +544,12 @@ describe('contact drains spirit', () => {
     expect(lastDrains).toEqual([CONTACT_SPIRIT]);
     realm.creatures.update(DT, 1);
     expect(lastDrains).toEqual([CONTACT_SPIRIT]);
-    const ally = realm.creatures.all()[0];
+    const other = newRealm();
+    other.creatures.update(DT, 1);
+    const ally = other.creatures.all()[0];
     ally.side = 'ally';
     ally.body.x = 6; ally.body.y = 10; ally.body.z = 0;
-    lastDrains = [];
-    realm.creatures.update(DT, 1);
+    other.creatures.update(DT, 1);
     expect(lastDrains).toEqual([]);
   });
 });
