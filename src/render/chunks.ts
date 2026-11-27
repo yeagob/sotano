@@ -18,6 +18,7 @@ const FIRE_FPS = 8;
 /** How far round the viewer the formula ground outside the stored world (the surface and its
  *  mountains) is meshed, in blocks: a little past the camera's far plane at the surface's fog. */
 export const OUTER_VIEW = 176;
+export const VOID_VIEW = 96;
 
 /**
  * Whether a dirty chunk can be dropped without meshing (docs/architecture/SKY.md §3.1, the ghost
@@ -143,12 +144,12 @@ export class ChunkRenderer {
   /** Streams the formula ground outside the stored world round (x, z): the chunks within
    *  OUTER_VIEW are queued nearest first, the ones left behind lose their meshes. Cheap when the
    *  viewer stays in the same chunk column. */
-  streamOuter(x: number, z: number) {
+  streamOuter(x: number, z: number, view = OUTER_VIEW) {
     if (!this.world.outerChunksNear) return;
-    const at = `${Math.floor(x / CHUNK)},${Math.floor(z / CHUNK)}`;
+    const at = `${Math.floor(x / CHUNK)},${Math.floor(z / CHUNK)},${view}`;
     if (at === this.outerAt) return;
     this.outerAt = at;
-    const next = new Set(this.world.outerChunksNear(x, z, OUTER_VIEW).map(([cx, cy, cz]) => chunkKey(cx, cy, cz)));
+    const next = new Set(this.world.outerChunksNear(x, z, view).map(([cx, cy, cz]) => chunkKey(cx, cy, cz)));
     for (const key of this.outerKeys) {
       if (next.has(key)) continue;
       for (const layer of ['blocks', 'elem'] as Layer[]) {

@@ -55,9 +55,20 @@ export class VoxelWorld implements VoxelSpace {
   }
   solid(x: number, y: number, z: number) { return this.get(x, y, z) !== AIR; }
 
+  breakable(x: number, y: number, z: number): boolean {
+    return this.inside(x, y, z) || !!this.terrain?.breakable(x, y, z);
+  }
+
   /** Sets a block and marks its chunk for remeshing (plus neighbours when it sits on a border). */
   set(x: number, y: number, z: number, m: number) {
-    if (!this.inside(x, y, z)) return;
+    if (!this.inside(x, y, z)) {
+      if (!this.breakable(x, y, z) || this.get(x, y, z) === m) return;
+      this.terrain!.except(x, y, z, m, m !== AIR);
+      this.version++;
+      this.markDirty(x, y, z);
+      this.onChange?.(x, y, z);
+      return;
+    }
     const i = this.idx(x, y, z);
     if (this.data[i] === m) return;
     this.data[i] = m;
@@ -74,7 +85,8 @@ export class VoxelWorld implements VoxelSpace {
 
   /** The element byte at a cell, 0 outside the world. */
   elemAt(x: number, y: number, z: number): number {
-    return this.inside(x, y, z) ? this.elem[this.idx(x, y, z)] : 0;
+    if (this.inside(x, y, z)) return this.elem[this.idx(x, y, z)];
+    return this.terrain && y >= 0 && y < this.sy ? this.terrain.elemAt(x, y, z) : 0;
   }
 
   /** Puts an element in an air cell (kind 0 clears it). Ignored inside solid blocks. */
@@ -158,7 +170,7 @@ export class VoxelWorld implements VoxelSpace {
     const src = elem ? this.elem : this.data;
     for (let z = 0; z < P; z++) for (let y = 0; y < P; y++) for (let x = 0; x < P; x++) {
       const wx = x0 + x, wy = y0 + y, wz = z0 + z;
-      out[x + P * (y + P * z)] = this.inside(wx, wy, wz) ? src[this.idx(wx, wy, wz)] : elem ? 0 : this.get(wx, wy, wz);
+      out[x + P * (y + P * z)] = this.inside(wx, wy, wz) ? src[this.idx(wx, wy, wz)] : elem ? this.elemAt(wx, wy, wz) : this.get(wx, wy, wz);
     }
     return out;
   }

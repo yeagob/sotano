@@ -11,7 +11,8 @@ import { intentFromStats, Intents } from '../combat/intents';
 import { createWeapon, type Weapon, type WeaponHost } from '../combat/weapons';
 import { Missiles, MISSILE_RANGE, MISSILE_SPEED, muzzleBlocked } from '../combat/missiles';
 import { TouchRouter } from '../combat/touch-router';
-import { ENEMY_BUDGET, ENEMY_BY_ID, pickWave, waveBudget } from '../content/enemies';
+import { ENEMIES, ENEMY_BUDGET, ENEMY_BY_ID, pickWave, waveBudget } from '../content/enemies';
+import { LAVA_TOP } from '../world/void';
 import { BOSS_BY_ID, bossFor, bossSpawnLife } from '../content/bosses';
 import { BLAST_ACTOR_DAMAGE, BOMB_FUSE, lightBomb, type BombBlast } from './bomb';
 import { enemyText, materialName, partText } from '../i18n/content';
@@ -83,7 +84,7 @@ import { BREWS, BULB, brew as labBrew, feed as labFeed, newAlembic, tickLabs, ty
 import { PotionEffects } from './potion-effects';
 import { boxHits, type Body } from '../physics/voxel-collide';
 import { buildAtlas } from '../render/atlas';
-import { ChunkRenderer } from '../render/chunks';
+import { ChunkRenderer, OUTER_VIEW, VOID_VIEW } from '../render/chunks';
 import { CrackView, CutHalves, DebrisView } from '../render/debris-view';
 import { LOVE_BLAST, MISSILE_TRAIL, MissileView } from '../render/missile-view';
 import { Hands } from '../render/hands';
@@ -181,6 +182,8 @@ const PLAYABLE_ITEMS = ITEMS.filter(i => validateItem(i).length === 0);
 
 const MAX_CUBES = IS_TOUCH ? 1000 : 2000;
 const DUNGEON_FOG = new THREE.Color(pal('fog.f1'));
+const VOID_FOG = new THREE.Color(pal('fog.warm'));
+const VOID_FAR = 90;
 /** The fog of each underground floor (its level's), blended to the sky near the surface. */
 const LEVEL_FOG = LEVELS.map(l => new THREE.Color(pal(l.fog)));
 const SKY = new THREE.Color(pal('sky.day'));
@@ -1919,17 +1922,45 @@ export class Game {
     if (p.hp <= 0) {
       const d = this.bus.emit('death', { source });
       if (d.cancelled) { p.hp = Math.max(1, p.hp); return true; }
-      p.hp = 0;
-      p.dead = true;
-      this.bus.emit('playerDied', { floor: bandOf(p.body.y), source });
-      this.bus.emit('actorDeath', { target: p.id, targetKind: 'player', def: 'player', x: p.body.x, y: p.body.y, z: p.body.z, drops: [] });
-      sfx3.death();
-      this.hud.showDeath(this.maxDepth, this.inventory.items.map(i => i.def), source, typeof owner === 'number' ? this.projectionTier.get(owner) : undefined);
-      this.endRoots();
-      // the Echo remembers where this run faded (ECHO.md): the deepest floor reached
-      this.keeper.recordFade(this.maxDepth);
+      this.finishDeath(source, owner);
     }
     return true;
+  }
+
+  private finishDeath(source: string, owner: Owner) {
+    const p = this.player;
+    p.hp = 0;
+    p.dead = true;
+    this.bus.emit('playerDied', { floor: bandOf(p.body.y), source });
+    this.bus.emit('actorDeath', { target: p.id, targetKind: 'player', def: 'player', x: p.body.x, y: p.body.y, z: p.body.z, drops: [] });
+    sfx3.death();
+    this.hud.showDeath(this.maxDepth, this.inventory.items.map(i => i.def), source, typeof owner === 'number' ? this.projectionTier.get(owner) : undefined);
+    this.endRoots();
+    // the Echo remembers where this run faded (ECHO.md): the deepest floor reached
+    this.keeper.recordFade(this.maxDepth);
+  }
+
+  private voidTrap() {
+    const t = this.dw?.terrain, p = this.player, b = p.body;
+    if (!t || p.dead) return;
+    const fx0 = Math.floor(b.x), fy = Math.floor(b.y), fz0 = Math.floor(b.z);
+    if (t.trapped(b.x, b.y, b.z) && this.dw.solid(fx0, fy - 1, fz0)) {
+      for (const [x, y, z] of t.shaft(b.x, b.y, b.z)) this.world.set(x, y, z, AIR);
+      this.spawnBurning(b.x, b.z);
+    }
+    if (t.voidAt(b.x, b.z) && elemDef(this.dw.elemAt(fx0, fy, fz0))?.key === 'lava') this.finishDeath('lava', 'world');
+  }
+
+  private spawnBurning(x: number, z: number) {
+    const r = this.rooms.get(this.floors.get(this.depth)?.rooms[0]?.id ?? -1);
+    if (!r) return;
+    for (let k = 0; k < 5; k++) {
+      const def = ENEMIES[Math.floor(fx.range(0, ENEMIES.length))];
+      const seq = this.spawnSeq.get(r.id) ?? 0;
+      this.spawnSeq.set(r.id, seq + 1);
+      const e = this.spawnEnemy(def.id, r, seq, x + fx.range(-3, 3), SURFACE_Y + LAVA_TOP + 1.5, z + fx.range(-3, 3));
+      if (e) { e.spawning = 0; this.setFaction(e, 'neutral', 'void'); }
+    }
   }
 
   private hurtFeedback(from: HurtFrom | null, scale: number) {
@@ -2844,7 +2875,7 @@ export class Game {
 
   /** `debris = false` starts the event with no loose cube (hooks may still ask for one). */
   breakBlock(x: number, y: number, z: number, kind: DamageKind, source: string, debris = true): boolean {
-    if (!this.world.inside(x, y, z)) return false;
+    if (!this.world.inside(x, y, z) && !this.world.breakable?.(x, y, z)) return false;
     const id = this.world.get(x, y, z);
     const ev = this.bus.emit('blockBreak', { x, y, z, material: id, kind, source, spawnDebris: debris });
     if (ev.cancelled) return false;
@@ -5649,7 +5680,7 @@ export class Game {
     setWorldTimeScale(running && !this.paused && !this.kairos.stopped ? this.timeScale : 1);
     // the ascent's blocks hold with the world: a menu, a pause or a card draws their music back and holds their voice
     this.ascentBlocks?.pause(!(running && !this.hud.presenceOfferOpen && !this.paused));
-    if (this.below) { this.stream(); this.chunks.streamOuter(this.player.eye.x, this.player.eye.z); } else this.sky!.stream(this.player.eye);
+    if (this.below) { this.stream(); this.chunks.streamOuter(this.player.eye.x, this.player.eye.z, this.dw?.terrain?.voidAt(this.player.eye.x, this.player.eye.z) ? VOID_VIEW : OUTER_VIEW); } else this.sky!.stream(this.player.eye);
     this.chunks.update();
     const p = this.player, e = p.eye;
     const below = this.below;
@@ -5680,6 +5711,12 @@ export class Game {
       (this.stars.material as THREE.PointsMaterial).opacity = night;
       const deep = this.floors.get(LAST_FLOOR)?.silence;
       if (deep && e.y < deep.y1 + 2) { this.fogColor.setHex(pal('ink.void')); fog.near = 0; fog.far = 14; }
+      const vm = this.dw?.terrain?.voidMix(e.x, e.z) ?? 0;
+      if (vm > 0 && !under?.fog) {
+        this.fogColor.lerp(VOID_FOG, vm);
+        fog.near = THREE.MathUtils.lerp(fog.near, 6, vm);
+        fog.far = THREE.MathUtils.lerp(fog.far, VOID_FAR, vm);
+      }
       fog.color.copy(this.fogColor);
     } else { this.sky!.atmosphere(e, this.fogColor, fog, this.stars); this.ascentAtmosphere(fog); }
     easeMaster(dt);
@@ -5744,6 +5781,7 @@ export class Game {
       bump: speed => this.headBump(speed),
       dashBreak: (x, y, z) => this.dashBreak(x, y, z),
     }, this.playerMedium, below ? { air: this.airForces } : { minJump: 1, air: skyAir ?? undefined });
+    if (below) this.voidTrap();
     if (below && b.onGround) this.groundBand = bandOf(b.y);
     if (this.player.dashStarted) this.dashFx();
     if (dashing || this.player.dashStarted) { this.dashTrail(dashFrom); this.dashStrike(dashFrom); }
