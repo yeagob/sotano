@@ -8,6 +8,7 @@ import type { Actor } from '../entities/actors';
 import type { ElementAffinity, ElementKey } from '../content/elements';
 import type { Strike } from './attacks';
 import type { Polarity } from '../combat/polarity';
+import type { Tier } from './tiers';
 
 /** How a projection lives with one element: its affinity (content/elements.ts DEFAULT_AFFINITY
  *  fills what is left out) and an optional reaction when its body goes in. */
@@ -46,10 +47,17 @@ export interface EnemyDef {
   id: string;
   kind?: BeingKind;
   responds?: Polarity;
+  /** Its bolts and strikes are intentions of this polarity (the Shadow's are cold): one that reaches an ally of the
+   *  player turns it hostile at once and harms it (friendly fire, POLARITY.md). Its touch and its bombs are plain harm. */
+  intends?: Polarity;
   name: string;
   /** The pattern it stands for (shown in the inventory's bestiary later). */
   pattern: string;
-  hp: number;
+  /** Life at birth, for a projection or a creature. A boss has none: its life comes from its floor and the run's seed (`bossLife`, content/bosses). */
+  hp?: number;
+  /** Bosses only: its life from your health in points as it materialises, instead of the boss life of its
+   *  floor (`bossLife`), and no practice changes it at spawn (the Shadow: the same hearts as yours, SHADOW.md). */
+  life?(points: number): number;
   speed: number;
   /** Half-width and height of its box. */
   size: [number, number];
@@ -72,6 +80,8 @@ export interface EnemyDef {
   /** A shell of plates in front of the core: hits break plates first, and the core takes none until they are gone. */
   shell?: { plates: number; plateHp: number };
   breaks?: { tier: number; power: number };
+  /** On the player's side it steps up and lets itself down two blocks instead of one (issue #327, MOVEMENT.md "Climbers"). A hostile ignores it. */
+  climber?: boolean;
   /** Bosses only: this boss's design needs a small room (its design doc must say why). Without it,
    *  a boss on floor 0 and below always fights in a large room (`bossRoomIsLarge`, issue #131). */
   smallRoom?: boolean;
@@ -84,6 +94,9 @@ export interface Enemy extends Actor {
   readonly kind: 'projection';
   /** The definition (`Actor.def` holds its id). */
   spec: EnemyDef;
+  /** Its life. While hostile, `hp` is its place on the bar from 0 to 2 × maxHp, starting at maxHp: harm drains
+   *  it (0 releases it), love fills it (the top turns it to your side). As an ally, `hp` is plain health up to
+   *  maxHp (combat/polarity.ts). */
   maxHp: number;
   /** Size multiplier: 1 at birth, up to GROWTH_MAX for a creature that love shots have grown (entities/growth.ts). */
   scale: number;
@@ -104,8 +117,6 @@ export interface Enemy extends Actor {
   /** The element its body is in now (null on dry ground), and seconds until the element can hurt it again. */
   inElement: ElementKey | null;
   elemT: number;
-  /** Intention warmth, 0–1: positive intentions fill it, and at full warmth it turns to your side (combat/polarity.ts). */
-  warmth: number;
   /** Visual-only: hit flash and scale pulse. */
   flash: number;
   pulse: number;
@@ -113,6 +124,7 @@ export interface Enemy extends Actor {
   stage: number;
   hold: number;
   frozen: number;
+  thaw: number;
   fear: number;
   aimX: number; aimZ: number;
   flyY: number;
@@ -125,6 +137,12 @@ export interface Enemy extends Actor {
   move: number;
   act: number;
   volley: number;
+  /** Its colour tier (tiers.ts); absent means Black. */
+  tier?: Tier;
+  /** The tier's extra climb in blocks (its tallest step and its leap's height), and its damage multiplier
+   *  for strikes, shots and bursts. A converted or mended ally keeps both. */
+  climb?: number;
+  power?: number;
 }
 
 /** Where a target is (a snapshot for this frame). */
@@ -141,7 +159,8 @@ export interface EnemyCtx {
   /** How many prizes the enemy carries. */
   carried(e: Enemy): number;
   strike(e: Enemy, s: Strike): void;
-  bolt(e: Enemy, dx: number, dy: number, dz: number, speed: number, damage: number): void;
+  /** A straight bolt along (dx, dy, dz). `radius` (blocks, default 0.12) is how close it must pass to hit, and its size. */
+  bolt(e: Enemy, dx: number, dy: number, dz: number, speed: number, damage: number, radius?: number): void;
   safe(e: Enemy, x: number, y: number, z: number): boolean;
   centre(e: Enemy): [number, number];
   quiet(e: Enemy): boolean;
@@ -151,11 +170,31 @@ export interface EnemyCtx {
   hide(e: Enemy, hidden: boolean): void;
   arena(e: Enemy, what: string): void;
   summon(e: Enemy, defIds: string[]): void;
+  /** The beings the player befriended in this run that can be summoned, one entry per friend, in the order of the
+   *  run's ally tally (game/ally-tally.ts): projections, mended allies and creatures. Deities and bosses never come.
+   *  Read only: the Shadow takes them once, when its fight starts. Absent in a stand-in: no friends. */
+  allies?(): readonly string[];
+  /** Announces one being of `defId` near `e` (an omen on a standable cell 1.5 to 4 blocks from it), hostile, through
+   *  the game's one spawn path, so it rolls its own tier. False when nothing could be announced. */
+  summonNear?(e: Enemy, defId: string): boolean;
+  /** How many beings `e` summoned are alive and hostile, or still in their omen. */
+  summoned?(e: Enemy): number;
   /** The enemy's current target, or null (then it idles). */
   target(e: Enemy): TargetView | null;
   /** The nearest actor of the self (the player, its allies), whatever the enemy's side: peaceful
    *  creatures use it to keep you company. */
   near(e: Enemy): TargetView | null;
+  /** The ids of the practices the player holds now, in the order gained. Read only: the Shadow takes them once,
+   *  when its fight starts, and mirrors them (content/bosses/mirror.ts). With `health` and `bombs`, the only
+   *  things of the player a behaviour can read. */
+  practices(): readonly string[];
+  /** The player's health now, in points (hearts and layers). Read only: the Shadow scores its choices on it. */
+  health(): number;
+  /** The bombs the player carries now. Read only: the Shadow takes as many when its fight starts. */
+  bombs(): number;
+  /** Drops the player's own bomb at its feet (game/bomb.ts: the same cube, look and fuse), cold, with its own blast:
+   *  radius in blocks, block damage at the centre, and points to every actor it reaches. */
+  placeBomb(e: Enemy, blast: { radius: number; blocks: number; damage: number }): void;
   /** Horizontal distance to a target. */
   dist(e: Enemy, t: TargetView): number;
   /** Direction to walk towards a target inside the room (flow field), or straight at it. */
@@ -183,3 +222,9 @@ export interface Behaviour {
 }
 
 export const defineEnemy = (d: EnemyDef) => d;
+
+/** A projection's or creature's life at birth (`EnemyDef.hp`). Throws for a boss, whose life is set at its spawn. */
+export const birthHp = (def: Pick<EnemyDef, 'id' | 'hp'>): number => {
+  if (def.hp === undefined) throw new Error(`${def.id}: no birth health (a boss's life comes from bossLife)`);
+  return def.hp;
+};

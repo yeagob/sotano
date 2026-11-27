@@ -4,8 +4,11 @@
 
 import type { Polarity } from '../../combat/polarity';
 import type { DamageKind } from '../../core/damage';
+import { Freeze, FREEZE_CADENCE } from '../../core/freeze';
 import type { Rng } from '../../core/rng';
 import { HINDRANCES } from '../hindrances';
+import { waterPace, worldOf } from '../laws/water';
+import { Chaser, type ChaseView } from './chase';
 import {
   MIN_TELEGRAPH, type AttackDef, type CreatureDeps, type CustomState, type DeityApi, type DeityCtx, type DeityDef,
   type HindranceId, type HindranceParams, type Place, type PositiveHit, type SkyActor, type SkyFloorPlan, type SkyHost,
@@ -32,6 +35,10 @@ const STILL_SPEED = 0.05;
 /** Two states beyond the six of CoreState: Teleporting (provisional, koala and horse) and Won (the player's ally). */
 export const TELEPORTING = 'Teleporting';
 export const WON = 'Won';
+export const FREEZE = 2;
+export const FREEZE_GAP = FREEZE_CADENCE;
+export const SHOT_FOR = 4;
+export const SETTLE_SPEED = 3;
 
 /** stage = min(2, ⌊3·hits / target⌋). */
 export const stageOf = (hits: number, target: number): Stage => Math.min(2, Math.floor(3 * hits / target)) as Stage;
@@ -86,7 +93,7 @@ export class Deity implements DeityApi {
   private attack: AttackDef | null = null;
   private lastAttack: string | null = null;
   private acted = false;
-  private home: Vec3;
+  private readonly home: Vec3;
   private used = new Set<string>();
   private customs = new Map<string, CustomState>();
   private replacing = new Map<string, CustomState>();
@@ -94,6 +101,12 @@ export class Deity implements DeityApi {
   private coreRecs: Record<string, Rec>;
   /** This attack run has drained already: a run drains once (guardians §6.6). Reset when a run begins. */
   private runDrained = false;
+  readonly chaser: Chaser | null;
+  private readonly ice = new Freeze();
+  private paceNow = 1;
+  private moveClock = 0;
+  private shotClock = -Infinity;
+  readonly freezes: number[] = [];
 
   constructor(
     readonly actor: SkyActor,
@@ -108,6 +121,7 @@ export class Deity implements DeityApi {
       if (s.replaces) this.replacing.set(s.replaces, s);
     }
     this.home = { x: plan.seat.x + 0.5, y: plan.seat.y, z: plan.seat.z + 0.5 };
+    this.chaser = def.chase && def.hover !== null ? new Chaser(actor, def, plan, deps, host, this.home) : null;
     BY_ACTOR.set(actor, this);
     const self = this;
     this.ctx = {
@@ -126,15 +140,19 @@ export class Deity implements DeityApi {
       far: min => self.farPlace(min),
       drain: n => self.drain(n),
       get attack() { return self.attack; },
+      pace: () => self.paceNow,
     };
     this.coreRecs = {
       Idle: { next: () => (this.inSight() ? 'Watching' : null) },
       Watching: {
-        enter: () => { this.restLeft = def.rest[this.level] + this.delays(); },
+        enter: () => {
+          this.restLeft = def.rest[this.level] + this.delays();
+          if (this.pendingCounter !== null) { this.restLeft = Math.min(this.restLeft, this.pendingCounter); this.pendingCounter = null; }
+        },
         tick: dt => { this.restLeft -= dt; },
         next: () => {
           if (this.distanceToPlayer() > def.sight * LOSE) return 'Idle';
-          if (this.restLeft > 0 || !this.inSight()) return null;
+          if (this.restLeft > 0 || !this.inSight() || this.chaser?.busy) return null;
           this.attack = this.choose();
           return this.attack ? 'Attacking' : null;
         },
@@ -178,12 +196,15 @@ export class Deity implements DeityApi {
           if (this.t < this.telegraphLength()) return null;
           const to = this.farPlace(TELEPORT_MIN, def.sight - DRIFT_RADIUS) ??this.farPlace(TELEPORT_MIN);
           if (to) this.placeAt(to);
+          this.chaser?.end();
           return 'Watching';
         },
         exit: () => { this.telegraphing = null; },
       },
       [WON]: {
         enter: () => {
+          this.chaser?.end();
+          this.ice.end();
           def.won.play(this.ctx);
           if (def.won.toast) host.toast(def.won.toast);
           if (def.won.gift) host.gift(def.won.gift, plan.seat.x + 0.5, plan.seat.y, plan.seat.z + 0.5);
@@ -200,7 +221,56 @@ export class Deity implements DeityApi {
   get stage(): Stage { return this.level; }
   get won(): boolean { return this.wonFlag; }
 
+  get frozen(): number { return this.ice.left; }
+
+  get pace(): number { return this.paceNow; }
+
+  get targeted(): boolean { return !this.wonFlag && this.clock - this.shotClock <= SHOT_FOR; }
+
+  get homePoint(): Vec3 { return this.home; }
+
+  markShot() {
+    if (!this.wonFlag) this.shotClock = this.clock;
+  }
+
+  freeze(seconds = FREEZE): boolean {
+    if (this.wonFlag || !this.ice.start(seconds)) return false;
+    this.freezes.push(this.clock);
+    const b = this.actor.body;
+    this.host.fx('motes', b.x, b.y + b.h / 2, b.z, 10);
+    this.host.cue('core.shimmer', b.x, b.y + b.h / 2, b.z);
+    return true;
+  }
+
+  private chaseView(): ChaseView {
+    return {
+      core: this.core,
+      restLeft: this.core === 'Watching' ? this.restLeft : 0,
+      cutRest: s => { if (this.core === 'Watching') this.restLeft = Math.min(this.restLeft, s); else this.pendingCounter = s; },
+    };
+  }
+
+  private pendingCounter: number | null = null;
+
+  private chaseFree(): boolean {
+    const c = this.core;
+    if (c === 'Idle' || c === 'Attacking' || c === TELEPORTING || c === WON) return false;
+    if (this.def.chase?.still?.includes(c)) return false;
+    return !this.telegraphing;
+  }
+
   update(dt: number) {
+    if (this.ice.frozen) {
+      this.clock += dt;
+      this.moveClock += dt;
+      this.ice.tick(dt);
+      this.sync();
+      return;
+    }
+    this.ice.tick(dt);
+    this.paceNow = waterPace(worldOf(this.host), this.actor.body);
+    const move = dt * this.paceNow;
+    this.moveClock += move;
     const p = this.host.player().body;
     const moving = Math.hypot(p.vx, p.vz) > STILL_SPEED || !p.onGround;
     this.stillFor = moving ? 0 : this.stillFor + dt;
@@ -215,6 +285,8 @@ export class Deity implements DeityApi {
       const next = this.recOf(from).next();
       if (next !== null) this.go(next);
     }
+    if (this.chaser) this.chaser.tick(move, this.chaseView(), this.chaseFree());
+    if (this.wonFlag) this.settle(move);
     this.placeBody(dt);
     this.sync();
   }
@@ -223,16 +295,18 @@ export class Deity implements DeityApi {
   touch(polarity: Polarity, warm: boolean, p: Vec3, _kind: DamageKind) {
     if (polarity === 'negative') { this.deps.puff.at(p); return; }
     if (this.wonFlag || !warm) return;
+    if (this.warded()) { this.deps.puff.at(p); return; }
     if (this.def.guard?.(this.actor, this.ctx)) { this.deps.puff.at(p); return; }
     // The touch carries no weapon id here; R2 may pass one later (only a rule's worth reads it).
     const hit: PositiveHit = { x: p.x, y: p.y, z: p.z, cell: -1, actor: this.actor.id, weapon: 'intent', warm };
     this.actor.hits = Math.min(this.def.hits, this.actor.hits + this.worth(hit));
-    this.host.fx('gold', p.x, p.y, p.z);
+    this.host.fx('gold', p.x, p.y, p.z, 12);
     this.host.cue('core.gold', p.x, p.y, p.z);
     this.hurtLeft = HURT;
     if (this.actor.hits >= this.def.hits) {
       this.win();
     } else {
+      this.chaser?.hit(this.chaseView());
       const s = stageOf(this.actor.hits, this.def.hits);
       if (s > this.level) {
         this.level = s;
@@ -252,6 +326,20 @@ export class Deity implements DeityApi {
     this.actor.side = 'ally';
     this.actor.faction = 'self';
     this.go(WON);
+  }
+
+  warded(): boolean {
+    const c = this.def.chase;
+    if (!c) return false;
+    const winding = (this.core === 'Attacking' && !this.acted) || !!c.ward?.includes(this.core);
+    return winding && this.distanceToPlayer() > c.answer;
+  }
+
+  private settle(dt: number) {
+    const s = this.plan.seat, h = this.home;
+    const dx = s.x + 0.5 - h.x, dy = s.y - h.y, dz = s.z + 0.5 - h.z, d = Math.hypot(dx, dy, dz);
+    const k = d > 1e-9 ? Math.min(1, (SETTLE_SPEED * dt) / d) : 1;
+    h.x += dx * k; h.y += dy * k; h.z += dz * k;
   }
 
   private worth(hit: PositiveHit): number {
@@ -318,7 +406,7 @@ export class Deity implements DeityApi {
   }
 
   private placeAt(to: Place) {
-    this.home = { x: to.x + 0.5, y: to.y, z: to.z + 0.5 };
+    this.home.x = to.x + 0.5; this.home.y = to.y; this.home.z = to.z + 0.5;
     const b = this.actor.body;
     b.x = this.home.x;
     b.z = this.home.z;
@@ -329,11 +417,11 @@ export class Deity implements DeityApi {
   /** Levitation: a bob and a slow drift round the home. A walking deity (hover null) stays where its files put it. */
   private placeBody(_dt: number) {
     if (!this.anchored || this.def.hover === null) return;
-    const a = this.clock * DRIFT_RATE;
+    const a = this.moveClock * DRIFT_RATE;
     const b = this.actor.body;
     b.x = this.home.x + DRIFT_RADIUS * Math.cos(a);
     b.z = this.home.z + DRIFT_RADIUS * Math.sin(a);
-    b.y = this.home.y + this.def.hover + BOB * Math.sin(2 * Math.PI * BOB_HZ * this.clock);
+    b.y = this.home.y + this.def.hover + BOB * Math.sin(2 * Math.PI * BOB_HZ * this.moveClock);
     b.vx = 0; b.vy = 0; b.vz = 0;
   }
 

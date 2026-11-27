@@ -20,7 +20,7 @@ Floors 3 and 4. Code: [scarcity.ts](../../../../src/content/enemies/scarcity.ts)
 
 ## How the player answers it
 
-Kill it to get back what it took. Good intentions do half damage and warm it; bad intentions do full damage. When it dies it drops everything it carried, plus one more of those pickups chosen at random.
+Kill it to get back what it took. Good intentions fill its [bar](../encounters/POLARITY.md#the-bar-owner-2026-11-26) toward conversion and bad intentions drain it toward release, by the same damage. When it dies it drops everything it carried, plus one more of those pickups chosen at random.
 
 ## Element affinities
 

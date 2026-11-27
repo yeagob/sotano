@@ -390,6 +390,33 @@ export interface DeityDef {
   knock: 'nudge' | 'hug' | 'sweep' | 'paw' | 'kick';
   won: WonOutcome;
   model: DeityModel;
+  chase?: ChaseSpec;
+}
+
+export type DiveKind = 'push' | 'hold' | 'slow' | 'pull';
+export interface DiveSpec {
+  kind: DiveKind;
+  every: number;
+  radius: number;
+  strength: number;
+  slow?: number;
+  cue: SkyCue;
+}
+export interface ChaseSpec {
+  keep: number;
+  near: number;
+  lift: number;
+  speed: number;
+  dash: number;
+  orbit: number;
+  dodge: number;
+  cool: number;
+  counter: number;
+  answer: number;
+  ward?: readonly string[];
+  still?: readonly string[];
+  dive: DiveSpec;
+  cue: SkyCue;
 }
 
 export interface DeityCtx {
@@ -414,6 +441,7 @@ export interface DeityCtx {
   drain(n: number): void;
   /** The attack being telegraphed or acted now, null between attacks (B3 addition: an animal's rules draw its marks and pose its body during the telegraph). */
   readonly attack?: AttackDef | null;
+  pace?(): number;
 }
 
 export interface Gait {
@@ -432,6 +460,7 @@ export interface SpawnRule {
   every: number;
   /** Clusters spawn asleep. */
   asleep?: boolean;
+  batch?: number;
 }
 
 export type AllyHelpKind = 'hold' | 'clear' | 'carry' | 'help';
@@ -439,7 +468,6 @@ export interface AllyHelp { kind: AllyHelpKind; rule: MinionRule }
 
 export interface MinionDef {
   animal: Animal;
-  /** 4/3, 6/6, 5/3, 6/4, 5/3. */
   max: number; wildMax: number;
   spawn: SpawnRule;
   /** 3, 3, 5, 4, 4. */
@@ -474,6 +502,7 @@ export interface SkyCreaturesApi extends TouchProvider {
   /** Only the creatures of the player's floor move. */
   update(dt: number, floor: number): void;
   all(): readonly SkyActor[];
+  freeze(id: number, seconds: number): boolean;
   /** Fired once per deity, when it is won. */
   onWon: ((d: SkyActor, floor: FloorIndex) => void) | null;
   dispose(): void;
@@ -493,6 +522,7 @@ export interface SpiritApi {
   update(): void;
   /** True when a drain could land now: not held, not within 1 s after, 6 s after the last drain. */
   canDrain(): boolean;
+  contact(n: number): boolean;
   /** Takes `n` spirit if it can land (and sends the player underground at zero); true when it did. */
   drain(n: number): boolean;
 }
@@ -506,6 +536,9 @@ export interface DeityApi {
   update(dt: number): void;
   touch(polarity: Polarity, warm: boolean, p: Vec3, kind: DamageKind): void;
   onWon: ((d: SkyActor) => void) | null;
+  readonly targeted: boolean;
+  readonly frozen: number;
+  freeze(seconds?: number): boolean;
 }
 export type DeityCtor = new (actor: SkyActor, def: DeityDef, plan: SkyFloorPlan, deps: CreatureDeps, host: SkyHost, rng: Rng) => DeityApi;
 
@@ -514,11 +547,14 @@ export interface MinionApi {
   readonly def: MinionDef;
   update(dt: number, deity: DeityApi | null, others: readonly SkyActor[]): void;
   touch(polarity: Polarity, warm: boolean, p: Vec3, kind: DamageKind): void;
+  readonly frozen: number;
+  freeze(seconds: number): boolean;
 }
 export type MinionCtor = new (actor: SkyActor, def: MinionDef, plan: SkyFloorPlan, deps: CreatureDeps, host: SkyHost, rng: Rng) => MinionApi;
 
 /** Law 3.3: every touch that is not positive goes out in a small puff. */
 export interface PuffApi {
+  update(dt: number): void;
   at(p: Vec3): void;
   /** The first puff of a run shows `toast.skyPuff`. */
   readonly shown: boolean;
@@ -670,6 +706,7 @@ export interface SkyEffectsApi {
   push(vx: number, vy: number, vz: number): void;
   slow(f: number, s: number): void;
   hold(s: number): void;
+  freeze(s: number): boolean;
   /** A solid block between the two points (shelter from a push or a gust). */
   shelter(from: Vec3, to: Vec3): boolean;
   /** Not placed and not protected. */
@@ -784,7 +821,16 @@ export interface SkyRealmApi {
   enterUnity(): void;
   /** True once `enterUnity` has been called. */
   readonly enteredUnity: boolean;
+  /** The ending of illumination (totality/ascension.ts): the game reads its light and takes its card once. */
+  readonly ascension: AscensionView;
   dispose(): void;
+}
+
+/** What the game reads of the ending of illumination: its phase, the screen's light (0 → 1) and the card, due once. */
+export interface AscensionView {
+  readonly phase: 'waiting' | 'rising' | 'light' | 'card';
+  readonly light: number;
+  takeCard(): boolean;
 }
 export interface SkyRealmCtor { create(host: SkyHost, root: THREE.Group, makeSet: SkySetFactory): SkyRealmApi }
 
@@ -812,6 +858,8 @@ export interface SkyPlayer {
   slow(f: number, s: number): void;
   hold(s: number): void;
   carry(to: Vec3, s: number): void;
+  freeze?(s: number): boolean;
+  readonly shielded?: boolean;
 }
 
 /** A practice's id (ItemDef.id). */

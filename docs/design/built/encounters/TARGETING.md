@@ -11,6 +11,7 @@ A being can target only an actor hostile to its own faction. Hostility is simple
 - Projections and bosses (the projection faction) target the player, and any converted ally (the self faction).
 - Creatures and presences (neutral) are never targeted and never target.
 - Actors still forming (materialising) are not targets.
+- An ally with nothing hostile in its room has no target and follows you instead (see [Movement](MOVEMENT.md#allies-and-the-player)).
 
 ## The choice
 

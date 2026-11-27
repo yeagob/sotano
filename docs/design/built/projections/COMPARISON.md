@@ -20,7 +20,7 @@ Floors 3 to 6. Code: [comparison.ts](../../../../src/content/enemies/comparison.
 
 ## How the player answers it
 
-Use blocks as cover from its bolts. Good intentions do half damage and warm it; bad intentions do full damage.
+Use blocks as cover from its bolts. Good intentions fill its [bar](../encounters/POLARITY.md#the-bar-owner-2026-11-26) toward conversion and bad intentions drain it toward release, by the same damage.
 
 ## Element affinities
 

@@ -30,7 +30,7 @@ Reaching the surface ends the "normal" run and opens the game's next layer. What
 
 ## Secret rooms (proposal)
 
-A secret room has no door. It is reached by breaking a wall, or bombing it, as in Isaac, but here it is also reached **by digging from anywhere**. Breaking a room's wall to get in or out is expensive for the room's own walls: see [ROOM-WALLS](../blocks/ROOM-WALLS.md). Secret rooms are not built: the built room types are in [built/levels/rooms](../../built/levels/rooms/README.md).
+A secret room has no door. It is reached by breaking a wall, or bombing it, as in Isaac, but here it is also reached **by digging from anywhere**. Breaking a room's wall to get in or out is expensive for the room's own walls: see [ROOM-WALLS](../blocks/ROOM-WALLS.md). Secret rooms are not built: the built room types are in [built/levels/rooms](../../built/levels/rooms/README.md). The decided secret rooms, with their way in, are in [secret-rooms](secret-rooms/README.md): the four cardinal destinations, Boss Rush and Snake 3D. The proposal above is kept as it was; whether it is absorbed into that folder is open (issue #331).
 
 ## Special doors (proposal)
 

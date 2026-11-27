@@ -20,7 +20,7 @@ Floors 1 and 2. Code: [craving.ts](../../../../src/content/enemies/craving.ts).
 
 ## How the player answers it
 
-Leave the wind's radius before it opens. Good intentions do half damage and warm it; bad intentions do full damage.
+Leave the wind's radius before it opens. Good intentions fill its [bar](../encounters/POLARITY.md#the-bar-owner-2026-11-26) toward conversion and bad intentions drain it toward release, by the same damage.
 
 ## Element affinities
 

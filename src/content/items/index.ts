@@ -53,11 +53,17 @@ import sleephygiene from './sleephygiene';
 import thoughtstopping from './thoughtstopping';
 import triangulation from './triangulation';
 import tripleJump from './triple-jump';
+import doubleJump from './double-jump';
+import wallJump from './wall-jump';
 import irimi from './irimi';
 import fartlek from './fartlek';
 import balasana from './balasana';
 import bookofsecrets from './bookofsecrets';
 import mendersThread from './menders-thread';
+import selfDistancing from './self-distancing';
+import guardingTheCentre from './guarding-the-centre';
+import likeWater from './like-water';
+import shield from './shield';
 import dowsing from './dowsing';
 import eyecontact from './eyecontact';
 import dialectic from './dialectic';
@@ -69,6 +75,7 @@ import controlledburn from './controlledburn';
 import kairos from './kairos';
 import boltfromtheblue from './boltfromtheblue';
 import serendipity from './serendipity';
+import stretch from './stretch';
 import tummo from './tummo';
 import firewalking from './firewalking';
 import prometheus from './prometheus';
@@ -86,6 +93,7 @@ import posttraumatic from './posttraumatic';
 import bilateral from './bilateral';
 import ruleofthree from './ruleofthree';
 import spiralgrowth from './spiralgrowth';
+import walkslow from './walkslow';
 
 export const ITEMS: readonly ItemDef[] = [
   stoic, deepfocus, kaizen, habitstack, secondbrain, exposure,
@@ -95,11 +103,11 @@ export const ITEMS: readonly ItemDef[] = [
   forgiveness, nothingpersonal, constellation, arttherapy, thinkwaitfast, omens,
   lionsmane, occamsrazor, kiai,
   ahamoment, affirmation, bounceback, chunking, discharge, dualprocess, kindling, rapport, resonance, selfcompassion, selfefficacy, sleephygiene, thoughtstopping, triangulation,
-  drlauncher, tripleJump, mendersThread,
+  drlauncher, tripleJump, doubleJump, wallJump, mendersThread, selfDistancing, guardingTheCentre, likeWater, shield,
   dowsing, eyecontact,
   dialectic, reframing,
   waymark,
-  pressurevalve, controlledburn, boltfromtheblue, serendipity,
+  pressurevalve, controlledburn, boltfromtheblue, serendipity, stretch,
   tummo, firewalking, prometheus,
   teaceremony, herbalism, distillation, spagyric, mindfuleating, breakingbread, harahachibu, grace, nourishment,
   irimi, fartlek, balasana, bookofsecrets,
@@ -108,6 +116,7 @@ export const ITEMS: readonly ItemDef[] = [
   luciddream,
   solvecoagula, posttraumatic,
   bilateral, ruleofthree, spiralgrowth,
+  walkslow,
 ];
 
 export const ITEM_BY_ID: ReadonlyMap<string, ItemDef> = new Map(ITEMS.map(i => [i.id, i]));

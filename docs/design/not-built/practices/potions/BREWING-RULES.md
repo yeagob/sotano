@@ -23,13 +23,13 @@ These are the proposal's defaults. They follow from the approved rules but the o
 
 ## 3. The drink verb (built without its lift)
 
-The drink verb is how a flask is used. It is built: G on a keyboard, X on a pad, and the flask button on a touch screen, shown only while a flask is in the hand (see [controls](../../../../architecture/input/README.md)). The lift is not built yet: the flask is drunk at once, and the player is not held still for 0.4 seconds.
+The drink verb is how a flask is used. It is built: G on a keyboard, X on a pad, and the use button on a touch screen, which drinks while a flask is on top of the hand (see [controls](../../../../architecture/input/README.md)). The lift is not built yet: the flask is drunk at once, and the player is not held still for 0.4 seconds.
 
 - **The verb:** Drink. A new action, a press, live only in play.
 - **What it acts on:** the top of the hand, when that is a flask. Otherwise it does nothing and plays the denied sound.
 - **The lift:** the hands raise the flask to the mouth for 0.4 seconds. The player may move but not cast during the lift (question 11's default).
 - **After the lift:** the drink event fires, the effect installs, the flask is gone, and the banner names the potion and its effect line, as for practices.
-- **Mappings (to decide):** keyboard and mouse, one key live only in play, with no clash with place, throw, bomb or polarity (F is polarity, [KEYBOARD](../../../../architecture/input/KEYBOARD.md)). Gamepad, one face or stick button; the controls skill lists X, LS and RS as free in play. Touch, a flask button in the right-thumb arc, shown only while a flask is in the hand, within the seven-button limit.
+- **Mappings (to decide):** keyboard and mouse, one key live only in play, with no clash with place, throw, bomb or polarity (F is polarity, [KEYBOARD](../../../../architecture/input/KEYBOARD.md)). Gamepad, one face or stick button; the controls skill lists X, LS and RS as free in play. Touch, the use button in the right-thumb arc (shared with throw; it drinks while a flask is on top), within the seven-button limit.
 - **Stations:** the kitchen's meals may later share the action under a wider label ([CARRYABLES](../../stations/CARRYABLES.md)). The brainstorm's "eat with F" must change either way: F is polarity.
 
 ## 4. The steps of a brew (proposal)

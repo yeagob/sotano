@@ -270,7 +270,7 @@ function minionRig(places: Place[], def: MinionDef) {
   const r = rig(worldOf(), 30.5, 30.5);
   const deps: CreatureDeps = {
     actors: r.actors, runner: r.runner, effects: r.effects, puff: new Puff(r.host), knock: {} as never,
-    spirit: { update() {}, canDrain: () => true, drain: () => true },
+    spirit: { update() {}, canDrain: () => true, drain: () => true, contact: () => true },
   };
   const plan = {
     index: 1, animal: 'panda', y0: 0, y1: 30, shapes: [], graph: { places, links: [] }, seat: places[0], spawns: [places[0]],

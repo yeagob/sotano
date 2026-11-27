@@ -1,0 +1,395 @@
+{
+  "move": {
+    "keyboard": {
+      "keys": [
+        "KeyW",
+        "ArrowUp",
+        "KeyS",
+        "ArrowDown",
+        "KeyA",
+        "ArrowLeft",
+        "KeyD",
+        "ArrowRight"
+      ]
+    },
+    "gamepad": {
+      "stick": "left"
+    }
+  },
+  "look": {
+    "keyboard": {
+      "mouseMove": true
+    },
+    "gamepad": {
+      "stick": "right"
+    }
+  },
+  "jump": {
+    "keyboard": {
+      "keys": [
+        "Space"
+      ]
+    },
+    "gamepad": {
+      "buttons": [
+        0
+      ]
+    }
+  },
+  "cast": {
+    "keyboard": {
+      "mouse": [
+        0
+      ]
+    },
+    "gamepad": {
+      "buttons": [
+        7
+      ]
+    }
+  },
+  "dash": {
+    "keyboard": {
+      "doubleTap": "move"
+    },
+    "gamepad": {
+      "doubleFlick": "left"
+    }
+  },
+  "run": {
+    "keyboard": {
+      "keys": [
+        "ShiftLeft",
+        "ShiftRight"
+      ]
+    },
+    "gamepad": {
+      "buttons": [
+        10
+      ]
+    }
+  },
+  "crouch": {
+    "keyboard": {
+      "toggle": [
+        "KeyC"
+      ]
+    },
+    "gamepad": {
+      "buttons": [
+        11
+      ]
+    }
+  },
+  "place": {
+    "keyboard": {
+      "mouse": [
+        2
+      ]
+    },
+    "gamepad": {
+      "buttons": [
+        6
+      ]
+    }
+  },
+  "throw": {
+    "keyboard": {
+      "keys": [
+        "KeyQ"
+      ]
+    },
+    "gamepad": {
+      "buttons": [
+        1
+      ]
+    }
+  },
+  "drink": {
+    "keyboard": {
+      "keys": [
+        "KeyG"
+      ]
+    },
+    "gamepad": {
+      "buttons": [
+        2
+      ]
+    }
+  },
+  "bomb": {
+    "keyboard": {
+      "keys": [
+        "KeyE"
+      ]
+    },
+    "gamepad": {
+      "buttons": [
+        5
+      ]
+    }
+  },
+  "polarity": {
+    "keyboard": {
+      "keys": [
+        "KeyF"
+      ]
+    },
+    "gamepad": {
+      "buttons": [
+        4
+      ]
+    }
+  },
+  "previous": {
+    "keyboard": {
+      "wheel": -1
+    },
+    "gamepad": {
+      "buttons": [
+        14
+      ]
+    }
+  },
+  "next": {
+    "keyboard": {
+      "wheel": 1
+    },
+    "gamepad": {
+      "buttons": [
+        15
+      ]
+    }
+  },
+  "pick": {
+    "keyboard": {
+      "keys": [
+        "Digit1",
+        "Digit2",
+        "Digit3",
+        "Digit4",
+        "Digit5",
+        "Digit6",
+        "Digit7",
+        "Digit8",
+        "Digit9",
+        "Enter"
+      ]
+    },
+    "gamepad": {
+      "buttons": [
+        0
+      ],
+      "when": [
+        "inventory"
+      ]
+    }
+  },
+  "inventory": {
+    "keyboard": {
+      "keys": [
+        "Tab",
+        "KeyI"
+      ]
+    },
+    "gamepad": {
+      "buttons": [
+        3
+      ]
+    }
+  },
+  "map": {
+    "keyboard": {
+      "keys": [
+        "KeyM"
+      ]
+    },
+    "gamepad": {
+      "buttons": [
+        8
+      ],
+      "when": [
+        "play",
+        "inventory"
+      ]
+    }
+  },
+  "recipes": {
+    "keyboard": {
+      "keys": [
+        "KeyJ"
+      ]
+    },
+    "gamepad": {
+      "buttons": [
+        13
+      ],
+      "when": [
+        "play"
+      ]
+    }
+  },
+  "pause": {
+    "keyboard": {
+      "keys": [
+        "Escape"
+      ]
+    },
+    "gamepad": {
+      "buttons": [
+        9
+      ]
+    }
+  },
+  "restart": {
+    "keyboard": {
+      "keys": [
+        "KeyR"
+      ],
+      "when": [
+        "play",
+        "dead"
+      ]
+    },
+    "gamepad": {
+      "buttons": [
+        8
+      ],
+      "when": [
+        "paused",
+        "dead"
+      ]
+    }
+  },
+  "book": {
+    "keyboard": {
+      "keys": [
+        "KeyH"
+      ]
+    },
+    "gamepad": {
+      "buttons": [
+        2
+      ]
+    }
+  },
+  "confirm": {
+    "keyboard": {
+      "keys": [
+        "Enter"
+      ],
+      "mouse": [
+        0,
+        1,
+        2
+      ]
+    },
+    "gamepad": {
+      "buttons": [
+        0
+      ]
+    }
+  },
+  "navigate": {
+    "keyboard": {
+      "keys": [
+        "ArrowUp",
+        "ArrowDown",
+        "ArrowLeft",
+        "ArrowRight"
+      ]
+    },
+    "gamepad": {
+      "buttons": [
+        12,
+        13,
+        14,
+        15
+      ]
+    }
+  },
+  "back": {
+    "keyboard": {
+      "keys": [
+        "Escape"
+      ],
+      "when": [
+        "inventory",
+        "toll",
+        "meditation",
+        "prompt"
+      ]
+    },
+    "gamepad": {
+      "buttons": [
+        1
+      ],
+      "when": [
+        "inventory",
+        "toll",
+        "meditation",
+        "prompt"
+      ]
+    }
+  },
+  "skip": {
+    "keyboard": {
+      "keys": [
+        "KeyN"
+      ]
+    },
+    "gamepad": {
+      "buttons": [
+        5
+      ]
+    }
+  },
+  "mute": {
+    "keyboard": {
+      "keys": [
+        "KeyM"
+      ]
+    },
+    "gamepad": {
+      "buttons": [
+        2
+      ]
+    }
+  },
+  "calm": {
+    "keyboard": {
+      "keys": [
+        "KeyC"
+      ]
+    },
+    "gamepad": {
+      "buttons": [
+        3
+      ]
+    }
+  },
+  "voice": {
+    "keyboard": {
+      "keys": [
+        "KeyV"
+      ]
+    },
+    "gamepad": {
+      "buttons": [
+        4
+      ]
+    }
+  },
+  "miracle": {
+    "keyboard": {
+      "keys": [
+        "KeyV"
+      ]
+    },
+    "gamepad": {
+      "buttons": [
+        12
+      ]
+    }
+  }
+}

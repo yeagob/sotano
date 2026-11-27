@@ -2,8 +2,9 @@
 // three results, never throws, never reports success without a fullscreen element, and the button is
 // offered on a phone only while the page is not fullscreen. Fake documents only, no DOM.
 
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { canEnterFullscreen, enterFullscreen, showFullscreenButton, type FullscreenDoc } from '../src/input/fullscreen';
+import { Input } from '../src/input/input';
 
 /** A document whose fullscreen state the test controls; `request` decides how a request ends. */
 function fakeDoc(opts: {
@@ -116,5 +117,94 @@ describe('return button visibility (#161)', () => {
   it('is never offered on keyboard or pad, fullscreen or not', () => {
     expect(showFullscreenButton(false, false, true)).toBe(false);
     expect(showFullscreenButton(false, true, true)).toBe(false);
+  });
+});
+
+// Escape and fullscreen (issue #374): the browser takes Escape to leave fullscreen, and the game reads the
+// same key to close a menu. The keyboard input is driven through its real listeners, with the document stubbed.
+describe('Escape and fullscreen (#374)', () => {
+  type Listener = (e: Record<string, unknown>) => void;
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+  });
+
+  /** A keyboard input with its window and document listeners, and a document whose fullscreen the test sets. */
+  function menu() {
+    const win = new Map<string, Listener[]>();
+    const doc = {
+      fullscreenElement: null as unknown,
+      pointerLockElement: null,
+      listeners: new Map<string, Listener[]>(),
+      addEventListener(type: string, fn: Listener) { doc.listeners.set(type, [...(doc.listeners.get(type) ?? []), fn]); },
+    };
+    vi.stubGlobal('addEventListener', (type: string, fn: Listener) => { win.set(type, [...(win.get(type) ?? []), fn]); });
+    vi.stubGlobal('document', doc);
+    vi.stubGlobal('matchMedia', undefined);
+    const inp = new Input({} as HTMLElement);
+    vi.unstubAllGlobals();
+    // the document stays stubbed for the test: the keydown listener reads `document.fullscreenElement` when it runs
+    vi.stubGlobal('document', doc);
+    const clock = vi.spyOn(performance, 'now');
+    const fire = (type: string, e: Record<string, unknown>) => win.get(type)?.forEach(fn => fn(e));
+    /** The browser's fullscreen change: `on` is the state after it. */
+    const fullscreenChange = (on: boolean) => {
+      doc.fullscreenElement = on ? {} : null;
+      doc.listeners.get('fullscreenchange')?.forEach(fn => fn({}));
+    };
+    /** One press and release of Escape; reports what the menus would read from it. */
+    const escape = () => {
+      fire('keydown', { code: 'Escape', repeat: false, preventDefault() {} });
+      const read = { back: inp.hit('back'), pause: inp.hit('pause') };
+      inp.endFrame();
+      fire('keyup', { code: 'Escape' });
+      return read;
+    };
+    return { inp, clock, fullscreenChange, escape };
+  }
+
+  it('the first Escape with fullscreen on leaves fullscreen only: the open menu does not close', () => {
+    const { clock, fullscreenChange, escape } = menu();
+    clock.mockReturnValue(1000);
+    fullscreenChange(true);
+    expect(escape()).toEqual({ back: false, pause: false });
+    fullscreenChange(false);
+  });
+
+  it('a second Escape, once fullscreen is left, closes the menu as before', () => {
+    const { clock, fullscreenChange, escape } = menu();
+    clock.mockReturnValue(1000);
+    fullscreenChange(true);
+    escape();
+    fullscreenChange(false);
+    clock.mockReturnValue(1400);
+    expect(escape()).toEqual({ back: true, pause: true });
+  });
+
+  it('with fullscreen off, Escape closes the menu as before', () => {
+    const { escape } = menu();
+    expect(escape()).toEqual({ back: true, pause: true });
+  });
+
+  it('an Escape that reaches the page just after the browser left fullscreen is still the browser\'s', () => {
+    const { clock, fullscreenChange, escape } = menu();
+    clock.mockReturnValue(1000);
+    fullscreenChange(true);
+    fullscreenChange(false);
+    clock.mockReturnValue(1100);
+    expect(escape()).toEqual({ back: false, pause: false });
+    // the next press is an ordinary one again
+    clock.mockReturnValue(1200);
+    expect(escape()).toEqual({ back: true, pause: true });
+  });
+
+  it('a press long after the browser left fullscreen on its own closes the menu', () => {
+    const { clock, fullscreenChange, escape } = menu();
+    clock.mockReturnValue(1000);
+    fullscreenChange(true);
+    fullscreenChange(false);
+    clock.mockReturnValue(5000);
+    expect(escape()).toEqual({ back: true, pause: true });
   });
 });

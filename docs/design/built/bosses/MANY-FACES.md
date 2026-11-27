@@ -8,7 +8,7 @@ The Many Faces is a cube with a face for everyone: two bright eyes, and a ring o
 
 - **Pattern:** people-pleasing, a face for everyone. To be loved.
 - **Path:** Emotion.
-- **Health:** 612 on floor 7, 782 on floor 8.
+- **Health:** 557 to 1193 on floor 7, 712 to 1525 on floor 8.
 
 ## Phases
 

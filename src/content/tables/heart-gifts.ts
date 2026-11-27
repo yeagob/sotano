@@ -1,4 +1,4 @@
-import { isPromised } from '../../items/pool';
+import { isPromised, isUnlockGift } from '../../items/pool';
 import { table, type Table } from '../../core/tables';
 import type { Rng } from '../../core/rng';
 import type { HeartKind } from '../heart-art';
@@ -6,8 +6,9 @@ import { ITEMS } from '../items';
 import type { RareHeart } from './hearts';
 
 /** Every item a presence's table may give: all but the promised pieces of the Covenant (the Mender's Thread), which only
- *  their one source hands out (COVENANT.md). The tables are as they were before the Thread existed. */
-const GIVEN = ITEMS.filter(item => !isPromised(item));
+ *  their one source hands out (COVENANT.md), and the unlocks (Walk Slowly), which only their achievement lays. The tables
+ *  are as they were before the Thread existed. */
+const GIVEN = ITEMS.filter(item => !isPromised(item) && !isUnlockGift(item));
 
 /**
  * The kinds a friendly creature's growth gift and The Listener's special heart can give: the five

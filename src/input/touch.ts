@@ -9,6 +9,9 @@ import type { Game } from '../game/game';
 import type { Polarity } from '../combat/polarity';
 import { intentPowerLevel } from '../combat/intents';
 import { swipeDir } from './gestures';
+import { sizePx, slotFor, slotStyle, SLOT, TouchPresence, touchLayerShown, type TouchSlot } from './touch-layout';
+import { bodyChoice, bodyDashDir, bodyShown, type BodyChoice } from './context-button';
+import { ITEM_BY_ID } from '../content/items';
 
 const STICK_SPLIT = 0.42;
 const STICK_DEAD = 0.12;
@@ -38,8 +41,8 @@ export function bombGlyph(polarity: Polarity): 'seedLove' | 'seed' {
 }
 
 /**
- * What the drink button shows for the top of the hand. Only a flask on top can be drunk (Game.drink
- * takes the top), so the button is shown for exactly that case and hidden for everything else.
+ * What the use button shows for the top of the hand when it drinks. Only a flask on top can be drunk (Game.drink
+ * takes the top), so the use button drinks in exactly that case and throws for everything else (`updateUse`).
  * `key` changes whenever the button's look must be redrawn (another flask, or an iced one).
  */
 export interface DrinkView { show: boolean; key: string; flask?: Flask; liquid?: PalToken }
@@ -82,21 +85,34 @@ export function halfTurn(last: number | null, raw: number): { side: number | nul
   return { side, flip: last !== null && last !== side };
 }
 
-interface Track { kind: 'stick' | 'look' | 'button' | 'slot'; action?: Action; slot?: number; x: number; y: number; ox: number; oy: number; t: number; swipe?: boolean; crouch?: boolean }
+interface Track { kind: 'stick' | 'look' | 'button' | 'slot' | 'body'; action?: Action; slot?: number; x: number; y: number; ox: number; oy: number; t: number; swipe?: boolean; crouch?: boolean }
 
 import { KAIROS_CHARGES } from '../game/kairos';
-const PAD_ACTIONS = BINDINGS.filter(b => b.touch.control === 'button' || b.touch.control === 'systemButton');
+const PAD_ACTIONS = BINDINGS.filter(b => (b.touch.control === 'button' || b.touch.control === 'systemButton') && !b.touch.shared);
+/** The glyph of the body button for each choice: the practice that gives the verb (Child's Pose kneels, Irimi dashes). */
+const BODY_GLYPH: Record<Exclude<BodyChoice, null>, string> = { crouch: 'balasana', stand: 'balasana', dash: 'irimi' };
 
 export class TouchControls {
   private root: HTMLElement;
   private stick: HTMLElement;
   private knob: HTMLElement;
   private buttons = new Map<Action, HTMLElement>();
+  /** The body button (#377): the context button the crouch and the dash share (context-button.ts). */
+  private body: HTMLElement;
+  /** The use button (owner, #376): one button for the active hand, throw and drink share it; `data-a` is what a press does now. */
+  private use: HTMLElement;
+  private bodyStats = { crouch: false, dash: false };
+  private bodyGlyph = '';
   private tracks = new Map<number, Track>();
   private stickId = -1;
   private key = '';
   /** The side of the phone the last landscape turn ended on (90 or 270); a change of side is a half turn. */
   private side: number | null = null;
+  /** When the set is on screen (issue #376): woken by a touch, gone TOUCH_IDLE_MS after the last one. */
+  private presence = new TouchPresence();
+  private shown = false;
+  /** The contextual buttons shown last frame: one that appears wakes the set, so a new verb is seen. */
+  private context = new Set<Action>();
 
   constructor(private input: Input) {
     this.root = document.createElement('div');
@@ -106,6 +122,7 @@ export class TouchControls {
     this.knob = document.createElement('i');
     this.stick.appendChild(this.knob);
     this.root.appendChild(this.stick);
+    place(this.stick, SLOT.stick);
     for (const b of PAD_ACTIONS) {
       const el = document.createElement('button');
       el.type = 'button';
@@ -113,9 +130,29 @@ export class TouchControls {
       el.dataset.a = b.action;
       if (b.touch.icon) el.style.setProperty('--glyph', `var(--ico-${b.touch.icon})`);
       el.appendChild(document.createElement('span'));
+      const slot = slotFor(b.action);
+      if (slot) place(el, slot);
       this.buttons.set(b.action, el);
       this.root.appendChild(el);
     }
+    this.use = document.createElement('button');
+    (this.use as HTMLButtonElement).type = 'button';
+    this.use.className = 'tb tb-use';
+    this.use.dataset.a = 'throw';
+    this.use.style.setProperty('--glyph', 'var(--ico-touchThrow)');
+    this.use.appendChild(document.createElement('span'));
+    this.use.hidden = true;
+    place(this.use, SLOT.use);
+    this.buttons.set('throw', this.use);
+    this.buttons.set('drink', this.use);
+    this.root.appendChild(this.use);
+    this.body = document.createElement('button');
+    (this.body as HTMLButtonElement).type = 'button';
+    this.body.className = 'tb tb-body';
+    this.body.dataset.body = '1';
+    this.body.hidden = true;
+    place(this.body, SLOT.body);
+    this.root.appendChild(this.body);
     const canvas = document.getElementById('game');
     canvas?.after(this.root);
     const opts = { passive: false } as const;
@@ -132,16 +169,23 @@ export class TouchControls {
 
   private label() {
     for (const [a, el] of this.buttons) el.setAttribute('aria-label', t(`controls.${a}` as MessageKey));
+    this.bodyGlyph = '';
   }
 
   private start(e: TouchEvent) {
     e.preventDefault();
+    this.presence.wake(performance.now());
     const inp = this.input;
     for (const tc of e.changedTouches) {
       const btn = (tc.target as HTMLElement | null)?.closest?.<HTMLElement>('[data-a]');
       const x = tc.clientX, y = tc.clientY;
       const t = performance.now();
       inp.touchPressed.add('confirm');
+      if (!btn && (tc.target as HTMLElement | null)?.closest?.('[data-body]')) {
+        this.pressBody();
+        this.tracks.set(tc.identifier, { kind: 'body', x, y, ox: x, oy: y, t });
+        continue;
+      }
       const slot = btn ? -1 : this.slotAt(x, y);
       if (slot >= 0) {
         // a tap on the hand chooses that carried item (`pick`); it never places a block
@@ -189,6 +233,7 @@ export class TouchControls {
 
   private moveTouches(e: TouchEvent) {
     e.preventDefault();
+    this.presence.wake(performance.now());
     for (const tc of e.changedTouches) {
       const tr = this.tracks.get(tc.identifier);
       if (!tr) continue;
@@ -225,10 +270,15 @@ export class TouchControls {
 
   private end(e: TouchEvent) {
     e.preventDefault();
+    this.presence.wake(performance.now());
     for (const tc of e.changedTouches) {
       const tr = this.tracks.get(tc.identifier);
       this.tracks.delete(tc.identifier);
       if (!tr) continue;
+      if (tr.kind === 'body') {
+        if (![...this.tracks.values()].some(o => o.kind === 'body')) this.body.classList.remove('on');
+        continue;
+      }
       if (tr.kind === 'slot') {
         if (performance.now() - tr.t < TAP_MS && Math.hypot(tr.x - tr.ox, tr.y - tr.oy) < TAP_SLOP) {
           this.input.touchSlot = tr.slot ?? -1;
@@ -264,7 +314,42 @@ export class TouchControls {
     this.side = turn.side;
   }
 
-  private radius() { return Math.min(innerWidth, innerHeight) * 0.13; }
+  /** What the body button does now (context-button.ts), from the practices held, the crouch and the stick. */
+  private bodyNow(): BodyChoice {
+    const { crouch, dash } = this.bodyStats;
+    return bodyChoice({ crouch, dash, crouched: crouch && this.input.held('crouch'), stickX: this.input.touchMove.x, stickY: this.input.touchMove.y });
+  }
+
+  /** A press of the body button: it kneels, stands or dashes, whichever applies at this moment. */
+  private pressBody() {
+    const choice = this.bodyNow();
+    if (!choice) return;
+    this.body.classList.add('on');
+    if (choice === 'dash') this.input.gesture('dash', bodyDashDir(this.input.touchMove.x, this.input.touchMove.y), 'touch');
+    else this.input.toggleCrouch();
+  }
+
+  /** The body button exists only while a practice gives the crouch or the dash; its glyph is what a press would do. */
+  private updateBody(g: Game) {
+    this.bodyStats.crouch = g.stats.get('crouch') >= 1;
+    this.bodyStats.dash = g.stats.get('dash') >= 1;
+    const show = bodyShown({ ...this.bodyStats, crouched: false });
+    this.body.hidden = !show;
+    if (!show) {
+      for (const [id, tr] of this.tracks) if (tr.kind === 'body') this.tracks.delete(id);
+      this.body.classList.remove('on');
+      return;
+    }
+    const choice = this.bodyNow() ?? 'crouch';
+    this.body.classList.toggle('crouched', choice === 'stand');
+    if (choice === this.bodyGlyph) return;
+    this.bodyGlyph = choice;
+    this.body.style.setProperty('--glyph', `url("${iconDataUrl(ITEM_BY_ID.get(BODY_GLYPH[choice])!, 3)}")`);
+    this.body.setAttribute('aria-label', t(choice === 'dash' ? 'controls.dash' : 'controls.crouch'));
+  }
+
+  /** The stick's reach: half its drawn side, so the knob stops at the ring. */
+  private radius() { return sizePx(SLOT.stick, innerWidth, innerHeight) / 2; }
 
   private placeStick(x: number, y: number, dx: number, dy: number) {
     this.stick.style.left = `${x}px`;
@@ -277,7 +362,7 @@ export class TouchControls {
     this.input.touchMove.x = this.input.touchMove.y = 0;
     this.input.touchHeld.delete('run');
     this.stick.classList.remove('on');
-    this.stick.style.left = this.stick.style.top = '';
+    place(this.stick, SLOT.stick);
     this.knob.style.transform = '';
   }
 
@@ -286,50 +371,79 @@ export class TouchControls {
     this.input.touchHeld.clear();
     this.releaseStick();
     for (const el of this.buttons.values()) el.classList.remove('on');
+    this.body.classList.remove('on');
   }
 
   /**
-   * The drink button exists only while a flask is on top of the hand: it is hidden (not dimmed) otherwise,
-   * drawn as that flask's own pixel icon, framed in its liquid colour. Hiding it also lets go of a press
-   * that was still held, so no hidden control stays pressed.
+   * The use button (owner, #376) acts on what the active hand holds: it exists only while the hand holds
+   * something (hidden, not dimmed, otherwise). With a flask on top it drinks it, drawn as that flask's own
+   * pixel icon framed in its liquid colour; with anything else it throws, drawn as the flying block. A change
+   * of verb, or hiding it, lets go of the press of the other verb, so no hidden control stays pressed.
    */
-  private updateDrink(v: DrinkView) {
-    const el = this.buttons.get('drink')!;
-    el.hidden = !v.show;
-    if (!v.show || !v.flask || !v.liquid) {
-      forgetButtonPress(this.tracks, this.input.touchHeld, 'drink');
-      el.classList.remove('on');
-      return;
+  private updateUse(holding: boolean, v: DrinkView) {
+    const el = this.use;
+    el.hidden = !holding;
+    this.noteContext('throw', holding);
+    const drink = holding && v.show && !!v.flask && !!v.liquid;
+    const verb: Action = drink ? 'drink' : 'throw';
+    for (const a of ['throw', 'drink'] as const) if (!holding || a !== verb) forgetButtonPress(this.tracks, this.input.touchHeld, a);
+    if (!holding || el.dataset.a !== verb) el.classList.remove('on');
+    el.dataset.a = verb;
+    el.setAttribute('aria-label', t(`controls.${verb}` as MessageKey));
+    el.classList.toggle('flask', drink);
+    if (drink) {
+      el.style.setProperty('--glyph', `url("${iconDataUrl(carriedDef(v.flask!), 3)}")`);
+      el.style.setProperty('--liquid', palCss(v.liquid!));
+    } else {
+      el.style.setProperty('--glyph', 'var(--ico-touchThrow)');
     }
-    el.style.setProperty('--glyph', `url("${iconDataUrl(carriedDef(v.flask), 3)}")`);
-    el.style.setProperty('--liquid', palCss(v.liquid));
+  }
+
+  /** Show or hide a contextual button; hiding it lets go of its press, showing it wakes the set. */
+  private showContext(a: Action, on: boolean) {
+    const el = this.buttons.get(a)!;
+    el.hidden = !on;
+    if (!on) { forgetButtonPress(this.tracks, this.input.touchHeld, a); el.classList.remove('on'); }
+    this.noteContext(a, on);
+  }
+
+  private noteContext(a: Action, on: boolean) {
+    if (on && !this.context.has(a)) this.presence.wake(performance.now());
+    if (on) this.context.add(a); else this.context.delete(a);
   }
 
   update(g: Game, ctx: Context) {
-    const show = this.input.device === 'touch' && (ctx === 'play' || ctx === 'prompt');
+    const show = touchLayerShown(this.input.device, ctx);
     if (!show && this.tracks.size) this.clear();
     this.root.classList.toggle('show', show);
-    if (!show) return;
+    const now = performance.now();
+    // coming into play on a phone shows the set once, so the player sees where everything is
+    if (show && !this.shown) this.presence.wake(now);
+    this.shown = show;
+    if (!show) { this.presence.sleep(); return; }
+    this.root.classList.toggle('awake', this.presence.awake(now, this.tracks.size > 0));
     const p = g.player;
     // the miracle button (Kairos, #123) exists only while the practice is held; its ring is the charge
     const miracle = this.buttons.get('miracle')!;
     const kairos = g.inventory.has('kairos');
     miracle.hidden = !kairos;
+    this.noteContext('miracle', kairos);
     if (!kairos) forgetButtonPress(this.tracks, this.input.touchHeld, 'miracle');
     else {
       miracle.style.setProperty('--charge', String(g.kairosCharge() / KAIROS_CHARGES));
       miracle.style.setProperty('--kairos', palCss('light.gold'));
     }
+    this.updateBody(g);
     const drink = drinkView(p.active);
     // the loaded intention's power (#111): the ring thickens and glows with every step of damage
     const power = intentPowerLevel(g.stats.get('damage')).toFixed(3);
     const key = `${p.hand.length}:${p.bombs}:${g.inventory.items.length}:${g.polarityNow}:${drink.key}:${power}`;
     if (key === this.key) return;
     this.key = key;
-    const thr = this.buttons.get('throw')!, bomb = this.buttons.get('bomb')!;
-    thr.classList.toggle('off', !p.hand.length);
-    this.updateDrink(drink);
-    bomb.classList.toggle('off', p.bombs <= 0);
+    const bomb = this.buttons.get('bomb')!;
+    // a contextual button is there only while it can act (issue #376): nothing in hand, no use button; no seed, no bomb
+    this.updateUse(p.hand.length > 0, drink);
+    this.showContext('bomb', p.bombs > 0);
     bomb.querySelector('span')!.textContent = String(p.bombs);
     // the bomb takes the loaded intention's colour: the white seed and its frame when positive, the black seed when negative
     bomb.dataset.polarity = g.polarityNow;
@@ -341,4 +455,9 @@ export class TouchControls {
     pol.style.setProperty('--pol', palCss(castPolarityToken(g.polarityNow)));
     pol.style.setProperty('--power', power);
   }
+}
+
+/** Put an element at its slot of the touch layout (src/input/touch-layout.ts, the one place for positions). */
+export function place(el: HTMLElement, slot: TouchSlot): void {
+  for (const [k, v] of Object.entries(slotStyle(slot))) el.style.setProperty(k.replace(/[A-Z]/g, c => `-${c.toLowerCase()}`), v);
 }

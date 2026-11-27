@@ -2,7 +2,7 @@
 
 Up: [testing](README.md) · a panel, opened with `?test`, to test the whole game (the sky included) in a browser without playing through every floor.
 
-The bench ships in the bundle but builds nothing unless `?test` is in the URL: without it, no panel, no tick and no change to play (`tests/test-bench.test.ts`). It owns no rule of its own: every button calls a real game path. Code: `src/debug/test-bench.ts` (the logic and the guide's data, no DOM), `src/debug/test-panel.ts` (the panel), `Game.debugFloor` and `Game.refillSpirit` in `src/game/game.ts`, the words in `src/i18n/locales/test-bench.en.ts` and `test-bench.es.ts`.
+The bench ships in the bundle but builds nothing unless `?test` is in the URL: without it, no panel, no tick and no change to play (`tests/test-bench.test.ts`). It owns no rule of its own: every button calls a real game path. Code: `src/debug/test-bench.ts` (the logic and the guide's data, no DOM), `src/debug/test-panel.ts` (the panel), `Game.debugFloor`, `Game.debugSkyFloor` and `Game.refillSpirit` in `src/game/game.ts`, the words in `src/i18n/locales/test-bench.en.ts` and `test-bench.es.ts`.
 
 ## 1. Start the dev server
 
@@ -37,12 +37,15 @@ The status line says where you are: the floor and its name, or the sky and the s
 | God mode | **God mode: on / off** | On: the console's `S.god(true)` (no damage), `S.keys` and `S.bombs` top both counters up to 99 whenever they fall under 90, `S.heal` fills the hearts, and spirit stays at 100. The bench applies this four times a second, so a new run (R), a toll or a spent key is undone within a quarter of a second. A heart paid as a toll still goes through the damage rules for that instant. Off: `S.god(false)`; the counters keep what they hold |
 | Floors | **0 · The roots … 9 · The ice** | `Game.debugFloor(k)`: carves and activates floor k (the capture's landing path, `undergroundSpawn`), carves the floor under it, and stands you in its start room. No toll is paid and the floors above are skipped. From the sky, the gate fades you down first, as a spirit fall does. Refused in the sandbox and while a fade is running |
 | Floors | **Sky deck** | `Game.debugSky()`: the gate fades you up to the sky's deck. It does nothing when you are already in the sky |
+| God mode | **Fly: on / off** | `player.flying`: no gravity, and the body moves where the view points (jump rises, crouch sinks). Stays on across runs until switched off |
+| God mode | **Walk through walls: on / off** | `player.ghost`: blocks do not stop the body sideways; the floor and the ceiling still do |
+| Floors | **1 · The giant panda … 5 · The horse**, **6 · Totality** | `Game.debugSkyFloor(k)`: from underground the gate fades you up to the sky first; in the sky you are placed at once. Floors 1 to 5 stand you at the foot of the floor's route, Totality at its first checkpoint. Nothing is won and no way up is opened |
 | Sky | **Refill spirit** | `Game.refillSpirit()`: spirit back to 100 |
 | Practices | **Give all** | Every practice, the sky's Triple Jump included, through `Game.grant`: no banners |
 | Practices | one button per practice | `Game.give(id)`: the practice with its banner, light and sound, as from a pedestal |
 | Guide | **Underground**, **The sky** | The guide of section 4, folded by floor, in the player's language |
 
-**Sending the player to a deity's floor is not possible.** No hook exists for it: `debugSky` takes no floor, `SkyRealm` has no teleport to a hall, and the `?sky=n` flag and `S.sky.go(n)` of [SKY §15](../architecture/SKY.md) are not built. You arrive on the deck in front of the foot door: walk through it, climb the four steps of the spiral and hop the rim onto floor 1, where the panda wakes (a deity acts, and takes hits, only while you are on its floor). When a deity is won, climb its floor's vertical route and go on up the heartwood ledges through the open way up into the next hall ([SKY §7.1](../architecture/SKY.md)). God mode keeps spirit full, so a fight never sends you underground.
+The guardian floors and Totality are one button each, so a fight is one click away. You arrive at the floor's entry and the deity is still there: it acts, and takes hits, only while you are on its floor. Nothing is won, so the way up stays shut: a won deity opens its way up ([SKY §7.1](../architecture/SKY.md)) only when you beat it. The `?sky=n` flag and `S.sky.go(n)` of [SKY §15](../architecture/SKY.md) are not built. God mode keeps spirit full, so a fight never sends you underground.
 
 ## 4. The guide, floor by floor
 
@@ -61,7 +64,7 @@ The same text as the panel's guide. Sources: [levels/floors](../design/built/lev
 | 6 · The walls | A random plan of 8 to 11 rooms. The boss room is the dead end farthest from the start; another dead end is the treasure room; no vault. Bigger rooms are common. | One of The Verdict, The Grudge, The Old Rule (health 478). | The boss room: beat the boss, pay the toll, and a 2 by 2 shaft opens down. Digging down instead meets lava in the rock. | 2 practices. |
 | 7 · The rivers | As floor 6. | One of The Furnace, The Impostor, The Many Faces (health 612). | As floor 6. | 3 practices. |
 | 8 · The ditches | As floor 6. | As floor 7 (health 782). | As floor 6. | 4 practices. |
-| 9 · The ice | A random plan like the circles above, frozen: every pool is ice on top, water under it. | The Shadow, always (health 1000). | The boss room: beat the Shadow and a free 2 by 2 shaft drops you into silence. | Nothing: the hole is free. |
+| 9 · The ice | A random plan like the circles above, frozen: every pool is ice on top, water under it. | The Shadow, always (its health is yours as it appears; the bench shows the floor curve's 1000, which the Shadow does not use). | The boss room: beat the Shadow and a free 2 by 2 shaft drops you into silence. | Nothing: the hole is free. |
 | Silence | A sealed chamber of air under the ninth floor's boss room, dark and quiet. | | Stand still for 3 s: you are carried up above the giant tree and float. Rising to the top of the sky opens the sky realm. | |
 
 The panel names the floors and bosses from the catalogs, so it reads the same pools and health in Spanish. The floor jump skips the toll: to test a toll, jump to the floor and walk to its boss room.
@@ -98,4 +101,4 @@ Not bugs to fix from the bench: these are reported as not built yet.
 - **Horse:** the leap to a tower; its sounds.
 - **Koala:** the body floating in for Hold fast and back to the Fork after a teleport; the telegraph poses; its sounds.
 - **Panda:** floating to a tower or in Cradle; the tower trigger on the floor; its sounds.
-- **The bench itself:** no jump to a deity's floor (section 3); no button to win a deity or open a way up; the planned `?sky=n`, `&won=`, `&jump3` flags and the `S.sky` console are not built.
+- **The bench itself:** no button to win a deity or open a way up; the planned `?sky=n`, `&won=`, `&jump3` flags and the `S.sky` console are not built.

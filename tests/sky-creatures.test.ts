@@ -11,7 +11,7 @@ import type { Body } from '../src/physics/voxel-collide';
 import { BOB, DRIFT_RADIUS, MIN_TELEGRAPH, TELEPORT_MIN, aimOf, reachOf, stageOf } from '../src/sky/creatures/deity';
 import { DEITIES } from '../src/sky/creatures/deities';
 import { Puff } from '../src/sky/creatures/puff';
-import { SkyCreatures } from '../src/sky/creatures/system';
+import { CONTACT_SPIRIT, SkyCreatures } from '../src/sky/creatures/system';
 import { linksOf, nearest, placeById, route } from '../src/sky/floors/graph';
 import { SkyRealm } from '../src/sky/sky-realm';
 import { SkyWorld } from '../src/sky/world/sky-world';
@@ -76,7 +76,7 @@ function rig(over: Partial<DeityDef> = {}, places: Place[] = []): Rig {
   } as unknown as HindranceRunnerApi;
   const deps: CreatureDeps = {
     actors, runner, effects: {} as SkyEffectsApi, puff: new Puff(h.host), knock: {} as TowerKnockApi,
-    spirit: { update() {}, canDrain: () => true, drain: () => true },
+    spirit: { update() {}, canDrain: () => true, drain: () => true, contact: () => true },
   };
   const seat: Place = { id: 0, kind: 'seat', x: SEAT.x, y: SEAT.y, z: SEAT.z, w: 3, d: 3, tag: 0 };
   const graph: FloorGraph = { places: [seat, ...places], links: [] };
@@ -434,21 +434,26 @@ describe('the floor graph (SKY.md §5.6)', () => {
 });
 
 /** A sky realm headless: a real layout and world, the player well away, and the host calls the realm makes as no-ops. */
+let lastDrains: number[] = [];
+
 function newRealm(seed = 1): SkyRealm {
+  lastDrains = [];
   const actors = new ActorRegistry();
   actors.setRealm('sky');
   const noop = () => {};
   const player: Body = { x: 6, y: 10, z: 0, vx: 0, vy: 0, vz: 0, hw: 0.3, h: 1.8, onGround: true };
+  let world: SkyWorld | null = null;
   const host = {
     time: () => 0,
     player: () => ({ body: player, eye: { x: 0, y: 0, z: 0 }, aim: { x: 1, y: 0, z: 0 }, hand: [], push: noop, slow: noop, hold: noop, carry: noop }),
     actors: () => actors,
+    world: () => world,
     debris: () => ({ spawn: () => 0, max: 0 }),
     fork: (...path: (string | number)[]) => new Rng(path.length * 7 + seed),
     fx: noop, cue: noop, toast: noop, card: noop, bar: noop, place: noop, gift: noop, travel: noop,
-    drainSpirit: noop, spirit: () => 100, refillSpirit: noop, takeRandomPractice: () => null, sendUnderground: noop,
+    drainSpirit: (n: number) => { lastDrains.push(n); }, spirit: () => 100, refillSpirit: noop, takeRandomPractice: () => null, sendUnderground: noop,
   } as unknown as SkyHost;
-  return SkyRealm.create(host, new THREE.Group(), layout => ({ kind: 'sky', world: new SkyWorld(layout) } as unknown as SkyRealmSet));
+  return SkyRealm.create(host, new THREE.Group(), layout => ({ kind: 'sky', world: (world = new SkyWorld(layout)) } as unknown as SkyRealmSet));
 }
 
 describe('the five deities of the sky (SKY.md §5.3)', () => {
@@ -488,7 +493,7 @@ describe('the five deities of the sky (SKY.md §5.3)', () => {
     const [a] = realm.creatures.all();
     const ids = realm.creatures.all().map(x => x.id);
     const p = { x: a.body.x, y: a.body.y + 0.5, z: a.body.z };
-    for (let i = 0; i < 24; i++) realm.creatures.touch(a.id, 'positive', true, p, 'intent');
+    for (let i = 0; i < 1000 && a.state !== 'Won'; i++) realm.creatures.touch(a.id, 'positive', true, p, 'intent');
     expect([a.state, a.side]).toEqual(['Won', 'ally']);
     realm.leave();
     realm.creatures.update(DT, 1);
@@ -509,5 +514,42 @@ describe('the puff (law 3.3)', () => {
     expect(puff.shown).toBe(true);
     expect(h.log.toasts).toEqual(['toast.skyPuff']);
     expect(h.log.fx).toEqual(['puff', 'puff']);
+  });
+  it('shows the intent-only toast at most once every few seconds after the first puff', () => {
+    const h = fakeHost();
+    const puff = new Puff(h.host);
+    const p = { x: 1, y: 1, z: 1 };
+    puff.at(p);
+    puff.at(p);
+    expect(h.log.toasts).toEqual(['toast.skyPuff']);
+    puff.update(2);
+    puff.at(p);
+    expect(h.log.toasts).toEqual(['toast.skyPuff']);
+    puff.update(2);
+    puff.at(p);
+    expect(h.log.toasts).toEqual(['toast.skyPuff', 'toast.skyIntentOnly']);
+    puff.at(p);
+    expect(h.log.toasts).toHaveLength(2);
+    expect(h.log.fx.filter(k => k === 'puff')).toHaveLength(5);
+  });
+});
+
+describe('contact drains spirit', () => {
+  it('a hostile creature touching the player drains CONTACT_SPIRIT through the gate, once per cooldown; an ally does not', () => {
+    const realm = newRealm();
+    realm.creatures.update(DT, 1);
+    const [a] = realm.creatures.all();
+    a.body.x = 6; a.body.y = 10; a.body.z = 0;
+    realm.creatures.update(DT, 1);
+    expect(lastDrains).toEqual([CONTACT_SPIRIT]);
+    realm.creatures.update(DT, 1);
+    expect(lastDrains).toEqual([CONTACT_SPIRIT]);
+    const other = newRealm();
+    other.creatures.update(DT, 1);
+    const ally = other.creatures.all()[0];
+    ally.side = 'ally';
+    ally.body.x = 6; ally.body.y = 10; ally.body.z = 0;
+    other.creatures.update(DT, 1);
+    expect(lastDrains).toEqual([]);
   });
 });

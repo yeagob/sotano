@@ -6,7 +6,7 @@ Below the ninth floor is silence: a sealed chamber of air on the bedrock, under 
 
 ## The chamber
 
-- **Place.** The silence chamber lies under the boss room of floor 9, about four blocks high, with rock above it. The way down from floor 9 is a two-by-two shaft that drops straight into it. The way down is free.
+- **Place.** The silence chamber lies under the boss room of floor 9 and takes its whole footprint (28 blocks by 16, the Shadow's room), about four blocks high, with rock above it. The way down from floor 9 is a two-by-two shaft that drops straight into it. The way down is free.
 - **Name.** The HUD says "Silence". On the first visit a toast says "Silence. Be still."
 - **Quiet.** The sound fades out here, and the fog turns to ink-black and close.
 

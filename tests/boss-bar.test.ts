@@ -15,7 +15,7 @@ import { defaultMeta, noStore } from '../src/game/meta';
 
 vi.mock('../src/audio/sfx', () => {
   const silent = new Proxy({}, { get: () => () => {} });
-  return { sfx: silent, sfx2: silent, sfx3: silent, easeMaster: () => {}, setMasterTarget: () => {}, spatial: silent, unlockAudio: () => {} };
+  return { sfx: silent, sfx2: silent, sfx3: silent, easeMaster: () => {}, setMasterTarget: () => {}, setWorldTimeScale: () => {}, spatial: silent, unlockAudio: () => {} };
 });
 
 let Game: typeof import('../src/game/game').Game;
@@ -42,7 +42,8 @@ const anything: any = new Proxy(function () {}, {
 
 /** A boss room's state as enterBossRoom makes it, its boss already summoned. */
 const fight = (room = ROOM) => ({ room, wake: 0, spawned: true, defeated: false, t: 0, open: false, warned: false, dust: 0, asked: false });
-const boss = (room = ROOM, hp = 50) => ({ id: room * 10, alive: true, spec: BOSS, room, hp, maxHp: 100 });
+/** A hostile boss of 100 health: its bar runs 0 → 200 (combat/polarity.ts), so `hp` 50 is a quarter of it. */
+const boss = (room = ROOM, hp = 50) => ({ id: room * 10, alive: true, faction: 'projection', spec: BOSS, room, hp, maxHp: 100 });
 
 /** The game's fields as the frame sees them: the player alive in room ROOM, the HUD and input stand-ins. */
 function rig(realm: 'dungeon' | 'sky' = 'dungeon'): any {
@@ -116,7 +117,7 @@ describe('the boss bar (issue #163)', () => {
     const g = rig();
     fightOn(g);
     frames(g, 1);
-    expect(bar(g)).toEqual({ name: expect.any(String), ratio: 0.5 });
+    expect(bar(g)).toEqual({ name: expect.any(String), ratio: 0.25, turn: true });
   });
 
   it('hides the frame the player dies, while the boss is still alive in the room', () => {
@@ -240,7 +241,7 @@ describe('the boss bar (issue #163)', () => {
     g.bossRooms.set(1, fight(7));
     g.enemies.list = [boss(ROOM, 30), boss(7, 80)];
     frames(g, 1);
-    expect(bar(g)).toEqual({ name: expect.any(String), ratio: 0.3 });
+    expect(bar(g)).toEqual({ name: expect.any(String), ratio: 0.15, turn: true });
   });
 
   it('leaves the sky alone: the sky sets its own bar for a deity', () => {

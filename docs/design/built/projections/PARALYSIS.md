@@ -20,7 +20,7 @@ Floors 6 to 9. Code: [paralysis.ts](../../../../src/content/enemies/paralysis.ts
 
 ## How the player answers it
 
-It stands still, so you can choose the moment. While you are in its pull, you are dragged back, so get out of its radius before you throw. Good intentions do half damage and warm it; bad intentions do full damage.
+It stands still, so you can choose the moment. While you are in its pull, you are dragged back, so get out of its radius before you throw. Good intentions fill its [bar](../encounters/POLARITY.md#the-bar-owner-2026-11-26) toward conversion and bad intentions drain it toward release, by the same damage.
 
 ## Element affinities
 

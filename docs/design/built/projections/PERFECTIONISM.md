@@ -19,7 +19,7 @@ Floors 3 to 6. Code: [perfectionism.ts](../../../../src/content/enemies/perfecti
 
 ## How the player answers it
 
-Break the plates first, then the body. Good intentions do half damage and warm it; bad intentions do full damage, and a kill releases it.
+Break the plates first, then the body. Good intentions fill its [bar](../encounters/POLARITY.md#the-bar-owner-2026-11-26) toward conversion and bad intentions drain it toward release, by the same damage, and a kill releases it.
 
 ## Element affinities
 

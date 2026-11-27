@@ -20,7 +20,7 @@ Floors 7 and 8. Code: [shortcut.ts](../../../../src/content/enemies/shortcut.ts)
 
 ## How the player answers it
 
-It is fragile: a few hits end it. Keep out of the ring's reach when you close in. Good intentions do half damage and warm it; bad intentions do full damage.
+It is fragile: a few hits end it. Keep out of the ring's reach when you close in. Good intentions fill its [bar](../encounters/POLARITY.md#the-bar-owner-2026-11-26) toward conversion and bad intentions drain it toward release, by the same damage.
 
 ## Element affinities
 

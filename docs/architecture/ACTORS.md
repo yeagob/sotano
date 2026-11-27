@@ -102,7 +102,7 @@ Thematic reading: a projection that changes side becomes part of the **self**. I
 - **Room clear.** A room clears when no live projection of faction `projection` is left in it (`Enemies.blockingIn`). Allies don't keep doors shut, so turning the last hostile into an ally clears the room.
 - **Allies stay in their room** (leash unchanged), fight hostiles there and otherwise idle. Following the player across rooms and floors is a later design, with controllers (PR7).
 - **Changing side.** `Game.setFaction(actor, faction, source)` emits react-only **`factionChange { target, targetKind, def, from, to, source }`** and makes the actor look for a new target.
-  - **Converted:** a projection whose warmth is full under positive intentions becomes `self`, at least half its maximum health.
+  - **Converted:** a projection whose bar positive intentions fill to the top (twice its maximum health, `combat/polarity.ts`) becomes `self`, with half its maximum health.
   - **Relapsed:** an ally at zero under a negative intention becomes `projection` again, at half its maximum health. It is not released, and a cleared room stays cleared.
   - **Dissolved:** anything else that takes an ally to zero (a blast, lava, fire, contact, a projectile) releases it, as a projection is released. Only a negative intention relapses one.
 - **Look.** Allies glow a steady ember light, which grows with their health (DECISIONS §14.1).

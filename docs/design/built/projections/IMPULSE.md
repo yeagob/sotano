@@ -21,7 +21,7 @@ Floors 1 and 2. Code: [impulse.ts](../../../../src/content/enemies/impulse.ts).
 
 ## How the player answers it
 
-Move after it starts to crouch: the first ring is where you stood, not where you are going. Stay out of the landing ring. Good intentions do half damage and warm it; bad intentions do full damage. It is most vulnerable while it waits between leaps.
+Move after it starts to crouch: the first ring is where you stood, not where you are going. Stay out of the landing ring. Good intentions fill its [bar](../encounters/POLARITY.md#the-bar-owner-2026-11-26) toward conversion and bad intentions drain it toward release, by the same damage. It is most vulnerable while it waits between leaps.
 
 ## Element affinities
 

@@ -8,7 +8,7 @@ The Guardian is a tall gate of stone with two pillars and a lintel, standing at 
 
 - **Pattern:** the fear at the edge of change. It keeps the player safe from the unknown.
 - **Path:** all paths.
-- **Health:** 374 on floor 5.
+- **Health:** 340 to 729 on floor 5.
 
 ## Phases
 

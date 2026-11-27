@@ -2,6 +2,7 @@
 // in order, the catalog, palette, gallery, audio and ledger parts are wired once and disjoint, every
 // stub matches its contract and constructs, and the VoxelSpace suite holds on the dungeon's world.
 
+import { LEAVES_GIFT } from '../src/content/crown';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import * as THREE from 'three';
@@ -119,11 +120,16 @@ describe('sky registries', () => {
       expect(d.telegraph).toBe(TELEGRAPH[n]);
       expect(d.telegraph).toBeGreaterThanOrEqual(MIN_TELEGRAPH);
     });
-    expect(ANIMALS.map(a => DEITIES[a].hits)).toEqual([24, 30, 36, 42, 48]);
+    expect(ANIMALS.map(a => DEITIES[a].hits)).toEqual([240, 480, 960, 1920, 3840]);
     expect(ANIMALS.map(a => DEITIES[a].teleport)).toEqual([false, true, false, false, true]);
     expect(DEITIES.horse.hover).toBeNull();
     expect(ANIMALS.map(a => MINIONS[a].hitsToTurn)).toEqual([3, 3, 5, 4, 4]);
-    expect(ANIMALS.map(a => [MINIONS[a].max, MINIONS[a].wildMax])).toEqual([[4, 3], [6, 6], [5, 3], [6, 4], [5, 3]]);
+    expect(ANIMALS.map(a => [MINIONS[a].max, MINIONS[a].wildMax])).toEqual([[40, 30], [60, 60], [50, 30], [60, 40], [50, 30]]);
+  });
+
+  it('every deity hands out its own gift on defeat, and the horse gives the triple jump again (the Leaves give it too)', () => {
+    expect(ANIMALS.map(a => DEITIES[a].won.gift)).toEqual(['self-distancing', 'guarding-the-centre', 'like-water', 'shield', 'triple-jump']);
+    expect(DEITIES.horse.won.gift).toBe(LEAVES_GIFT.item);
   });
 
   it('has every hindrance once, under its own id', () => {

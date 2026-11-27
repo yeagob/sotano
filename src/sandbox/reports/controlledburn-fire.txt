@@ -10,21 +10,24 @@ t 0 (0.0 s)
   cubes — · pickups 0
 
 t 150 (2.5 s)
-  player hp 24/24 · at 2.5 0.0 3.5 · hand [crate brick] · bombs 99 · keys 99
+  player hp 24/24 · at 2.5 0.0 3.5 · hand [] · bombs 99 · keys 99
   practices controlledburn · synergies —
+  doubt#2 hp 1.2/24 · projection · at 2.0 0.0 4.6
   blocks crate 5
   elements —
-  cubes brick 9 · crate 14 · pickups 11
+  cubes brick 10 · crate 15 · pickups 9
   rewards red-heart
-  events actorDamage:doubt<explosion 1 · actorDamage:doubt<item 1 · actorDamage:doubt<kick 4 · actorDeath:doubt 1 · blockBreak:brick 10 · blockBreak:crate 15 · blockDamage:brick 10 · blockDamage:crate 126 · blockLoot:brick 10 · blockLoot:crate 15 · bombBlast 1 · burst 1 · explosion 1 · roomEnter 1 · touchCube:brick 1 · touchCube:crate 1
+  events actorDamage:doubt<explosion 1 · actorDamage:doubt<item 1 · actorDamage:doubt<kick 3 · blockBreak:brick 10 · blockBreak:crate 15 · blockDamage:brick 10 · blockDamage:crate 16 · blockLoot:brick 10 · blockLoot:crate 15 · bombBlast 1 · burst 1 · explosion 1 · roomEnter 1
 
 t 360 (6.0 s)
-  player hp 24/24 · at 2.5 0.0 3.5 · hand [crate brick] · bombs 99 · keys 99
+  player hp 12/24 · at 2.9 0.0 2.5 · hand [] · bombs 99 · keys 99
   practices controlledburn · synergies —
+  doubt#2 hp 1.2/24 · projection · at 2.9 0.0 2.5
   blocks crate 5
   elements —
-  cubes brick 9 · crate 14 · pickups 11
+  cubes brick 10 · crate 15 · pickups 9
   rewards red-heart
+  events actorDamage:player<contact 3 · contact 3 · land 3
 
 map t 360 · h 0
   .............

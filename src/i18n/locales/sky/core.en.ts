@@ -6,6 +6,7 @@ export const SKY_CORE_EN = {
   'toast.skyEnter': 'You are in the sky. Nothing here takes your health.',
   'toast.skyLeave': 'You fall back to the crown of the tree.',
   'toast.skyPuff': 'Only a good intention lands here. The rest puffs away.',
+  'toast.skyIntentOnly': 'Only good intentions reach it.',
   'toast.gateOpens': 'The way up opens.',
   'toast.towerDown': 'The tower comes down.',
   'sky.won': 'The guardian yields.',

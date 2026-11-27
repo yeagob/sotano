@@ -81,3 +81,4 @@ When you add an **event**, add a sample payload to `SAMPLES` in the synergy matr
 - [ ] Event added: `GameEvents` doc comment, an emit site, `SAMPLES` in the synergy matrix, the contract test's `eventNames`, `ITEMS.md`.
 - [ ] Pool change noted for the iteration's single pin re-record (rule 19).
 - [ ] Path tags checked against the states of being (rule 18).
+- [ ] Classified for the Shadow's mirror: a rule in `MIRROR_RULES` (`src/content/bosses/mirror.ts`, copied, adapted or skipped with its reason) and a row in the table of `docs/design/built/bosses/SHADOW.md` (`tests/shadow-mirror.test.ts`).

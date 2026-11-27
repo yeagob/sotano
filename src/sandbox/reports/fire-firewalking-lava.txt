@@ -9,12 +9,12 @@ t 0 (0.0 s)
   cubes — · pickups 0
 
 t 30 (0.5 s)
-  player hp 16/24 · at 5.5 -2.0 4.5 · hand [] · bombs 99 · keys 99
+  player hp 16/24 · at 5.5 -0.6 4.5 · hand [] · bombs 99 · keys 99
   practices firewalking · synergies —
   blocks —
   elements lava 18 (18 src)
   cubes — · pickups 0
-  events actorDamage:player<fire 1 · elementEnter:player:lava 1 · roomEnter 1
+  events actorDamage:player<fire 1 · elementEnter:player:lava 2 · elementLeave:player:lava 1 · roomEnter 1
 
 t 60 (1.0 s)
   player hp 16/24 · at 5.5 -2.0 4.5 · hand [] · bombs 99 · keys 99

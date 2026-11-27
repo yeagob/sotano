@@ -2,7 +2,7 @@
 
 Up: [not-built levels](README.md) · [The realm of the sky](../sky/README.md)
 
-Status: decided for the placement (level 6 going up, above the five deities), the core mechanic (high-altitude, long-distance platforming across small platforms), the ascent theme (leaving the tree and the Earth behind, climbing through deep space toward the Sun), and the requirement of the triple jump reward. Decided (owner, 2026-11-05, replacing the closed threshold of 2026-11-03): the last jump of the climb enters the Sun; entering activates Unity (issue #95, pending), which does nothing yet. Built: the climb, the fall recovery (the updraft), the views of the Earth and the Sun and the entrance ([built Totality](../../built/levels/totality/README.md)). Decided and not built: the Earth's continents (owner, 2026-11-06).
+Status: decided for the placement (level 6 going up, above the five deities), the core mechanic (high-altitude, long-distance platforming across small platforms), the ascent theme (leaving the tree and the Earth behind, climbing through deep space toward the Sun), and the requirement of the triple jump reward. Decided (owner, 2026-11-05, replacing the closed threshold of 2026-11-03): the last jump of the climb enters the Sun; entering activates Unity (issue #95, pending), which does nothing yet; the ending of illumination, built for a player who has won the five guardians, ends the run in the Sun ([ILLUMINATION](../../built/levels/totality/ILLUMINATION.md), issue #351). Built: the climb, the fall recovery (the updraft), the views of the Earth and the Sun and the entrance ([built Totality](../../built/levels/totality/README.md)). Decided and not built: the Earth's continents (owner, 2026-11-06).
 
 ## 1. What Totality is
 

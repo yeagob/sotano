@@ -20,7 +20,7 @@ Floors 4 to 9. Code: [noise.ts](../../../../src/content/enemies/noise.ts).
 
 ## How the player answers it
 
-It is quick and small: time your intentions to its passes. Good intentions do half damage and warm it; bad intentions do full damage.
+It is quick and small: time your intentions to its passes. Good intentions fill its [bar](../encounters/POLARITY.md#the-bar-owner-2026-11-26) toward conversion and bad intentions drain it toward release, by the same damage.
 
 ## Element affinities
 

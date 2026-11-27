@@ -29,11 +29,11 @@ t 60 (1.0 s)
 t 150 (2.5 s)
   player hp 24/24 · at 1.5 0.0 3.5 · hand [] · bombs 99 · keys 99
   practices kairos · synergies —
-  doubt#2 hp 15.3/24 · self · at 10.8 0.0 3.5
+  doubt#2 hp 15.3/24 · self · at 10.0 0.0 4.4
   blocks —
   elements —
   cubes — · pickups 0
-  events actorDamage:doubt<intent 5 · factionChange:doubt>self 1 · fire 5 · intentHit 5
+  events actorDamage:doubt<intent 5 · factionChange:doubt>self 1 · fire 5 · intentHit 5 · projectionConverted 1
 
 map t 150 · h 0
   .............

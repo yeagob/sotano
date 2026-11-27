@@ -40,7 +40,7 @@ function arena(id: string, stage: number, bounds: [number, number, number, numbe
     strike: did, bolt: did, shootAt: did, rain: did, rockfall: did, summon: did, quake: did,
     cue: (_e: Enemy, kind: string) => { if (kind === 'windup' || kind === 'leap' || kind === 'hide') did(); },
     crash: () => {}, fx: () => {}, arena: () => {}, burst: () => {}, quiet: () => false, others: () => [],
-    safe: () => true, hide: (_e: Enemy, h: boolean) => { e.hidden = h; }, kill: () => { killed = true; },
+    safe: () => true, hide: (_e: Enemy, h: boolean) => { e.hidden = h; }, kill: () => { killed = true; }, practices: () => [], health: () => 48, bombs: () => 0, placeBomb: () => {},
   } as unknown as EnemyCtx;
   let wasEvading = false, lx = 0, lz = 0, walked = 0;
   return {

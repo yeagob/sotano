@@ -230,7 +230,7 @@ export interface FittedRoom { t: RoomTemplate; flipX: boolean; flipZ: boolean; l
 export function fitTemplates(rr: RunRandom, k: number, plan: FloorPlan, templates: readonly RoomTemplate[], bossSmallRoom = false, easyRoots = false): { space: Int16Array; fitted: Map<number, FittedRoom> } {
   const lv = level(k);
   const bossRoom = lv.tutorial ? undefined : plan.rooms.find(r => r.type === 'boss');
-  const allot = allotSpace(plan, rr.fork('floor', k, 'space'), bossRoom?.id);
+  const allot = allotSpace(plan, rr.fork('floor', k, 'space'), bossRoom?.id, !!lv.plan.bossBlock);
   const space = new Int16Array(plan.grid);
   const fitted = new Map<number, FittedRoom>();
   for (const pr of plan.rooms) {
@@ -284,7 +284,7 @@ export function createDungeonWorld(rr: RunRandom, dungeon: DungeonPlan): VoxelWo
 }
 
 /** Enemy roster per room: what can appear and how many, by floor. */
-export interface EnemyBudget { pick(rng: Rng, floor: number, cells?: number): string[] }
+export interface EnemyBudget { pick(rng: Rng, floor: number, cells?: number, difficulty?: number): string[] }
 
 export interface CarveOptions {
   templates: readonly RoomTemplate[];
@@ -296,6 +296,9 @@ export interface CarveOptions {
   /** The player's mastery level (0 to 100), read by floor 0 only (REWARDS). Default 0. Generation never reads the save:
    *  the game passes the level it read at run start. */
   mastery?: number;
+  /** The run's global difficulty (#352, enemies/difficulty.ts), from the mastery level the game read at run start: it
+   *  adds projections to each room's roster on the same room fork. Default 1: every roster as before. */
+  difficulty?: number;
   /** The depth the last run faded on (the save's `fade`, read at run start by the game): the Echo waits on that floor.
    *  Undefined when no Echo waits. It only picks which floor holds the Echo; the room is still chosen by the seed. */
   echoFloor?: number;
@@ -459,8 +462,8 @@ export function carveFloor(w: VoxelWorld, rr: RunRandom, k: number, plan: FloorP
     rooms.push({
       id: gid(pr.id), floor: k, type: pr.type, gx: pr.gx, gz: pr.gz, x0, y0, z0, hx, hz, height, w: RW, d: RD, open: openMask, template: t.id, flipX, flipZ, mood, doors: {},
       // the tutorial floor is peaceful: no roster at all
-      // a bigger room holds more of them (the roster budget grows with its open floor, a cell at a time)
-      enemies: fights && !lv.tutorial ? opt.enemies.pick(rr.fork('floor', k, 'room', pr.id, 'roster'), k, Math.max(1, Math.round(openTiles / (ROOM_W * ROOM_D)))) : [],
+      // a bigger room holds more of them (the roster budget grows with its open floor, a cell at a time); the difficulty adds more
+      enemies: fights && !lv.tutorial ? opt.enemies.pick(rr.fork('floor', k, 'room', pr.id, 'roster'), k, Math.max(1, Math.round(openTiles / (ROOM_W * ROOM_D))), opt.difficulty ?? 1) : [],
       presence: pr.type === 'vault' && !lv.tutorial ? 'boundary' : undefined,
     });
   }
@@ -781,7 +784,7 @@ function flipsThatFit(t: RoomTemplate, pr: PlanRoom, allot: Int16Array, gw: numb
  * beside a room goes to one of them; then every empty cell beside a cell given away goes to that
  * room too (so a room can grow two cells long, or round a corner). Rooms only take what fits them.
  */
-export function allotSpace(plan: FloorPlan, rng: Rng, claim?: number): Int16Array {
+export function allotSpace(plan: FloorPlan, rng: Rng, claim?: number, block = false): Int16Array {
   const { w, h } = plan;
   const own = new Int16Array(plan.grid);
   for (const r of plan.rooms) if (r.size) {
@@ -797,6 +800,15 @@ export function allotSpace(plan: FloorPlan, rng: Rng, claim?: number): Int16Arra
   if (claimed && !claimed.size) for (const dx of [-1, 1]) {
     const x = claimed.gx + dx, z = claimed.gz;
     if (x >= 0 && x < w && own[x + z * w] === -1) own[x + z * w] = claimed.id;
+  }
+  // a floor whose boss fights in four cells (`bossBlock`, the Shadow's arena) also claims the cells north or south of
+  // them that close an empty 2×2 block round the boss room; no draw, so the rest of the allotment keeps its order
+  if (claimed && !claimed.size && block) {
+    const mine = (x: number, z: number) => x >= 0 && z >= 0 && x < w && z < h && plan.grid[x + z * w] === -1 && (own[x + z * w] === -1 || own[x + z * w] === claimed.id);
+    for (const dz of [-1, 1]) for (const dx of [-1, 1]) {
+      const cells: [number, number][] = [[claimed.gx + dx, claimed.gz], [claimed.gx, claimed.gz + dz], [claimed.gx + dx, claimed.gz + dz]];
+      if (cells.every(([x, z]) => mine(x, z))) for (const [x, z] of cells) own[x + z * w] = claimed.id;
+    }
   }
   for (let pass = 0; pass < 2; pass++) {
     const was = new Int16Array(own);

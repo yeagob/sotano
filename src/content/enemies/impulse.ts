@@ -15,6 +15,7 @@ export default defineEnemy({
   maxFloor: 2,
   drops: { heart: 0.06 },
   breaks: { tier: 0, power: 6 },
+  climber: true,
   behaviour: leap({ every: 2.2, range: 6, crouch: 0.6, air: 0.7, reach: 1.1, damage: 4 }),
   model: [
     { size: [6 * TX, 5 * TX, 6 * TX], pos: [0, 4 * TX, 0], color: pal('husk.panic.base'), name: 'body' },

@@ -9,6 +9,7 @@
 //
 // Every clock is the host's time; nothing draws randomness, so a fixed dt repeats exactly.
 
+import { hunt } from '../hunt';
 import type * as THREE from 'three';
 import { pal } from '../../../content/palette';
 import type { ModelPart } from '../../../enemies/types';
@@ -30,7 +31,9 @@ const WATERHOLE_OUT = 2.6;
 const FILE_GAP = 1.6;
 /** The shoulder: the player this near a wild minion, on the ground ring, is pushed 2 blocks away from the herd. */
 export const SHOULDER_RANGE = 2.2;
-export const SHOULDER_BLOCKS = 2;
+export const EFFECT = 3;
+export const HUNTERS = 0.5;
+export const SHOULDER_BLOCKS = 2 * EFFECT;
 export const SHOULDER_EVERY = 4;
 /** An ally this near a wild minion takes its push: the shove does not start. */
 export const CLEAR_RANGE = 2.5;
@@ -198,7 +201,7 @@ const spray: MinionRule = (m, ctx) => {
     const foot = ch.bed[ch.bed.length - 1];
     if (!foot || Math.hypot(foot[0] + 0.5 - m.body.x, foot[2] + 0.5 - m.body.z) > 1.5) continue;
     calf.sprayAt = now;
-    ctx.hinder('water-currents', { channel: ch, seconds: SPRAY_SECONDS, push: 3 });
+    ctx.hinder('water-currents', { channel: ch, seconds: SPRAY_SECONDS, push: 3 * EFFECT });
     return true;
   }
   return false;
@@ -349,12 +352,12 @@ export function reactModel(parts: Parts, ratio: number) {
 
 export const elephantMinion: MinionDef = {
   animal: 'elephant',
-  max: 5, wildMax: 3,
+  max: 50, wildMax: 30,
   // bubbles rise and a low rumble grows for 2 s, and a young elephant wades out; one every 15 s (B5)
-  spawn: { where: 'waterhole', warning: 2, every: 15 },
+  spawn: { where: 'waterhole', warning: 2, every: 3, batch: 5 },
   hitsToTurn: 5,
   gait: walk(SPEED),
-  rules: [wadeOut, halt, closeRanks, flapping, shoulder, spray, inFile],
+  rules: [wadeOut, halt, closeRanks, flapping, shoulder, spray, hunt(HUNTERS), inFile],
   ally: [
     { kind: 'clear', rule: clear },
     { kind: 'carry', rule: carry },

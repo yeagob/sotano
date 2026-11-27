@@ -20,7 +20,7 @@ Floors 3 and 4. Code: [gloom.ts](../../../../src/content/enemies/gloom.ts).
 
 ## How the player answers it
 
-Keep moving: its drops follow you around the room. Reach it with intentions from a height, from a gallery, or by building up toward it. Good intentions do half damage and warm it; bad intentions do full damage.
+Keep moving: its drops follow you around the room. Reach it with intentions from a height, from a gallery, or by building up toward it. Good intentions fill its [bar](../encounters/POLARITY.md#the-bar-owner-2026-11-26) toward conversion and bad intentions drain it toward release, by the same damage.
 
 ## Element affinities
 

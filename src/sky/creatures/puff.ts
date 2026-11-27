@@ -6,21 +6,32 @@ import type { MessageKey } from '../../i18n/locales/en';
 import type { PuffApi, SkyHost, Vec3 } from '../types';
 
 const FIRST_PUFF = 'toast.skyPuff' as string as MessageKey;
+const INTENT_ONLY = 'toast.skyIntentOnly' as string as MessageKey;
+const TOAST_EVERY = 4;
 
 export class Puff implements PuffApi {
   private seen = false;
+  private quiet = 0;
 
   constructor(private host: SkyHost) {}
 
   get shown(): boolean { return this.seen; }
 
+  update(dt: number) {
+    if (this.quiet > 0) this.quiet = Math.max(0, this.quiet - dt);
+  }
+
   /** One puff: cloud motes and a soft "pff". Nothing else changes. */
   at(p: Vec3) {
     this.host.fx('puff', p.x, p.y, p.z, 6);
     this.host.cue('core.puff', p.x, p.y, p.z);
+    if (this.quiet > 0) return;
     if (!this.seen) {
       this.seen = true;
       this.host.toast(FIRST_PUFF);
+    } else {
+      this.host.toast(INTENT_ONLY);
     }
+    this.quiet = TOAST_EVERY;
   }
 }

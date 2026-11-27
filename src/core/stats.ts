@@ -9,10 +9,10 @@ import { fmtNum, t } from '../i18n';
 
 export type StatName =
   | 'damage' | 'fireRate' | 'shotSpeed' | 'range' | 'gravity' | 'size' | 'luck' | 'mining'
-  | 'moveSpeed' | 'jump' | 'airJumps' | 'reach'
+  | 'moveSpeed' | 'jump' | 'airJumps' | 'wallJumps' | 'reach'
   | 'carry' | 'kick' | 'throw' | 'crush' | 'headbutt'
   | 'maxHearts' | 'invuln' | 'bombRadius' | 'bombDamage' | 'breath' | 'missile' | 'dash' | 'run' | 'crouch' | 'lavaWalk'
-  | 'twinCast' | 'triad' | 'spiral' | 'recipes';
+  | 'twinCast' | 'triad' | 'spiral' | 'recipes' | 'walkSlow' | 'magnet' | 'flightDamage' | 'freezeSphere' | 'airShield';
 
 export type StatLayer = 'add' | 'mul' | 'final';
 
@@ -37,6 +37,7 @@ export const BASE_STATS: Stats = {
   moveSpeed: 1,    // relative (1 = 4.6 blocks/s)
   jump: 1,         // relative jump height (1 ≈ 1.25 blocks)
   airJumps: 0,     // jumps you may make in the air before landing (floored; at most 3: two Triple Jump copies, SKY.md §9)
+  wallJumps: 0,    // the last of the airJumps that need a solid block touching your side (floored; Wall Jump, WALL-JUMP.md; 0 = none)
   reach: 4,        // reach for placing blocks, in blocks (4 = 20% less than the old 5; issue #162)
   carry: 2,        // how many blocks you can hold (floored): one per hand
   kick: 1,         // kick strength multiplier
@@ -57,6 +58,11 @@ export const BASE_STATS: Stats = {
   triad: 0,        // 1 = each intention flies as three strands in a widening triangle (Rule of Three)
   spiral: 0,       // 1 = each intention flies as three strands on a turning helix (Spiral Growth)
   recipes: 0,      // 1 = the Recipe Book opens (Book of Secrets, src/game/recipe-book.ts; 0 = its key and tab do nothing)
+  walkSlow: 0,     // 1 = crouched on the ground, the whole world runs at half speed (Walk Slowly, src/game/time-scale.ts; 0 = no slow)
+  magnet: 0,
+  flightDamage: 0,
+  freezeSphere: 0,
+  airShield: 0,
 };
 
 export const STAT_LIMITS: Partial<Record<StatName, [number, number]>> = {
@@ -70,6 +76,7 @@ export const STAT_LIMITS: Partial<Record<StatName, [number, number]>> = {
   moveSpeed: [0.3, 3],
   jump: [0.3, 5],
   airJumps: [0, 3],
+  wallJumps: [0, 3],
   carry: [1, 9],
   kick: [0.2, 6],
   throw: [0.2, 6],
@@ -78,6 +85,7 @@ export const STAT_LIMITS: Partial<Record<StatName, [number, number]>> = {
   maxHearts: [1, 12],
   invuln: [0.2, 5],
   bombRadius: [1, 8],
+  magnet: [0, 8],
   bombDamage: [5, 500],
   breath: [1, 120],
   missile: [0, 1],
@@ -89,6 +97,10 @@ export const STAT_LIMITS: Partial<Record<StatName, [number, number]>> = {
   triad: [0, 1],
   spiral: [0, 1],
   recipes: [0, 1],
+  walkSlow: [0, 1],
+  flightDamage: [0, 1],
+  freezeSphere: [0, 1],
+  airShield: [0, 1],
 };
 
 const times = (v: number) => t('unit.times', { n: fmtNum(v, 2) });
@@ -107,6 +119,7 @@ const STAT_FMT: Record<StatName, (v: number) => string> = {
   moveSpeed: times,
   jump: times,
   airJumps: v => fmtNum(Math.floor(v), 0),
+  wallJumps: v => fmtNum(Math.floor(v), 0),
   reach: v => blocks(v, 1),
   carry: v => blocks(Math.floor(v), 0),
   kick: times,
@@ -116,6 +129,7 @@ const STAT_FMT: Record<StatName, (v: number) => string> = {
   maxHearts: v => fmtNum(Math.floor(v), 0),
   invuln: v => t('unit.seconds', { n: fmtNum(v, 1) }),
   bombRadius: v => blocks(v, 1),
+  magnet: v => (v <= 0 ? t('unit.crushNone') : blocks(v, 1)),
   bombDamage: v => fmtNum(v, 0),
   breath: v => t('unit.seconds', { n: fmtNum(v, 1) }),
   missile: v => (v < 1 ? t('unit.crushNone') : t('unit.missileOn')),
@@ -127,6 +141,10 @@ const STAT_FMT: Record<StatName, (v: number) => string> = {
   triad: v => (v < 1 ? t('unit.off') : t('unit.on')),
   spiral: v => (v < 1 ? t('unit.off') : t('unit.on')),
   recipes: v => (v < 1 ? t('unit.off') : t('unit.on')),
+  walkSlow: v => (v < 1 ? t('unit.off') : t('unit.on')),
+  flightDamage: v => (v < 1 ? t('unit.off') : t('unit.on')),
+  freezeSphere: v => (v < 1 ? t('unit.off') : t('unit.on')),
+  airShield: v => (v < 1 ? t('unit.off') : t('unit.on')),
 };
 
 export const statLabel = (n: StatName) => t(`stat.${n}`);

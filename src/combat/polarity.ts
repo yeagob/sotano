@@ -1,57 +1,64 @@
-// Intention polarity (docs/design/BESTIARY.md §1.1, docs/reviews/polarity.md). A positive intention
+// Intention polarity (docs/design/built/encounters/POLARITY.md, docs/reviews/polarity.md). A positive intention
 // mends what it touches; a negative one harms it. These are the pure rules: no three.js, no DOM,
 // no events. The game (game/game.ts) applies them inside the one damage pipeline, after the
 // `actorDamage` hooks, so items see every step and cannot break the rules by accident.
+//
+// The bar (owner, 2026-11-26): converting and killing are one value. A hostile being's `hp` is its
+// place on a bar from 0 to twice its maximum health, and it starts in the middle, at `maxHp`. Harm
+// drains it toward 0, where the being dies; love fills it toward `2 × maxHp`, where it turns to your
+// side. Both move it by the same amount, the hit's damage, so killing and converting cost the same,
+// whatever the being's life.
 
 import type { Faction } from '../entities/actors';
 
 export type Polarity = 'positive' | 'negative';
 
-/** Share of an intention's damage a positive one deals to a hostile projection. */
-export const POSITIVE_DAMAGE = 0.5;
-/** Warmth a positive hit adds to a projection (0 → 1; full warmth turns it to your side). */
-export const WARMTH_PER_HIT = 0.2;
-/** Warmth a negative hit takes from a projection. It cools; it does not reset. */
-export const WARMTH_COOL = 0.25;
+/** The bar's top as a multiple of the being's maximum health: love converts at `BAR_TOP × maxHp`. */
+export const BAR_TOP = 2;
 /** Share of the damage a positive intention would deal that heals an ally instead. */
 export const ALLY_HEAL = 0.5;
-/** Share of its maximum health a projection has when it changes side (converted or relapsed). */
+/** Share of its maximum health a projection has as an ally once it converts. */
 export const TURN_HP = 0.5;
 
 const EPS = 1e-9;
+const clamp01 = (v: number) => Math.max(0, Math.min(1, v));
 
-/** Damage an intention deals, before any event: positive ones halve it against projections. */
-export const intentDamage = (polarity: Polarity, damage: number) =>
-  polarity === 'positive' ? damage * POSITIVE_DAMAGE : damage;
+/** Where a hostile being's bar starts, and where an ally that relapses starts again: the middle. */
+export const barStart = (maxHp: number) => maxHp;
+
+/** The bar's top: the health at which love turns a hostile being. */
+export const barTop = (maxHp: number) => BAR_TOP * maxHp;
+
+/** The bar as a share, 0 (released) → 0.5 (the start) → 1 (converted). */
+export const barShare = (hp: number, maxHp: number) => clamp01(hp / Math.max(EPS, barTop(maxHp)));
+
+/** How far love has filled the upper half, 0 → 1 (the captive glow and the bar's warm part). */
+export const barLove = (hp: number, maxHp: number) => clamp01((hp - maxHp) / Math.max(EPS, maxHp));
 
 /**
- * The most health a hit may take from a projection, applied after the `actorDamage` hooks. A
- * positive intention never takes the last point: its warmth still fills, so the route of light
- * always ends in a conversion. Negative intentions have no limit (a kill is a release).
+ * What is left of the fight, 1 at the middle and 0 at either end. Every reading of "how much life is
+ * left" on a projection (a boss's phases, a decree's strength, a wake-up) uses it, so love moves a
+ * fight on as much as harm does. For health at or under the middle (any ally, or a being only harmed)
+ * it is exactly `hp / maxHp`.
  */
-export const intentCeiling = (polarity: Polarity, hp: number) =>
-  polarity === 'positive' ? Math.max(0, hp - 1) : Infinity;
+export const barRest = (hp: number, maxHp: number) => 1 - clamp01(Math.abs(hp - maxHp) / Math.max(EPS, maxHp));
 
-/** Warmth after one hit of this polarity. */
-export const warmthAfter = (polarity: Polarity, warmth: number, gain = WARMTH_PER_HIT) =>
-  polarity === 'positive' ? Math.min(1, warmth + gain) : Math.max(0, warmth - WARMTH_COOL);
+/** The bar is full: the being turns to your side (tolerant to float sums). */
+export const isConverted = (hp: number, maxHp: number) => hp >= barTop(maxHp) - EPS;
 
-/** Warmth one hit adds to a boss: its raw damage as a share of its maximum health, so filling it costs the same
- *  damage as destroying it (the positive share is halved, so `amount` is divided back to the raw damage). */
-export const bossWarmth = (amount: number, maxHp: number) => Math.min(1, amount / POSITIVE_DAMAGE / maxHp);
-
-/** Full warmth turns a projection to your side (tolerant to float sums: 0.2 five times is not exact). */
-export const isWarm = (warmth: number) => warmth >= 1 - EPS;
+/** The bar after one hit: harm takes `amount`, love adds it, never past either end. */
+export const barAfter = (polarity: Polarity, hp: number, maxHp: number, amount: number) =>
+  Math.max(0, Math.min(barTop(maxHp), polarity === 'positive' ? hp + amount : hp - amount));
 
 /** Health a positive intention heals an ally by: half the damage, never past its maximum. */
 export const allyHeal = (damage: number, hp: number, maxHp: number) =>
   Math.max(0, Math.min(damage * ALLY_HEAL, maxHp - hp));
 
-/** Health a projection has once it converts: at least half its maximum, so one touch cannot undo it. */
-export const convertedHp = (hp: number, maxHp: number) => Math.max(hp, maxHp * TURN_HP);
+/** Health a projection has as an ally once its bar is full: half its maximum. */
+export const convertedHp = (maxHp: number) => maxHp * TURN_HP;
 
-/** Health an ally returns with when a negative intention turns it hostile again (never below 1). */
-export const relapseHp = (maxHp: number) => Math.max(1, maxHp * TURN_HP);
+/** Where an ally's bar starts again when a negative intention turns it hostile: the middle. */
+export const relapseHp = (maxHp: number) => barStart(maxHp);
 
 /** Whether an intention of this polarity meets an actor: hostile projections always; allies when
  *  it is negative (it harms them) or when they are hurt (a positive one heals them). A healthy ally
@@ -59,23 +66,28 @@ export const relapseHp = (maxHp: number) => Math.max(1, maxHp * TURN_HP);
 export const meetsIntention = (faction: Faction, hp: number, maxHp: number, polarity: Polarity, responds?: Polarity) =>
   responds ? responds === polarity : faction === 'projection' || polarity === 'negative' || hp < maxHp;
 
-/** An enemy as an intention sees it, before the hit. */
-export interface HitState { polarity: Polarity; warm: boolean; faction: Faction; hp: number; maxHp: number; warmth: number; boss?: boolean }
+/** An actor as an intention sees it, before the hit. `hostile`: the intention comes from the hostile side (the
+ *  Shadow's bolts and strokes), not from the player. */
+export interface HitState { polarity: Polarity; faction: Faction; hp: number; hostile?: boolean }
 
-/** What the hit does: the warmth after it, the health it takes, and whether an ally relapses or a
- *  projection converts. */
-export interface HitResolution { warmth: number; dealt: number; relapse: boolean; convert: boolean }
+/** What the hit does: the harm it takes off the bar, the love it adds, and whether an ally relapses. A relapse
+ *  comes first: with harm as well, the harm drains the bar from its middle. */
+export interface HitResolution { harm: number; love: number; relapse: boolean }
 
 /**
- * One intention hit, after the `actorDamage` hooks have had their say (`amount`). Warmth moves first
- * (unless the stroke already warmed this target). An ally at zero under a negative intention relapses
- * instead of dissolving. A positive intention never takes a projection's last point. A projection
- * converts when a positive intention fills its warmth.
+ * One intention hit, after the `actorDamage` hooks have had their say (`amount`). A negative
+ * intention harms by the whole amount, and an ally it would bring to zero relapses instead of
+ * dissolving. A hostile negative intention (friendly fire, issue #372) turns an ally at once and
+ * harms it too. A positive intention adds the whole amount to a hostile being's bar: it never harms
+ * one, so the route of light always ends in a conversion. (A positive intention on an ally heals it
+ * before this point, in the game's `intentTouch`.) Plain harm on an ally (a bomb, a touch, a hostile
+ * shot, lava) is resolved as a negative intention of the player's: it harms, and relapses at zero.
  */
 export function resolveHit(s: HitState, amount: number): HitResolution {
-  const warmth = s.warm ? warmthAfter(s.polarity, s.warmth, s.boss ? bossWarmth(amount, s.maxHp) : WARMTH_PER_HIT) : s.warmth;
-  if (s.polarity === 'negative' && s.faction === 'self' && s.hp - amount <= 0) return { warmth: 0, dealt: 0, relapse: true, convert: false };
-  const dealt = Math.min(amount, intentCeiling(s.polarity, s.hp));
-  const convert = s.polarity === 'positive' && s.faction === 'projection' && isWarm(warmth);
-  return { warmth, dealt, relapse: false, convert };
+  if (s.polarity === 'negative') {
+    if (s.faction === 'self' && s.hostile) return { harm: amount, love: 0, relapse: true };
+    if (s.faction === 'self' && s.hp - amount <= 0) return { harm: 0, love: 0, relapse: true };
+    return { harm: amount, love: 0, relapse: false };
+  }
+  return { harm: 0, love: s.faction === 'projection' ? amount : 0, relapse: false };
 }

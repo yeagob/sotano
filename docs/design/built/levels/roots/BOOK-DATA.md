@@ -142,7 +142,7 @@ Lesson screenshots (39, **all new captures**; 28 are taken, the 11 marked pendin
 | `practice` | A practice floating over a pedestal | `roots-door` |
 | `ring` | The HUD map of the Roots with the ring of rooms | any roots room |
 | `way-down` | The toll window over the open way down | `roots-door` |
-| `drink` | A flask on top of the hand, the drink button on touch | a sandbox room |
+| `drink` | A flask on top of the hand, the use button on touch | a sandbox room |
 | `alembic` | The alembic with a full bulb | a laboratory room, floor 2 |
 | `kitchen` | The kitchen with a part in front of it | a kitchen room, floor 1 |
 | `convert` | A projection turning gold as it comes to the player's side | a sandbox room, floor 1 |
@@ -203,7 +203,7 @@ Portraits, sky (10; the sky route of portrait mode, captured):
 Lessons (6):
 
 - `lesson/sky`: the sky above the great tree from the sky deck, the first sky floor and its guardian's seat in view, no HUD (page 5, "Above and below").
-- `lesson/warm-boss`: a boss (Resistance) in its room with its warmth near full (`e.warmth = 0.95`), seen from about 8 blocks, as `convert` does for a projection (page 6, "Warm a boss").
+- `lesson/warm-boss`: a boss (Resistance) in its room with its bar near full (`e.hp = e.maxHp * 1.9`, 95 % of the way to conversion), seen from about 8 blocks, as `convert` does for a projection (page 6, "Warm a boss").
 - `lesson/seal`: a room of floor 1 just sealed: a doorway shut by its seal, a projection in the room (page 6, "The seal").
 - `lesson/omen`: an omen half-gathered: the cold motes drifting in to a point on the floor, the crack not yet open (page 6, "Omens").
 - `lesson/room-clear`: a room just cleared, its doors open, a heart, a bomb or a key lying where the last projection was (page 6, "Cleared rooms").

@@ -17,9 +17,12 @@ export type PadButton = typeof PAD[keyof typeof PAD];
  * How a touch reaches the action. `worldTap` is a short touch on the world (no drag): it aims at the
  * tapped block. `turn` is a half turn of the phone (the steering-wheel gesture). `none` means the
  * action has no touch button of its own: it is reached through another (the tab button opens the menu).
- * `swipe` is a stroke across the left side of the screen (the dash, DASH.md): it has no button.
+ * `swipe` is a stroke across the screen with no button of its own.
  */
 export type TouchControl = 'stick' | 'stickEdge' | 'lookPad' | 'button' | 'systemButton' | 'menuButton' | 'tap' | 'worldTap' | 'turn' | 'swipe' | 'none';
+
+/** The touch context buttons: one button, several actions, only one of which applies at a time (issue #377). */
+export type ContextButton = 'body' | 'use';
 
 export interface Binding {
   action: Action;
@@ -29,7 +32,11 @@ export interface Binding {
   keyboard: { keys?: readonly string[]; toggle?: readonly string[]; mouse?: readonly number[]; mouseMove?: true; wheel?: -1 | 1; doubleTap?: 'move'; when?: readonly Context[] };
   /** `doubleFlick: 'left'` is a double flick of the left stick (no button). */
   gamepad: { buttons?: readonly PadButton[]; stick?: 'left' | 'right'; doubleFlick?: 'left'; when?: readonly Context[] };
-  touch: { control: TouchControl; icon?: string; when?: readonly Context[] };
+  /**
+   * `shared` names a context button that several actions share (TOUCH.md §1.1): one button on screen, and a press does
+   * the action that applies now. `gesture` is a second way in, kept beside the button (the swipes of #377).
+   */
+  touch: { control: TouchControl; icon?: string; when?: readonly Context[]; shared?: ContextButton; gesture?: 'swipe' };
   refs: { minecraft: string; noita: string; isaac: string };
 }
 
@@ -67,11 +74,12 @@ export const BINDINGS: readonly Binding[] = [
     refs: { minecraft: 'left click / right trigger to attack and mine', noita: 'left click / right trigger fires the wand while held', isaac: 'holding a fire direction keeps shooting' },
   },
   {
-    // Irimi (DASH.md): a gesture of the movement, not a button. Read only in play, and only with the `dash` stat.
+    // Irimi (DASH.md): a gesture of the movement on keyboard and pad, not a button. Read only in play, and only with the `dash` stat.
     action: 'dash', kind: 'press', when: ['play'],
     keyboard: { doubleTap: 'move' },
     gamepad: { doubleFlick: 'left' },
-    touch: { control: 'swipe' },
+    // touch (#377): the body button, shared with the crouch (it dashes while the stick moves); the swipe still dashes
+    touch: { control: 'button', shared: 'body', gesture: 'swipe' },
     refs: { minecraft: 'a double press of forward sprints; a double jump is the jump button pressed again', noita: 'the levitate key is held; a new meaning of the movement, not a new key', isaac: 'a practice changes what a direction does, never adds a button' },
   },
   {
@@ -84,9 +92,10 @@ export const BINDINGS: readonly Binding[] = [
   },
   {
     action: 'crouch', kind: 'hold', when: ['play'],
-    keyboard: { keys: ['ControlLeft', 'ControlRight'], toggle: ['KeyC'] },
+    keyboard: { toggle: ['KeyC'] },
     gamepad: { buttons: [PAD.RS] },
-    touch: { control: 'swipe' },
+    // touch (#377): the body button, shared with the dash (it kneels while the stick rests); the swipe down still toggles
+    touch: { control: 'button', shared: 'body', gesture: 'swipe' },
     refs: { minecraft: 'Shift sneaks and will not walk off an edge; a stick click toggles sneaking on a controller', noita: 'no crouch: the body has one shape', isaac: 'no crouch: a practice changes what the body does, never adds a button' },
   },
   {
@@ -100,14 +109,16 @@ export const BINDINGS: readonly Binding[] = [
     action: 'throw', kind: 'press', when: ['play'],
     keyboard: { keys: ['KeyQ'] },
     gamepad: { buttons: [PAD.B] },
-    touch: { control: 'button', icon: 'touchThrow' },
+    // touch (owner, #376): the use button, shared with drink: it drinks a flask on top of the hand and throws anything else
+    touch: { control: 'button', shared: 'use', icon: 'touchThrow' },
     refs: { minecraft: 'Q / B drops the held item', noita: 'throwing a held item or flask', isaac: 'dropping a trinket or pocket item' },
   },
   {
     action: 'drink', kind: 'press', when: ['play'],
     keyboard: { keys: ['KeyG'] },
     gamepad: { buttons: [PAD.X] },
-    touch: { control: 'button', icon: 'touchDrink' },
+    // touch (owner, #376): the use button, shared with throw (it drinks while a flask is on top of the hand)
+    touch: { control: 'button', shared: 'use', icon: 'touchDrink' },
     refs: { minecraft: 'right click eats or drinks the food or potion you hold', noita: 'a flask you hold is drunk with its own key, never thrown by accident', isaac: 'the active item on its own button (Space / right trigger)' },
   },
   {
@@ -252,6 +263,12 @@ export const BINDINGS: readonly Binding[] = [
   },
 ];
 
+/** The actions each touch context button carries, in table order. */
+export const SHARED_TOUCH: Readonly<Record<ContextButton, readonly Action[]>> = {
+  body: BINDINGS.filter(b => b.touch.shared === 'body').map(b => b.action),
+  use: BINDINGS.filter(b => b.touch.shared === 'use').map(b => b.action),
+};
+
 export const BINDING = Object.fromEntries(BINDINGS.map(b => [b.action, b])) as Record<Action, Binding>;
 
 export const PASSIVE = ['pickup', 'doors'] as const;
@@ -259,6 +276,47 @@ export const PASSIVE = ['pickup', 'doors'] as const;
 export const CONTROL_ROWS: readonly (Action | typeof PASSIVE[number])[] = [
   'look', 'move', 'jump', 'cast', 'polarity', 'dash', 'run', 'crouch', 'pickup', 'place', 'throw', 'drink', 'bomb', 'miracle', 'doors', 'previous', 'next', 'pick', 'inventory', 'map', 'recipes', 'restart', 'pause',
 ];
+
+export type ControlRow = (typeof CONTROL_ROWS)[number];
+/** A stat a practice (or a potion) grants, read by the controls list: the control does nothing without it. */
+export type ControlStat = 'run' | 'crouch' | 'dash' | 'recipes';
+
+/**
+ * What the player must hold for a row of the controls list (the pause card) to show: a stat from a practice or a
+ * potion, a practice held by id, or the star map opened once in this run. A row with no gate is a basic control, that
+ * every game has, and it always shows (issue #349). No row says that another one is missing.
+ */
+export type ControlGate = { stat: ControlStat } | { item: string } | { starMapSeen: true };
+
+export const CONTROL_GATES: Partial<Record<ControlRow, ControlGate>> = {
+  dash: { stat: 'dash' },        // Irimi
+  run: { stat: 'run' },          // Fartlek, a Stride Tonic
+  crouch: { stat: 'crouch' },    // Child's Pose, a Folding Tincture, Walk Slowly
+  recipes: { stat: 'recipes' },  // the Book of Secrets (the book row)
+  miracle: { item: 'kairos' },   // Kairos, the miracle
+  map: { starMapSeen: true },    // the star map: no item grants it, so its first opening in the run does
+};
+
+/** What the controls list reads from the player: the stats, the practices held by id, and the star map's first opening. */
+export interface ControlFacts {
+  stat(name: ControlStat): number;
+  holds(item: string): boolean;
+  starMapSeen: boolean;
+}
+
+export function gateMet(gate: ControlGate, facts: ControlFacts): boolean {
+  if ('stat' in gate) return facts.stat(gate.stat) >= 1;
+  if ('item' in gate) return facts.holds(gate.item);
+  return facts.starMapSeen;
+}
+
+/** The rows the controls list shows, in CONTROL_ROWS order: every basic row, and each gated row the player meets. */
+export function visibleControlRows(facts: ControlFacts): ControlRow[] {
+  return CONTROL_ROWS.filter(r => {
+    const gate = CONTROL_GATES[r];
+    return !gate || gateMet(gate, facts);
+  });
+}
 
 export function contextsFor(b: Binding, device: Device): readonly Context[] {
   const d = device === 'keyboard' ? b.keyboard : device === 'gamepad' ? b.gamepad : b.touch;

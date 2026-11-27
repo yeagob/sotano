@@ -20,7 +20,7 @@ Only as a split of [Procrastination B](PROCRASTINATION-B.md). The roster never r
 
 ## How the player answers it
 
-It dies to a few hits. Good intentions do half damage and warm it; bad intentions do full damage.
+It dies to a few hits. Good intentions fill its [bar](../encounters/POLARITY.md#the-bar-owner-2026-11-26) toward conversion and bad intentions drain it toward release, by the same damage.
 
 ## Element affinities
 

@@ -4,6 +4,7 @@ Each idea the game is built on: where it comes from (ids from [SOURCES.md](SOURC
 
 | Concept | Sources | In the game |
 |---|---|---|
+| **No one is illuminated alone** | `lathe-of-heaven` | The ending of illumination: the friends of the run rise into the Sun with the player ([ILLUMINATION.md](../design/built/levels/totality/ILLUMINATION.md)) |
 | **Intention alters reality** | `as-a-man-thinketh`, `kybalion` (mentalism) | The core verb: intentions break the world's blocks |
 | **Looking is the way through** | `eye-contact`, `dowsing` | Steering: Eye Contact curves intentions toward what you fear; Dowsing toward what lies hidden |
 | **Insight is electric** | `insight`, `kindling` | Electricity: a sudden flash that runs from one thought to the next (Aha Moment, Resonance, Rapport, Discharge) |
@@ -15,6 +16,7 @@ Each idea the game is built on: where it comes from (ids from [SOURCES.md](SOURC
 | **A miracle is a shift in perception** | `course-in-miracles` | Practices that change how a hit is perceived (Forgiveness, Nothing Personal); future: rooms that change when seen differently |
 | **Forgiveness as release** | `course-in-miracles` | **Forgiveness**: what touches you is hurt instead of you |
 | **Transcending limits** ("No hay nada imposible...", the owner's line) | `no-impossible` | **Dr. Launcher** (the Miracles path): its missile keeps its line where a thrown bomb would fall ([DR-LAUNCHER.md](../design/built/practices/milagros/DR-LAUNCHER.md)) |
+| **Walking slowly** ("El acto más revolucionario...", the owner's line) | `walk-slowly` | **Walk Slowly** (Body): crouched on the ground, the world slows to half ([WALK-SLOWLY.md](../design/built/practices/body/WALK-SLOWLY.md)) |
 | **The love explosion** (our own, reusable) | — (our own) | Built: a positive missile of **Dr. Launcher** ends in an area explosion that mends blocks, heals allies, warms projections and grows creatures instead of breaking, in the bomb's radius ([DR-LAUNCHER.md](../design/built/practices/milagros/DR-LAUNCHER.md)) |
 | **Don't take anything personally** | `four-agreements` | **Nothing Personal**: contact hits often slide off |
 | **Be impeccable with your word** | `four-agreements` | Future: intentions that never miss what they're aimed at |
@@ -61,4 +63,5 @@ Each idea the game is built on: where it comes from (ids from [SOURCES.md](SOURC
 | **Unity in the Sun** (the last sky floor, where the solar relic is given) | — (our own) | Decided setting, not built: silence below, the Sun above ([UNITY.md](../design/not-built/levels/UNITY.md)) |
 | **Strength while held** (the Berserker heart) | — (our own) | Built: one more heart of 100 health that keeps the player a berserker for as long as it is held ([BERSERKER.md](../design/built/player/hearts/BERSERKER.md)) |
 | **All beings are kin** (interconnection) | `camino-rojo`, `constellations` | Proposed: "Por Todas Mis Relaciones" practice — effects extend to allies and weaken projections ([issue #194](https://github.com/yeagob/sotano/issues/194)) |
+| **The long walk** | `islamic-pilgrimage` (the sacred journey), our own (walking straight for long enough) | Walking straight for long enough from the surface reaches the four cardinal portals; the journey to a far, sacred place is the way in ([CARDINAL-WALK](../design/not-built/levels/secret-rooms/CARDINAL-WALK.md)) |
 | **A mark on the path** (cairns and waymarks: the way back is known) | Concept (pilgrim routes, no single source) | Waymark: a checkpoint that is an extra life, where you last knew yourself ([built/practices/will/WAYMARK.md](../design/built/practices/will/WAYMARK.md)) |

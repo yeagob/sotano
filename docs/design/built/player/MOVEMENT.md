@@ -11,7 +11,7 @@ Part of [the player](README.md).
 - In the air you steer, but with much less control than on the ground. You cannot change direction in mid-air the way you do on foot.
 - On ice you keep sliding: starting, turning and stopping take far longer than on stone.
 - Water slows you while you wade through it. Swimming is described in [SWIMMING.md](SWIMMING.md).
-- Air jumps exist only as the Triple Jump's two extra jumps ([TRIPLE-JUMP.md](TRIPLE-JUMP.md)). There is no sprint, no lone second jump and no flight action. Those are planned, not built: see [not-built/player/MOVEMENT-ABILITIES.md](../../not-built/player/MOVEMENT-ABILITIES.md).
+- Air jumps come only from practices: the Triple Jump's two extra jumps ([TRIPLE-JUMP.md](TRIPLE-JUMP.md)) and the Double Jump's one ([not-built/practices/DOUBLE-JUMP.md](../../not-built/practices/DOUBLE-JUMP.md), built in code, awaiting the owner's acceptance). There is no sprint, no lone second jump and no flight action. Those are planned, not built: see [not-built/player/MOVEMENT-ABILITIES.md](../../not-built/player/MOVEMENT-ABILITIES.md).
 
 ## The rule behind it
 
@@ -24,6 +24,7 @@ The movement is kept simple on purpose: the challenge of the dungeon is in the b
 - Coyote time: 0.1 s after leaving the ground.
 - Jump buffer: 0.12 s before landing.
 - Air control: about a third of the control you have on the ground.
+- Above the crown of the tree the wind pushes you in the air with 1.1 times your own air control, so there you can slow your drift but never stop it ([WIND](../levels/giant-tree/WIND.md)).
 - Ice: the grip on a slippery floor is about an eighth of the normal grip.
 - Wading: you move at 60 percent of your pace in water and 40 percent in lava; a jump out of a fluid is weaker than a jump on land.
 

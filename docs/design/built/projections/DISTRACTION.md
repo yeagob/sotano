@@ -20,7 +20,7 @@ Floors 1 to 5. Code: [distraction.ts](../../../../src/content/enemies/distractio
 
 ## How the player answers it
 
-Its path is erratic, so wait for a clear moment and throw. Good intentions do half damage and warm it; bad intentions do full damage. It has twelve health: four full hits, or seven good ones.
+Its path is erratic, so wait for a clear moment and throw. Good intentions fill its [bar](../encounters/POLARITY.md#the-bar-owner-2026-11-26) toward conversion and bad intentions drain it toward release, by the same damage. It has twelve health: four full hits, or seven good ones.
 
 ## Element affinities
 

@@ -26,9 +26,17 @@ import {
 
 // ───────────────────────── targets (HORSE.md B2, B3, B3b, B4, B9) ─────────────────────────
 
-export const HORSE_HITS = 48;
+export const HORSE_HITS = 3840;
+export const HIT_STARTLE = 4;
+export const DODGE_NEAR = 6;
+export const DODGE_FAR = 11;
+export const TRAMPLE_RADIUS = 3.5;
+export const TRAMPLE_PUSH = 4;
+export const TRAMPLE_LEAD = 0.5;
+export const SHY = 2.5;
+export const SHY_SPEED = 6;
 /** Alert starts within this distance. */
-export const SIGHT = 14;
+export const SIGHT = 24;
 export const REST: readonly [number, number, number] = [2.5, 2, 1.5];
 /** Startle: a moving player, or a jump that lands, this close. */
 export const STARTLE = 6;
@@ -296,6 +304,12 @@ export class Brain {
   private grazeA = 0;
   private hurtLeft = 0;
   private hitsSeen = 0;
+  private shot = false;
+  private shotLeap = -Infinity;
+  hitLeaps = 0;
+  tramples = 0;
+  shies = 0;
+  private trampling = false;
 
   constructor(ctx: DeityCtx) {
     this.ctx = ctx;
@@ -323,6 +337,11 @@ export class Brain {
     return null;
   }
 
+  settleHits() {
+    this.hitsSeen = this.ctx.deity.hits;
+    this.shot = false;
+  }
+
   // ── the tick ──
 
   tick(dt: number) {
@@ -334,7 +353,7 @@ export class Brain {
     const pb = pl.body;
     this.landedNear = !this.wasOnGround && pb.onGround && flat(pb, b) <= STARTLE;
     this.wasOnGround = pb.onGround;
-    if (a.hits > this.hitsSeen) { this.hurtLeft = 0.3; this.hitsSeen = a.hits; }
+    if (a.hits > this.hitsSeen) { this.hurtLeft = 0.3; this.hitsSeen = a.hits; this.shot = true; }
     this.hurtLeft = Math.max(0, this.hurtLeft - dt);
 
     // the machine began the attack it was offered (its state's clock is zero on its first frame)
@@ -343,7 +362,7 @@ export class Brain {
     if (a.state !== 'Hurt' && a.state !== this.lastState) this.entered(a.state);
     if (a.state !== 'Hurt') this.lastState = a.state;
 
-    this.move(dt);
+    this.move(dt * (this.ctx.pace?.() ?? 1));
     if (this.strike) {
       this.strike.left -= dt;
       if (this.strike.left <= 1e-9) { const id = this.strike.id; this.strike = null; this.land(id); }
@@ -351,6 +370,7 @@ export class Brain {
     this.runTrail();
     this.runQueue();
     if (!this.won) {
+      this.shotReact();
       this.rhythmTick(dt);
       this.transitions(dt);
     }
@@ -369,6 +389,25 @@ export class Brain {
     if (state === 'Recovering') this.ctx.host.cue('horse.blow', b.x, b.y + b.h, b.z);
   }
 
+  private shotReact() {
+    if (!this.shot || this.motion || this.current || this.strike) return;
+    const st = this.lastState;
+    if (st !== 'Grazing' && st !== 'Watching' && st !== 'Recovering') return;
+    this.shot = false;
+    const b = this.body, pl = this.player().body;
+    if (st !== 'Recovering' && this.clock - this.shotLeap >= HIT_STARTLE && this.clock - this.landedAt >= LEAP_REST) {
+      const at = this.hitLeaps % 3 !== 2 ? this.tramplePaddock() : null;
+      const to = at ?? this.dodgePaddock() ?? this.farPaddock();
+      if (to) { this.shotLeap = this.clock; this.hitLeaps++; this.trampling = at !== null; this.leap(to); return; }
+    }
+    const ux = b.x - pl.x, uz = b.z - pl.z, l = Math.hypot(ux, uz) || 1, side = this.shies % 2 ? 1 : -1;
+    this.shies++;
+    const tx = b.x - (uz / l) * SHY * side, tz = b.z + (ux / l) * SHY * side;
+    const g = groundAt(this.world, tx, tz, b.y + 1);
+    if (g === null || Math.abs(g - b.y) > 1) return;
+    this.motion = { k: 'walk', to: { x: tx, y: g, z: tz }, speed: SHY_SPEED, stop: 0.2, t: 0, max: SHY / SHY_SPEED + 0.2 };
+  }
+
   /** The horse's own moves between attacks: startle, calm, an ally's calm, and the leap home. */
   private transitions(dt: number) {
     const ctx = this.ctx, a = ctx.deity, pl = this.player().body;
@@ -377,6 +416,7 @@ export class Brain {
     const d = ctx.distance();
     const free = st === 'Grazing' || st === 'Watching';
     if (!free) return;
+
     // the leap home after a landing, a gallop or a circle
     if (this.offHome && st === 'Watching') {
       if (!this.onPaddock()) { this.leap(this.homePaddock()); return; }
@@ -737,12 +777,32 @@ export class Brain {
     return from.reduce((best, p) => (dist(p) > dist(best) ? p : best));
   }
 
-  /** Back home after a landing: the paddock nearest the horse that is at least 6 from the player. */
+  dodgePaddock(): Place | null {
+    const b = this.body, pb = this.player().body, here = this.onPaddock();
+    const ok = this.paddocks().filter(p => {
+      const d = Math.hypot(p.x + 0.5 - pb.x, p.z + 0.5 - pb.z);
+      return p !== here && d >= DODGE_NEAR && d <= DODGE_FAR;
+    });
+    if (!ok.length) return null;
+    const d = (p: Place) => Math.hypot(p.x + 0.5 - b.x, p.z + 0.5 - b.z);
+    return ok.reduce((best, p) => (d(p) < d(best) ? p : best));
+  }
+
+  tramplePaddock(): Place | null {
+    const pb = this.player().body;
+    const x = pb.x + pb.vx * TRAMPLE_LEAD, z = pb.z + pb.vz * TRAMPLE_LEAD;
+    if (Math.hypot(x - this.body.x, z - this.body.z) > LEAP_MAX) return null;
+    const g = groundAt(this.world, x, z, pb.y + 1);
+    if (g === null) return null;
+    return { id: -1, kind: 'paddock', x: Math.floor(x), y: g - 1, z: Math.floor(z), w: 1, d: 1, tag: 0 };
+  }
+
   private homePaddock(): Place {
-    const b = this.body, pb = this.player().body;
+    const pb = this.player().body;
     const ok = this.paddocks().filter(p => Math.hypot(p.x + 0.5 - pb.x, p.z + 0.5 - pb.z) >= STARTLE);
     const from = ok.length ? ok : this.paddocks();
-    return from.reduce((best, p) => (Math.hypot(p.x + 0.5 - b.x, p.z + 0.5 - b.z) < Math.hypot(best.x + 0.5 - b.x, best.z + 0.5 - b.z) ? p : best));
+    const d = (p: Place) => Math.hypot(p.x + 0.5 - pb.x, p.z + 0.5 - pb.z);
+    return from.reduce((best, p) => (d(p) < d(best) ? p : best));
   }
 
   /** Leaping: the crouch and the landing mark on the far paddock, then the leap (or the teleport, beyond LEAP_MAX). */
@@ -753,7 +813,8 @@ export class Brain {
     this.ctx.host.cue('horse.paw', b.x, b.y, b.z);
     if (to) {
       const p = this.feetPoint(to);
-      this.draw([{ kind: 'ring', x: p.x, y: p.y + 0.02, z: p.z, r: 1.5, grow: 0, width: 0.2, height: 0.4 }], CROUCH, 0.8, KNOCKBACK_PAINT);
+      const r = this.trampling ? TRAMPLE_RADIUS : 1.5;
+      this.draw([{ kind: 'ring', x: p.x, y: p.y + 0.02, z: p.z, r, grow: 0, width: 0.2, height: 0.4 }], CROUCH, 0.8, KNOCKBACK_PAINT);
     }
   }
 
@@ -795,7 +856,7 @@ export class Brain {
     const c = this.feetPoint(this.home);
     this.grazeA += dt * GRAZE_SPEED / 1.2;
     const tx = c.x + Math.cos(this.grazeA) * 1.2, tz = c.z + Math.sin(this.grazeA) * 1.2;
-    glide(this.world, this.body, tx, tz, GRAZE_SPEED * 2, dt);
+    glide(this.world, this.body, tx, tz, GRAZE_SPEED * 2, dt * (this.ctx.pace?.() ?? 1));
   }
 
   gentleEnter() {
@@ -837,6 +898,17 @@ export class Brain {
         this.landedAt = this.clock;
         this.ctx.host.fx('puff', b.x, b.y, b.z, 10);
         this.ctx.host.cue('horse.land', b.x, b.y, b.z);
+        if (this.trampling) {
+          this.trampling = false;
+          this.tramples++;
+          const pl = this.player(), pb = pl.body;
+          const dx = pb.x - b.x, dz = pb.z - b.z, d = Math.hypot(dx, dz);
+          if (d <= TRAMPLE_RADIUS + pb.hw && Math.abs(pb.y - b.y) < 2) {
+            const k = push(TRAMPLE_PUSH), ux = d > 1e-3 ? dx / d : 1, uz = d > 1e-3 ? dz / d : 0;
+            pl.push(ux * k, k * 0.45, uz * k);
+          }
+          this.ctx.host.cue('horse.kick', b.x, b.y, b.z);
+        }
       }
       return;
     }

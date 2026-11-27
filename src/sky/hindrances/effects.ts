@@ -60,6 +60,12 @@ export class SkyEffects implements SkyEffectsApi {
   push(vx: number, vy: number, vz: number) { this.host.player().push(vx, vy, vz); }
   slow(f: number, s: number) { this.host.player().slow(f, s); }
   hold(s: number) { this.host.player().hold(s); }
+  freeze(s: number): boolean {
+    const pl = this.host.player();
+    if (pl.freeze) return pl.freeze(s);
+    pl.hold(s);
+    return true;
+  }
 
   /** A solid block strictly between the two points (the end cells, where either stands, do not count). */
   shelter(from: Vec3, to: Vec3): boolean {

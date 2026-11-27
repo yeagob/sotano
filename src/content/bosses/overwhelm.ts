@@ -12,7 +12,6 @@ export default defineEnemy({
   kind: 'boss',
   name: 'Overwhelm',
   pattern: 'Too much at once',
-  hp: 140,
   speed: 2.6,
   size: [0.9, 2.8],
   contactDamage: 8,

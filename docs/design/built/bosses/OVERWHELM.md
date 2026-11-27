@@ -8,7 +8,7 @@ Overwhelm is a tide with a face of foam: a tall wall of husk-coloured water that
 
 - **Pattern:** too much at once. To be held.
 - **Path:** Emotion.
-- **Health:** 229 on floor 3, 293 on floor 4.
+- **Health:** 208 to 447 on floor 3, 267 to 571 on floor 4.
 
 ## Phases
 

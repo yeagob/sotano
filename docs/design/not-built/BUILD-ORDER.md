@@ -64,8 +64,7 @@ What the game holds against this plan. "Simpler" is what was built with less tha
 
 **Open for the owner**
 
-1. **Boss health.** §6.1 gives about 140 on floor 1 and 1 000 on floor 9, and ×1.35 per floor. Those two numbers contradict each other: ×1.35 for eight floors from 140 reaches about 1 540. The build follows the two ends: a curve of about ×1.28 a floor (`bossHp` in `content/bosses/index.ts`). Which one stands?
-2. **The living palette** (§10) and the art gate for creatures and projections built in this iteration.
-3. **Names marked *(proposal)*** (§13).
+1. **The living palette** (§10) and the art gate for creatures and projections built in this iteration.
+2. **Names marked *(proposal)*** (§13).
 
 ---

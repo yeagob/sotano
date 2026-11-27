@@ -5,6 +5,8 @@
 import type { Behaviour, Enemy, EnemyCtx } from './types';
 import { fx } from '../core/fx';
 import { hash3 } from '../core/rng';
+import { leapAir } from './tiers';
+import { barRest } from '../combat/polarity';
 
 /**
  * Walk at the target and keep pressing on it (Doubt). With `hesitate`, it stops every so often to
@@ -194,9 +196,11 @@ export function leap(opt: { every: number; range: number; crouch: number; air: n
         e.wishX = 0; e.wishZ = 0;
         e.pulse = 1 - e.timer / opt.crouch;
         if (e.timer <= 0) {
-          const vx = e.aimX * d / opt.air, vz = e.aimZ * d / opt.air;
-          e.body.vx = vx; e.body.vz = vz; e.body.vy = 13 * opt.air;
-          e.state = 'air'; e.timer = opt.air; e.pulse = 0;
+          // a tier that climbs higher (tiers.ts) arcs its extra blocks higher, and still lands on its mark
+          const air = leapAir(opt.air, e.climb ?? 0);
+          const vx = e.aimX * d / air, vz = e.aimZ * d / air;
+          e.body.vx = vx; e.body.vz = vz; e.body.vy = 13 * air;
+          e.state = 'air'; e.timer = air; e.pulse = 0;
           ctx.cue(e, 'leap');
         }
         return;
@@ -336,7 +340,8 @@ export function phased(opt: { phases: Behaviour[]; arena: string[] }): Behaviour
   return {
     name: 'phased',
     update(e, ctx) {
-      const share = e.hp / e.maxHp;
+      // what is left of the fight, so love moves a boss through its phases as harm does (combat/polarity.ts)
+      const share = barRest(e.hp, e.maxHp);
       const stage = share <= 1 / 3 ? 2 : share <= 2 / 3 ? 1 : 0;
       if (stage > e.stage) {
         e.stage = stage;
@@ -361,7 +366,7 @@ export function sleep(opt: { wakeSpeed: number; wakeHurt?: number; then: Behavio
         e.wishX = 0; e.wishZ = 0; e.pulse = 0.05;
         // a push wakes it, and so does being hurt (`wakeHurt`, a share of its health): shots too weak
         // to move it must not leave it asleep for good (issue #314)
-        const hurt = opt.wakeHurt !== undefined && e.hp <= e.maxHp * (1 - opt.wakeHurt);
+        const hurt = opt.wakeHurt !== undefined && barRest(e.hp, e.maxHp) <= 1 - opt.wakeHurt;
         if (Math.hypot(e.body.vx, e.body.vz) > opt.wakeSpeed || hurt) { e.tags.delete('asleep'); ctx.cue(e, 'phase'); }
         return;
       }

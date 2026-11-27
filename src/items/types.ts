@@ -70,6 +70,7 @@ export interface ItemApi {
    *  nothing was (not that fluid there, no room, or already one conversion this frame); -1 when a negative conversion into
    *  lava is refused because the player's body touches the section and no `lavaWalk` time is left. `source` names the practice. */
   convertFluid(x: number, y: number, z: number, from: 'water' | 'lava', to: 'water' | 'lava', cap: number, source: string): number;
+  tempWater(x: number, y: number, z: number, seconds: number): boolean;
   launch(spec: IntentSpec, x: number, y: number, z: number, dx: number, dy: number, dz: number): void;
   intentsHere(): number;
   tagCube(cube: number, tag: string): void;
@@ -151,10 +152,11 @@ export interface Effect {
   weapon?: { id: WeaponId; priority: number };
 }
 
-/** 'sky' is the sky realm's gift pool, 'covenant' the Covenant's (the Mender's Thread, COVENANT.md) and 'roots' the Roots'
- *  mastery table's (the Book of Secrets, REWARDS §4): no pool draws from any of them at random (ItemPools leaves their
- *  items out); each item is handed out by id by its one source. */
-export type PoolName = 'treasure' | 'boss' | 'vault' | 'sky' | 'covenant' | 'roots';
+/** 'sky' is the sky realm's gift pool, 'covenant' the Covenant's (the Mender's Thread, COVENANT.md), 'roots' the Roots'
+ *  mastery table's (the Book of Secrets, REWARDS §4) and 'unlock' an achievement's (Walk Slowly: an achievement lays it by id
+ *  at its place): no pool draws from any of them at random (ItemPools leaves their items out); each item is handed out by
+ *  id by its one source. */
+export type PoolName = 'treasure' | 'boss' | 'vault' | 'sky' | 'covenant' | 'roots' | 'unlock';
 
 export interface ItemDef extends Effect {
   id: string;

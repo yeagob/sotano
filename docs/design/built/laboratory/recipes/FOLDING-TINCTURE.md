@@ -7,7 +7,7 @@ Three sealed rooms of Child's Pose's crouch, without holding the practice. The n
 - **Path:** body.
 - **Bulb:** one mind of a body pattern and one dirt block, in any order.
 - **Effect:** the `crouch` stat +1, the same switch Child's Pose gives: holding the crouch control makes the body one block shorter (1.8 to 0.8 blocks, the eye from 1.62 to 0.62), moves at 45 % of the walk, never walks off a ledge and takes half the contact damage of projections ([run and crouch](../../practices/RUN-AND-CROUCH.md)). Not holding it changes nothing.
-- **Control:** C switches it, Control holds it; R3 on a gamepad toggles it; on touch, a swipe down from the bottom twelfth of the right side toggles it.
+- **Control:** C switches it; R3 on a gamepad toggles it; on touch, the body button toggles it (the swipe down from the bottom of the right side still does).
 - **Duration:** 3 sealed rooms (4 with ice), and at the latest the next floor entry. When it ends under a low ceiling, the body stands up only once there is room, as the crouch already does.
 - **With Child's Pose:** nothing more. The stat is a switch (`crouch` is limited to 0 to 1).
 - **Why it is easy:** a body mind (about 12 % of releases) and a block of dirt, the commonest block there is. The dirt keeps it apart from the Stride Tonic, which is the same mind alone.
