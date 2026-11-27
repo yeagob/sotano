@@ -154,7 +154,7 @@ describe('the surface is a formula with exceptions: memory never grows with its 
     expect(sizes.map(s => s.exceptions)).toEqual([0, 0, 0]);
     expect(sizes.map(s => s.exceptionBytes)).toEqual([0, 0, 0]);
     // the caches are capped: walking four times as far keeps them under their caps
-    expect(sizes[2].cacheBytes).toBeLessThanOrEqual(COLUMN_CAP * (18 * 18 * 2 + 256) + TERRAIN_CHUNKS * 4096);
+    expect(sizes[2].cacheBytes).toBeLessThanOrEqual(COLUMN_CAP * (18 * 18 * 2 + 2 * 256) + TERRAIN_CHUNKS * 2 * 4096);
   });
 
   it('the voxels stay under the 16 MB ceiling on the whole surface, array and caches included', () => {

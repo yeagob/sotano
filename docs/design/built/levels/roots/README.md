@@ -18,6 +18,7 @@ Every panel is short, warm and concrete, and true to what the room holds.
 | [PANELS.md](PANELS.md) | The five layouts (lesson, plate, prose, quote, image) on the 896 × 512 slab: geometry, character budgets, key caps, where each panel hangs |
 | [BOOK-DATA.md](BOOK-DATA.md) | The two JSON files, every field, the validation rules, the image namespaces and the key caps |
 | [REWARDS.md](REWARDS.md) | What the Roots lay at each mastery level, 0 to 100, and what stays the same everywhere else |
+| [MASTERY-STONE.md](MASTERY-STONE.md) | The mastery level cut in Roman numerals in the way-down room, in sight of the spawn (issue #397) |
 | [CALL.md](CALL.md) | The Roots' call (level 50): at every run start what the Roots lay flies to the player, all but the meditation's practice |
 
 The achievements, the mastery level and the save record are not specific to the Roots: they are in [progression](../../progression/README.md) ([ACHIEVEMENTS](../../progression/ACHIEVEMENTS.md), [MASTERY](../../progression/MASTERY.md), [SAVE](../../progression/SAVE.md)).
@@ -30,7 +31,7 @@ The plan is `TUTORIAL_LAYOUT` (`src/world/floorplan.ts`) with one template per c
 
 | Cell | Room key (template) | Grid (x, z) | Exercise it holds | Doors |
 |---|---|---|---|---|
-| S | `roots-hall` | (3, 5) | The start: the spawn, facing north | W, E, S |
+| S | `roots-hall` | (3, 5) | The start: the spawn, facing south toward the way down (B) | W, E, S |
 | a | `roots-step` | (4, 5) | Two-high brick walls: build a step and climb | W, N |
 | b | `roots-dig` (flipped north–south) | (4, 4) | A full-height brick wall with a dirt plug between you and the north door | S, N |
 | c | `roots-mend` | (4, 3) | An open room with dirt blocks to crack and mend | S, N |
@@ -56,4 +57,4 @@ The plan is `TUTORIAL_LAYOUT` (`src/world/floorplan.ts`) with one template per c
 
 ## Code
 
-`src/game/roots-book.ts` (the pure page state machine), `src/game/roots-keeper.ts` (one run's walls, the page it shows, its layout), `src/content/book/` (the book files, the validator, the image manifest), `src/render/tablets.ts`, `src/render/panel-layout.ts`, `src/render/page-stone.ts` (the panels and the page stone), `src/content/tables/roots-mastery.ts` (the mastery table), `src/game/achievement-keeper.ts` and `src/content/achievements.ts` (the achievements), `src/game/meta.ts` (the save).
+`src/game/roots-book.ts` (the pure page state machine), `src/game/roots-keeper.ts` (one run's walls, the page it shows, its layout), `src/content/book/` (the book files, the validator, the image manifest), `src/render/tablets.ts`, `src/render/panel-layout.ts`, `src/render/page-stone.ts` (the panels and the page stone), `src/render/mastery-stone.ts` and `mastery-layout.ts` (the mastery stone), `src/content/tables/roots-mastery.ts` (the mastery table), `src/game/achievement-keeper.ts` and `src/content/achievements.ts` (the achievements), `src/game/meta.ts` (the save).
