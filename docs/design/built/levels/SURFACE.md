@@ -21,7 +21,7 @@ Every run has its own mountains: the passes, the summits and where the stairs st
 - **Art gate: owner review needed.** The surface uses only existing blocks and palette tokens; see the PR of issue #10 for what was looked at in the browser. Its read at distance and in the surface's fog, the ledges and stairs, and what the mountains mean to the story need the owner's eye before the art gate is passed.
 - **The mountains are out of sight from the tree.** The surface's fog closes at about 114 blocks and the camera sees 200, so the ring (from 304 blocks out) is only seen when you walk towards it. A far silhouette of the ring is open.
 - **The plain is flat and empty.** What grows or stands on it is open.
-- **What lies past the passes**, and whether the far edge should be hidden or grown into new areas.
+- **What lies past the passes**, and whether the far edge should be hidden or grown into new areas. The extra zones are drafted in [not-built/levels/extra-zones](../../not-built/levels/extra-zones/README.md).
 - **Whether the surface should become diggable** like the rest of the world (the formula already has a store of exceptions for it; decision 8 of [WORLD-STORAGE](../../not-built/levels/WORLD-STORAGE.md) keeps it closed for now).
 
 How it is built: [architecture LEVELS §13](../../../architecture/LEVELS.md#13-the-surface-and-its-mountains-issue-10).
