@@ -2311,8 +2311,10 @@ export class Game {
     if (!a.alive || a.spawning > 0 || !t.alive || t.spawning > 0) return;
     if (t === this.player && this.player.invulnT > 0) return;
     if (!this.contacts.ready(a.id, t.id, this.time)) return;
+    const starred = t === this.player && this.player.starT > 0;
     const ev = this.bus.emit('contact', {
-      attacker: a.id, attackerDef: a.def, target: t.id, targetKind: t.kind, toTarget: a.contactDamage, toAttacker: 0,
+      attacker: a.id, attackerDef: a.def, target: t.id, targetKind: t.kind, toTarget: a.contactDamage,
+      toAttacker: starred ? this.stats.get('damage') : 0,
     });
     if (ev.cancelled) return;
     // Child's Pose: a crouched body takes half the contact, after the items have had their say (RUN-AND-CROUCH.md)
