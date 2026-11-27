@@ -6,7 +6,7 @@ Changes to the tutorial and to the book are listed without their content, so not
 
 ## Unreleased
 
-## 0.2.10-alpha · 2026-11-27
+## 0.3.0-alpha · 2026-11-27
 
 ### Added
 - The way-down room of the Roots carries your mastery level cut in stone, in Roman numerals, in sight of where you wake (#397).
