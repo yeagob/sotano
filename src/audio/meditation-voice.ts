@@ -47,6 +47,7 @@ export class NarrationQueue {
   /** Drops the clip in course and every waiting line. */
   stop(): void {
     this.pending = null;
+    this.paused = false;
     const c = this.current;
     this.current = null;
     this.token++;

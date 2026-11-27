@@ -140,6 +140,15 @@ describe('the narration queue', () => {
     expect(player.started).toEqual([url('c')]);
   });
 
+  it('a stop ends a pause too: the next sitting speaks without a resume', () => {
+    const { player, q } = queue();
+    q.pause(true);
+    q.say('a');
+    q.stop();
+    q.say('b');
+    expect(player.started).toEqual([url('b')]);
+  });
+
   it('the address of a clip is per language and per line', () => {
     expect(clipUrl('/', 'es', 'med.ground.arrive.1')).toBe('/audio/meditation/es/med.ground.arrive.1.mp3');
   });
