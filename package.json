@@ -1,5 +1,6 @@
 {
   "name": "the-roots",
+  "author": "Santiago Dopazo (yeagob)",
   "private": true,
   "version": "0.2.10-dev",
   "type": "module",

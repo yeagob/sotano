@@ -864,8 +864,8 @@ export const ES: Catalog = {
     'teach.lionsmane.lesson': 'Cuida el cuerpo que te lleva: comida, descanso, movimiento. Una mente descansada y bien alimentada ve más lejos. Luego vuelve a mirar un límite que dabas por hecho.',
     'teach.manthinketh.quote': 'Según piensas, así te vuelves.',
     'teach.manthinketh.lesson': 'Fíjate en los pensamientos que repites sobre ti y sobre tu vida. Cambia uno que desanime por otro más cierto y amable, y actúa según él. Los hábitos de pensar dan forma, despacio, a los hábitos de vivir.',
-    'teach.meditations.quote': 'Separa lo que te toca cambiar de lo que no, y pon tu fuerza donde cuenta.',
-    'teach.meditations.lesson': 'Cuando algo te inquiete, escribe dos columnas: lo que controlas y lo que no. Actúa sobre lo primero y deja estar lo segundo. Las notas a ti mismo son un espejo al que puedes volver.',
+    'teach.meditations.quote': 'No hay nada más transformador que meditar cada día.',
+    'teach.meditations.lesson': 'Siéntate unos minutos cada día, a la misma hora, y deja que la respiración sea el ancla. Una sesión corta todos los días hace más que una larga de vez en cuando: el hábito es lo que te cambia.',
     'teach.mindset.quote': 'Todavía no no es nunca.',
     'teach.mindset.lesson': 'Cuando falles, añade «todavía»: «todavía no sé hacerlo». Trata los errores como información sobre qué practicar después. Valora el esfuerzo y la estrategia, en ti y en los demás.',
     'teach.nothingpersonal.quote': 'Lo que hacen los demás suele hablar de ellos, no de ti.',
@@ -1504,7 +1504,7 @@ export const ES: Catalog = {
       selfefficacy: {
         name: 'Autoeficacia',
         description: 'Creer que puedes subir hace posible la subida.',
-        effect: 'Una proyección golpeada por una intención huye de ti durante 3 segundos en lugar de atacar. Alcance +1 bloque.',
+        effect: 'Una proyección golpeada por una intención huye de ti durante 3 segundos en lugar de atacar, y luego no puede volver a asustarse durante 5 a 10 segundos. Alcance +1 bloque.',
         inspiredBy: 'la autoeficacia (Albert Bandura, 1977)',
       },
       selfcompassion: {
@@ -1603,10 +1603,10 @@ export const ES: Catalog = {
         inspiredBy: 'James Allen, Como un hombre piensa, así es (dominio público)',
       },
       meditations: {
-        name: 'Meditaciones',
-        description: 'Notas para ti sobre lo que está en tu mano. Cada intención cae con un peso enorme.',
+        name: 'Meditar cada día',
+        description: 'Sentarte contigo cada día. Cada intención cae con un peso enorme.',
         effect: 'Daño ×3, y luego +2. El mayor aumento de daño del juego.',
-        inspiredBy: 'Marco Aurelio, Meditaciones (dominio público)',
+        inspiredBy: 'Santiago Dopazo, sobre la meditación diaria; las tradiciones orientales de meditación',
       },
       mindset: {
         name: 'Mentalidad de crecimiento',

@@ -47,7 +47,7 @@ Each idea the game is built on: where it comes from (ids from [SOURCES.md](SOURC
 | **What keeps living anyway** (instinct, curiosity, play, rest) | — (our own) | Creatures: the living beings of the depths, never hostile ([BESTIARY §7](../design/built/creatures/README.md)) |
 | **Boundaries** | — (our own) | The Boundary: a guardian that wakes only if you break a sanctuary, and settles when you mend it; the Sanctuary, its meditation app: the space a boundary keeps for you ([MEDITATION-APP.md](../design/built/presences/MEDITATION-APP.md)) |
 | **Resistance** | `war-of-art` | A future boss |
-| **What's in your control** | `meditations`, `enchiridion` | Stoic Resolve, Meditations |
+| **What's in your control** | `meditations`, `enchiridion` | Stoic Resolve |
 | **Rhythm and polarity** | `kybalion` | Fire and water, cycles of runs ([COSMOLOGY.md §2](COSMOLOGY.md#2-the-seven-principles-as-systems)) |
 | **Cause and effect** | `kybalion` | Synergies and chain reactions |
 | **Change is the only constant** | `i-ching`, `kybalion` (rhythm) | Every run is a different moment; the run seed is shown and read as a hexagram (owner's decision) whose changing lines hint at how the run turns |

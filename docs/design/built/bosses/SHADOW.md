@@ -131,7 +131,7 @@ The owner's rule (issue #372): the fight is against your own friends. The Shadow
 | Lion's Mane | `lionsmane` | copied | Jump ×2 (headbutts break blocks: no meaning for it) |
 | Lucid Dream | `luciddream` | skipped | Miracle: through walls |
 | As a Man Thinketh | `manthinketh` | copied | Damage ×1.5, shot speed +50% |
-| Meditations | `meditations` | copied | Damage ×3 +2 |
+| Daily Meditation | `meditations` | copied | Damage ×3 +2 |
 | Mender's Thread | `menders-thread` | skipped | Defence |
 | Mindful Eating | `mindfuleating` | skipped | Meals |
 | Growth Mindset | `mindset` | copied | Jump ×1.7 |

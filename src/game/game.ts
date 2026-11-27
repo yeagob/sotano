@@ -94,6 +94,8 @@ import { Wind } from './wind';
 import { AirForces } from '../physics/air-forces';
 import { currentVoice, panelImages, Tablets } from '../render/tablets';
 import { PageStone } from '../render/page-stone';
+import { MasteryStone } from '../render/mastery-stone';
+import { masteryStoneBlocks } from '../render/mastery-layout';
 import { loadBook } from '../content/book';
 import { locale, onLocaleChange, t, type MessageKey } from '../i18n';
 import {
@@ -139,7 +141,7 @@ import { ActorRegistry, ContactGate, HALF_HEART, HEART, QUARTER_HEART, hostile, 
 import { createBus, WEAPONS_KEEPING_SHOT, type Cause, type GameBus, type IntentSpec, type Owner, type PickupKind, type WeaponId } from './events';
 import { attachDevlog, carriedName, cell, devlog } from '../debug/devlog';
 import { Hud, floorLabel } from './hud';
-import { CHECKPOINT_TAG, arrivalOf, releasedRooms, standingSpot, type Spot } from './checkpoint';
+import { CHECKPOINT_TAG, arrivalOf, arrivalYaw, releasedRooms, standingSpot, type Spot } from './checkpoint';
 import { CheckpointMark } from './checkpoint-mark';
 import { CloudLayer } from './cloud-layer';
 import { PHASE_STATUS, PHASE_WARN_S, phasedSolid, roomBox, roomInterior, fallbackBox, rescueSpot, inBox, type CellBox, type RescueArea } from './phase';
@@ -165,6 +167,7 @@ import type { Rng } from '../core/rng';
 import { CourseRunner } from '../world/course';
 import { branchGifts, holdsAllBranchPractices, walkSlowSpot, WALK_SLOW_ITEM } from './branch-gifts';
 import { freezeProjection } from '../core/freeze';
+import { frightenProjection } from '../core/fear';
 import { FreezeSpheres, SPHERE_FREEZE, sphereRadius, type SphereTarget } from '../combat/freeze-sphere';
 import { TempWater } from '../world/temp-water';
 import { WATER_PACE } from '../sky/laws/water';
@@ -592,6 +595,8 @@ export class Game {
   /** The page stone's block (x, y, z) and whether it was broken this run: the stone goes until the next run (PAGES §4). */
   private stoneBlock: [number, number, number] | undefined;
   private stoneGone = false;
+  private masteryStone!: MasteryStone;
+  private masteryBlocks: [number, number, number][] = [];
   private readonly walls: WallSink = {
     show: (room, side, panel, page) => this.tablets.show(room, side, panel, page),
     stone: page => this.setStone(page),
@@ -753,6 +758,9 @@ export class Game {
     this.pageStone?.dispose();
     this.pageStone = new PageStone(this.dungeonRoot);
     this.stoneGone = false; this.stoneBlock = undefined;
+    this.masteryStone?.dispose();
+    this.masteryStone = new MasteryStone(this.dungeonRoot);
+    this.masteryBlocks = [];
     // the walls exist before floor 0 is carved: the page the run starts on decides its layout (EASY-LAYOUT §7)
     this.roots = openRoots(sandbox !== null, {
       record: this.meta,
@@ -859,7 +867,7 @@ export class Game {
     this.branchGifts = box ? [] : this.placeBranchGifts();
     this.carve(FIRST_FLOOR + 1);
     p.spawnAt(...this.floors.get(k)!.spawn);
-    p.yaw = 0; p.pitch = 0;
+    p.yaw = box ? 0 : arrivalYaw(this.floors.get(k)!); p.pitch = 0;
     this.stream();
     this.depth = this.maxDepth = this.groundBand = k;
     this.room = -1;
@@ -1015,6 +1023,10 @@ export class Game {
         // the wall block behind the stone: the stone is its face (pageStoneMount sits 0.015 in front of z0)
         this.stoneBlock = [r.hx + 6, r.y0 + 2, r.hz - 1];
       }
+      if (r.type === 'boss') {
+        this.masteryStone.mount(r.hx, r.y0, r.hz, this.runMastery);
+        this.masteryBlocks = masteryStoneBlocks(r.hx, r.y0, r.hz, this.runMastery);
+      }
     }
     const token = ++this.wallsToken;
     this.wallsLoading = true;
@@ -1034,6 +1046,10 @@ export class Game {
     if (b && !this.stoneGone && !this.solid(b[0], b[1], b[2])) {
       this.stoneGone = true;
       this.pageStone.hide();
+    }
+    if (this.masteryBlocks.some(([x, y, z]) => !this.solid(x, y, z))) {
+      this.masteryBlocks = [];
+      this.masteryStone.hide();
     }
   }
 
@@ -1689,8 +1705,8 @@ export class Game {
       nearestProjection: (x, y, z, r, except) => this.nearestProjection(x, y, z, r, except),
       actorAt: id => { const a = this.actors.get(id); return a ? { x: a.body.x, y: a.body.y + a.body.h / 2, z: a.body.z } : null; },
       shove: (id, dx, dz, s) => this.shove(id, dx, dz, s),
-      freeze: (id, s) => this.affectProjection(id, 'frozen', s),
-      frighten: (id, s) => this.affectProjection(id, 'fear', s),
+      freeze: (id, s) => this.freezeAt(id, s),
+      frighten: id => this.frighten(id),
       igniteArea: (x, y, z, r) => this.igniteArea(x, y, z, r),
       shieldFire: (x, y, z, r, s) => this.shieldFire(x, y, z, r, s),
       convertFluid: (x, y, z, from, to, cap, src) => this.convertFluid(x, y, z, from, to, cap, src),
@@ -2342,8 +2358,10 @@ export class Game {
     if (!a.alive || a.spawning > 0 || !t.alive || t.spawning > 0) return;
     if (t === this.player && this.player.invulnT > 0) return;
     if (!this.contacts.ready(a.id, t.id, this.time)) return;
+    const starred = t === this.player && this.player.starT > 0;
     const ev = this.bus.emit('contact', {
-      attacker: a.id, attackerDef: a.def, target: t.id, targetKind: t.kind, toTarget: a.contactDamage, toAttacker: 0,
+      attacker: a.id, attackerDef: a.def, target: t.id, targetKind: t.kind, toTarget: a.contactDamage,
+      toAttacker: starred ? this.stats.get('damage') : 0,
     });
     if (ev.cancelled) return;
     // Child's Pose: a crouched body takes half the contact, after the items have had their say (RUN-AND-CROUCH.md)
@@ -3155,7 +3173,7 @@ export class Game {
 
   private freezeBySphere(id: number) {
     if (this.inSky) { this.sky?.creatures.freeze(id, SPHERE_FREEZE); return; }
-    this.affectProjection(id, 'frozen', SPHERE_FREEZE);
+    this.freezeAt(id, SPHERE_FREEZE);
   }
 
   private updateSpheres(dt: number) {
@@ -3173,14 +3191,22 @@ export class Game {
     }
   }
 
-  private affectProjection(id: number, field: 'frozen' | 'fear', seconds: number) {
+  private freezeAt(id: number, seconds: number) {
     const e = this.enemies.get(id);
     if (!e || e.faction !== 'projection') return;
-    if (field === 'frozen' && !freezeProjection(e, seconds)) return;
-    if (field === 'fear') e.fear = Math.max(e.fear, seconds);
+    if (!freezeProjection(e, seconds)) return;
     const b = e.body;
     this.particles.burst(b.x, b.y + b.h * 0.6, b.z, pal('cold.body'), 10, 1.4, 0.06);
-    spatial.cue(field === 'frozen' ? 'field' : 'chirp', b.x, b.y, b.z);
+    spatial.cue('field', b.x, b.y, b.z);
+  }
+
+  private frighten(id: number) {
+    const e = this.enemies.get(id);
+    if (!e || e.faction !== 'projection') return;
+    if (!frightenProjection(e, () => this.rng.stream('ai').next())) return;
+    const b = e.body;
+    this.particles.burst(b.x, b.y + b.h * 0.6, b.z, pal('cold.body'), 10, 1.4, 0.06);
+    spatial.cue('chirp', b.x, b.y, b.z);
   }
 
   /** Sets alight every flammable block whose cell lies within `r` blocks of (x, y, z). Offsets are whole cells, so a
