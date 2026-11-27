@@ -1,10 +1,11 @@
+export const FEAR_FLIGHT = 3;
 export const FEAR_REST_MIN = 5;
 export const FEAR_REST_MAX = 10;
 
-export function frightenProjection(e: { fear: number; fearRest: number }, seconds: number, roll: number): boolean {
-  if (!(seconds > 0) || e.fear > 0 || e.fearRest > 0) return false;
-  e.fear = seconds;
-  e.fearRest = FEAR_REST_MIN + (FEAR_REST_MAX - FEAR_REST_MIN) * roll;
+export function frightenProjection(e: { fear: number; fearRest: number }, next: () => number): boolean {
+  if (e.fear > 0 || e.fearRest > 0) return false;
+  e.fear = FEAR_FLIGHT;
+  e.fearRest = FEAR_REST_MIN + (FEAR_REST_MAX - FEAR_REST_MIN) * next();
   return true;
 }
 

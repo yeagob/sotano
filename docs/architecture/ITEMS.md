@@ -51,7 +51,7 @@ Then list it in `src/content/items/index.ts`, and translate `name`, `description
 | `has(id)`, `hasTag(tag)` | Ask about other held items |
 | `pulse`, `arc`, `igniteArea` | Area effects: damage and shove every projection around a point, a bolt between a point and a projection (through its polarity), fire on flammable blocks |
 | `shieldFire` | Fire never hurts you within `radius` of a point for `seconds` (Controlled Burn: the fire of your own blasts) |
-| `nearestProjection`, `actorAt`, `shove`, `freeze`, `frighten` | Find projections, push one, freeze one for a time (it cannot move, attack or touch), frighten one (it runs away) |
+| `nearestProjection`, `actorAt`, `shove`, `freeze`, `frighten` | Find projections, push one, freeze one for a time (it cannot move, attack or touch), frighten one (the fear effect of `src/core/fear.ts`: it runs away for 3 s, then rests 5 to 10 s before it can be frightened again) |
 | `launch`, `intentsHere`, `tagCube` | Fire a new intention, count the intentions in flight in the player's room, tag a loose cube |
 | `placeBlock` | Place one copy of an ordinary block in an empty cell of the player's room (Affirmation). Only interior room space, no body, no element, no door or doorway, never a material that may not be copied. Writes the world like the player's placement but emits no `blockPlace` or `blockPlaced`. Returns whether it placed |
 | `tempWater` | Source water in an empty air cell for `seconds`, then it dries; on water it made, only the timer restarts. True when it placed or restarted (`src/world/temp-water.ts`). Like Water |

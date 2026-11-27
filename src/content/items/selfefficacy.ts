@@ -31,7 +31,7 @@ export default defineItem({
   stats: [{ stat: 'reach', layer: 'add', value: 1 }],
   hooks: [
     hook('intentHit', (e, api) => {
-      if (e.kind === 'actor') api.frighten(e.target, 3);
+      if (e.kind === 'actor') api.frighten(e.target);
     }, { id: 'frighten', priority: 200 }),
   ],
 });

@@ -61,7 +61,7 @@ export interface ItemApi {
   actorAt(id: ActorId): { x: number; y: number; z: number } | null;
   shove(id: ActorId, dx: number, dz: number, speed: number): void;
   freeze(id: ActorId, seconds: number): void;
-  frighten(id: ActorId, seconds: number): void;
+  frighten(id: ActorId): void;
   igniteArea(x: number, y: number, z: number, radius: number): void;
   /** For `seconds`, fire never hurts you within `radius` of (x, y, z): the fire of a blast of yours (Controlled Burn). */
   shieldFire(x: number, y: number, z: number, radius: number, seconds: number): void;
