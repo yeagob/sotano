@@ -134,11 +134,11 @@ Three rooms hide part of their panels behind their own exercise. The geometry of
 
 ## 7. Which wall holds the lesson
 
-A player walking the ring forward faces one wall on entering each room. That wall holds the room's lesson on every tutorial page; the other wall holds plates and the lessons that change from page to page. The owner asked for "the south panels for bestiary plates"; taken literally, that would put the lesson behind the player in six of the eleven rooms, so the build follows the intent (the bestiary taught on the walls) and keeps each lesson where it is read first. [Open question 1](../../../not-built/levels/roots/OPEN-QUESTIONS.md), built with its default.
+A player walking the ring forward faces one wall on entering each room. That wall holds the room's lesson on every tutorial page; the other wall holds plates and the lessons that change from page to page. The owner asked for "the south panels for bestiary plates"; taken literally, that would put the lesson behind the player in six of the eleven rooms, so the build follows the intent (the bestiary taught on the walls) and keeps each lesson where it is read first. The start room is the exception since issue #397: the player wakes facing south, toward the way down and its mastery stone, so the start room's lesson (north) is behind the player at the first frame. [Open question 1](../../../not-built/levels/roots/OPEN-QUESTIONS.md), built with its default.
 
 | Room | Entered forward from | Lesson wall | Plate wall |
 |---|---|---|---|
-| `roots-hall` | (spawn, facing north) | north | south |
+| `roots-hall` | (spawn, facing south toward the way down; the lesson wall is behind) | north | south |
 | `roots-step` | west | north | south |
 | `roots-dig` | south | south (the north panel is behind the wall) | north |
 | `roots-mend` | south | north | south |
