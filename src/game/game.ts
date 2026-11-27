@@ -164,6 +164,7 @@ import type { Rng } from '../core/rng';
 import { CourseRunner } from '../world/course';
 import { branchGifts, holdsAllBranchPractices, walkSlowSpot, WALK_SLOW_ITEM } from './branch-gifts';
 import { freezeProjection } from '../core/freeze';
+import { frightenProjection } from '../core/fear';
 import { FreezeSpheres, SPHERE_FREEZE, sphereRadius, type SphereTarget } from '../combat/freeze-sphere';
 import { TempWater } from '../world/temp-water';
 import { WATER_PACE } from '../sky/laws/water';
@@ -3142,7 +3143,7 @@ export class Game {
     const e = this.enemies.get(id);
     if (!e || e.faction !== 'projection') return;
     if (field === 'frozen' && !freezeProjection(e, seconds)) return;
-    if (field === 'fear') e.fear = Math.max(e.fear, seconds);
+    if (field === 'fear' && !frightenProjection(e, seconds, this.rng.stream('ai').next())) return;
     const b = e.body;
     this.particles.burst(b.x, b.y + b.h * 0.6, b.z, pal('cold.body'), 10, 1.4, 0.06);
     spatial.cue(field === 'frozen' ? 'field' : 'chirp', b.x, b.y, b.z);

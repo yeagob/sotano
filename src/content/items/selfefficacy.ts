@@ -5,7 +5,7 @@ export default defineItem({
   id: 'selfefficacy',
   name: 'Self-Efficacy',
   description: 'Believing you can climb makes the climb possible.',
-  effect: 'A projection hit by an intention runs away from you for 3 seconds instead of attacking. Reach +1 block.',
+  effect: 'A projection hit by an intention runs away from you for 3 seconds instead of attacking, then cannot be scared again for 5 to 10 seconds. Reach +1 block.',
   inspiredBy: 'Self-efficacy (Albert Bandura, 1977)',
   pools: { treasure: 1 },
   tags: ['will', 'intent'],
