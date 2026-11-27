@@ -12,7 +12,7 @@ import { createWeapon, type Weapon, type WeaponHost } from '../combat/weapons';
 import { Missiles, MISSILE_RANGE, MISSILE_SPEED, muzzleBlocked } from '../combat/missiles';
 import { TouchRouter } from '../combat/touch-router';
 import { ENEMIES, ENEMY_BUDGET, ENEMY_BY_ID, pickWave, waveBudget } from '../content/enemies';
-import { LAVA_TOP } from '../world/void';
+import { LAVA_FLOOR, LAVA_TOP } from '../world/void';
 import { BOSS_BY_ID, bossFor, bossSpawnLife } from '../content/bosses';
 import { BLAST_ACTOR_DAMAGE, BOMB_FUSE, lightBomb, type BombBlast } from './bomb';
 import { enemyText, materialName, partText } from '../i18n/content';
@@ -5689,7 +5689,8 @@ export class Game {
     const p = this.player, e = p.eye;
     const below = this.below;
     const sky = !below || e.y > SURFACE_Y - 4;
-    this.chunks.setVisibleRange(e.y - (sky ? 60 : 22), e.y + (sky ? 120 : 22), sky);
+    const inVoid = !!this.dw?.terrain?.voidAt(e.x, e.z);
+    this.chunks.setVisibleRange(e.y - (sky ? 60 : 22), e.y + (sky ? 120 : 22), sky || inVoid, inVoid ? Math.min(e.y - 60, SURFACE_Y + LAVA_FLOOR - 1) : e.y - (sky ? 60 : 22));
     this.stars.position.set(e.x, 0, e.z);
 
     // camera with a little walking bob and explosion shake
@@ -5709,7 +5710,7 @@ export class Game {
         fog.near = 0; fog.far = under.fog.far;
       } else { fog.near = 6 + k * 30; fog.far = 34 + k * 80; }
       // up the tree the sky turns to night and the stars come out (the cosmos); silence is dark
-      const night = THREE.MathUtils.smoothstep(e.y, SURFACE_Y + TREE_ZONES.branches, SURFACE_Y + TREE_ZONES.heaven);
+      const night = THREE.MathUtils.smoothstep(e.y, SURFACE_Y + TREE_ZONES.branches, SURFACE_Y + TREE_ZONES.heaven) * (1 - (this.dw?.terrain?.voidMix(e.x, e.z) ?? 0));
       if (night > 0) { this.fogColor.lerp(NIGHT, night); fog.far = 34 + k * 80 + night * 60; }
       this.stars.visible = night > 0.05;
       (this.stars.material as THREE.PointsMaterial).opacity = night;

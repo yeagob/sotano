@@ -146,7 +146,7 @@ export class ChunkRenderer {
    *  viewer stays in the same chunk column. */
   streamOuter(x: number, z: number, view = OUTER_VIEW) {
     if (!this.world.outerChunksNear) return;
-    const at = `${Math.floor(x / CHUNK)},${Math.floor(z / CHUNK)},${view}`;
+    const at = `${Math.floor(x / CHUNK)},${Math.floor(z / CHUNK)},${view},${this.world.outerVersion?.() ?? 0}`;
     if (at === this.outerAt) return;
     this.outerAt = at;
     const next = new Set(this.world.outerChunksNear(x, z, view).map(([cx, cy, cz]) => chunkKey(cx, cy, cz)));
@@ -157,7 +157,7 @@ export class ChunkRenderer {
         if (m) { m.geometry.dispose(); this.scene.remove(m); this.meshes[layer].delete(key); }
       }
     }
-    for (const key of next) if (!this.outerKeys.has(key)) this.world.dirty.add(key);
+    for (const key of next) if (!this.outerKeys.has(key)) { this.world.dirty.add(key); this.world.elemDirty.add(key); }
     this.outerKeys = next;
   }
 
@@ -189,10 +189,10 @@ export class ChunkRenderer {
 
   /** Only draw chunks whose rows overlap [y0, y1] (floors far above or below stay hidden). `outer`:
    *  draw the terrain outside the stored world (the mountains) at any height above y0, or not at all. */
-  setVisibleRange(y0: number, y1: number, outer = false) {
+  setVisibleRange(y0: number, y1: number, outer = false, outerY0 = y0) {
     for (const layer of ['blocks', 'elem'] as Layer[]) for (const [key, m] of this.meshes[layer]) {
       const [cx, cyi, cz] = parseChunkKey(key), cy = cyi * CHUNK;
-      m.visible = this.world.outerChunk?.(cx, cz) ? outer && cy + CHUNK > y0 : cy + CHUNK > y0 && cy < y1;
+      m.visible = this.world.outerChunk?.(cx, cz) ? outer && cy + CHUNK > outerY0 : cy + CHUNK > y0 && cy < y1;
     }
   }
 

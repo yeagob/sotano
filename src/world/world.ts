@@ -121,6 +121,10 @@ export class VoxelWorld implements VoxelSpace {
     return this.terrain ? this.terrain.chunksNear(x, z, radius) : [];
   }
 
+  outerVersion(): number {
+    return this.terrain ? this.terrain.editVersion : 0;
+  }
+
   markElemDirty(x: number, y: number, z: number) {
     const cx = Math.floor(x / CHUNK), cy = Math.floor(y / CHUNK), cz = Math.floor(z / CHUNK);
     this.elemDirty.add(chunkKey(cx, cy, cz));

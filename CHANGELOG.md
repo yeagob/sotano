@@ -8,6 +8,7 @@ Changes to the tutorial and to the book are listed without their content, so not
 
 ### Added
 - The Outer Void: past the initial zone the land goes on, endless, with trees, lakes and a sea of lava under the ground that takes whoever digs ten blocks down (#330).
+- Four biomes far out in the Outer Void: an open sea with a stilt village, a harbour and a boat to the east, a desert of dunes to the south, a mountain massif crowned by a temple to the west, and a frozen land to the north.
 - Every hostile sky guardian and minion that touches you drains your spirit (4 at a time, at most once every 1.5 s).
 - A new body practice, the Double Jump: one more jump in the air (#293).
 - A new body practice, the Wall Jump: one more jump in the air, taken from a wall beside you (#294).

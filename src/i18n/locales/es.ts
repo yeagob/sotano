@@ -2046,6 +2046,7 @@ export const ES: Catalog = {
       palebough: 'Rama clara',
       shadebough: 'Rama umbría',
       breathleaf: 'Hojas de aliento',
+      sand: 'Arena',
     },
     parts: {
       'doubt.flesh': {
