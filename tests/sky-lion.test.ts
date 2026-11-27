@@ -95,7 +95,7 @@ function rig(def: DeityDef = lionDeity, at: Vec3 = { x: LEDGE.x + 0.5, y: LEDGE.
   const gate = { open: true };
   const deps: CreatureDeps = {
     actors, runner, effects, puff: new Puff(host), knock: {} as TowerKnockApi,
-    spirit: { update() {}, canDrain: () => gate.open, drain: n => { if (!gate.open) return false; log.drains.push(n); return true; } },
+    spirit: { update() {}, canDrain: () => gate.open, drain: n => { if (!gate.open) return false; log.drains.push(n); return true; }, contact: () => true },
   };
   const creatures = new SkyCreatures(new THREE.Group(), host, deps);
   const actor = creatures.spawnDeity(calm(def), PLAN);

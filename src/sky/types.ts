@@ -522,6 +522,7 @@ export interface SpiritApi {
   update(): void;
   /** True when a drain could land now: not held, not within 1 s after, 6 s after the last drain. */
   canDrain(): boolean;
+  contact(n: number): boolean;
   /** Takes `n` spirit if it can land (and sends the player underground at zero); true when it did. */
   drain(n: number): boolean;
 }

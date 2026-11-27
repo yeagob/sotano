@@ -34,6 +34,9 @@ interface MinionEntry {
 const MINION_HW = 0.35;
 const MINION_H = 0.9;
 
+export const CONTACT_SPIRIT = 10;
+export const CONTACT_EVERY = 1.5;
+
 export class SkyCreatures implements SkyCreaturesApi {
   onWon: ((d: SkyActor, floor: FloorIndex) => void) | null = null;
   private view: CreatureView;
@@ -184,6 +187,7 @@ export class SkyCreatures implements SkyCreaturesApi {
   /** Only the creatures of `floor` move; the others are parked (hidden, not updated) until the player comes back. */
   update(dt: number, floor: number) {
     this.deps.puff.update(dt);
+    this.contactDrain();
     for (const e of this.deities) {
       const on = e.def.floor === floor;
       e.actor.parked = !on;
@@ -203,6 +207,22 @@ export class SkyCreatures implements SkyCreaturesApi {
       if (parts) m.def.model.react(parts, m.actor.hits / Math.max(1, m.def.hitsToTurn));
     }
     this.view.update(dt, this.all());
+  }
+
+  private readonly contactAt = new Map<number, number>();
+
+  private contactDrain() {
+    const pb = this.host.player().body;
+    const now = this.host.time();
+    for (const a of this.all()) {
+      const b = a.body;
+      if (a.parked || a.side !== 'wild' || !b) continue;
+      if (now < (this.contactAt.get(a.id) ?? -Infinity)) continue;
+      const reach = b.hw + pb.hw;
+      if (Math.abs(b.x - pb.x) > reach || Math.abs(b.z - pb.z) > reach) continue;
+      if (pb.y > b.y + b.h || pb.y + pb.h < b.y) continue;
+      if (this.deps.spirit.contact(CONTACT_SPIRIT)) this.contactAt.set(a.id, now + CONTACT_EVERY);
+    }
   }
 
   /** The minions of floor `floor`, parked or not: what its spawner counts against `max` and `wildMax`. */
