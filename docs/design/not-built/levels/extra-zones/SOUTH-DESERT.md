@@ -11,12 +11,12 @@ The south cardinal walk ends in the deep desert, a basin of sand in the south of
 ## Decided and built
 
 - **The place.** Inside the Outer Void, due south, 1 450 to 1 750 blocks from the tree (open question 4 of the earlier text: inside the Void, not beyond it).
-- **The worm.** One worm, unkillable: calmed by positive intentions from its head, ridden, steered inside the desert, and its gifts given on the dismount.
+- **The worm.** One worm: calmed by positive intentions from its head, ridden, steered inside the desert, and its gifts given on the dismount; killed only by an explosive in its mouth (a swallowed bomb, or a missile as it starts its dive).
 - **The rules of a secret room.** A fixed unique practice (Prescience) and an achievement (Rider of the Sands), once per run.
 
 ## Open
 
 1. **The names.** The generic name the owner chooses for the desert and its worm; the practice and the achievement names are provisional.
-2. **The kill path.** The issue's first text gave a second practice for killing the worm (the tooth knife, proposed as Cut Ties with Toxic Relationships). The owner's latest words make the worm unkillable, so it is not built. If it returns, it needs the owner's rule for the mouth (the only place a negative intention reaches, in the owner's details of 2026-11-26).
+2. **The kill's reward.** Killing the worm is built (explosives in its mouth, the owner's correction of 2026-11-28), but it gives nothing yet: the tooth knife (proposed as Cut Ties with Toxic Relationships) and the water of life of the issue comment wait for the owner's definition.
 3. **More worms.** "Gusanos" is plural: one worm is built.
 4. **The portal.** The walk is the way in; the portal of the cardinal rooms is still open ([CARDINAL-WALK](../secret-rooms/CARDINAL-WALK.md)).

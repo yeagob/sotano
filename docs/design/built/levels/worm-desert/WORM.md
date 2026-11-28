@@ -4,7 +4,7 @@
 
 Status: built (issue #354). Code: `src/entities/sand-worm.ts` (its rules), `src/render/worm-view.ts` (its look), `Game.wormBefore`, `Game.wormAfter`, `Game.wormIntention` (`src/game/game.ts`). Tests: `tests/sand-worm.test.ts`.
 
-A worm as wide as a house lives under the sand of the deep desert ([README](README.md)). It cannot be hurt and it cannot be killed: it can only be calmed. The player reads the sand, climbs onto its back as it leaps, walks it plate by plate to the head, and calms it with good intentions. A calm worm can be steered. Stepping off it gives Prescience and the achievement *Rider of the Sands*.
+A worm as wide as a house lives under the sand of the deep desert ([README](README.md)). No intention hurts it. It can be calmed, and it can be killed only by an explosive in its mouth. The player reads the sand, climbs onto its back as it leaps, walks it plate by plate to the head, and calms it with good intentions. A calm worm can be steered. Stepping off it gives Prescience and the achievement *Rider of the Sands*.
 
 It is not a projection: it is no pattern of the mind and has no colour tier. It is the desert's own life, like the creatures of the depths, and as they do it answers only positive intentions.
 
@@ -30,7 +30,16 @@ It is not a projection: it is no pattern of the mind and has no colour tier. It 
 ## Calming it
 
 - **Only positive intentions count.** A positive intention that hits the head, fired by a rider standing on the head, calms the worm: a gold spark, a soft chime and a toast that counts (`The worm grows calm: 5 of 12`). Twelve make it tame.
-- **Everything else does nothing.** A negative intention anywhere on the worm does nothing at all, and a toast says so ("Nothing harms the worm…"). A positive intention on any other segment, or from anywhere but the head, is spent on the body and does nothing. The worm has no health: it cannot die (owner's latest words; the issue's kill path and its tooth knife are not built).
+- **Everything else does nothing.** A negative intention anywhere on the worm does nothing at all, and a toast says so ("Intentions do not harm the worm…"). A positive intention on any other segment, or from anywhere but the head, is spent on the body and does nothing. The worm has no health bar: intentions never kill it.
+
+## Killing it
+
+The owner's correction (2026-11-28): the worm can be killed, but only by an explosive in its mouth. The mouth is the front of the head, a block and a half behind and in front of its front face, inside its rim.
+
+- **A bomb it swallows.** A lit bomb (placed, thrown or kicked) that reaches its mouth while it is out of the sand is swallowed and kills it.
+- **A missile as it dives.** A missile (Dr. Launcher) that enters its mouth in the first 2.5 seconds of its dive kills it. At any other moment a missile that meets the worm bursts on its body and does nothing to it.
+- **Nothing else.** An explosive anywhere else on the body does nothing to it; negative intentions still do nothing to the body.
+- **Its death.** A muffled blast inside it, smoke and fire bursting from the mouth, a shake and a toast ("The worm swallowed the blast…"). A rider is dropped. It sinks and does not rise again this run: no dismount, no Prescience, no achievement. A reward for the kill is not built: it is pending the owner's items (the issue's tooth knife; the water of life of the issue comment is pending its definition).
 - **Kept.** The calm it has taken is kept for the run, even if the rider falls off.
 
 ## Steering it
@@ -70,10 +79,11 @@ Riding adds no button: it gives new meanings to existing actions, as a Minecraft
 | Calm | 12 positive intentions on the head, from the head |
 | Steering limit | 120 blocks from the basin's centre |
 | Dive | after 40 s with no rider; 8 s before the next cracks |
+| Death | a bomb in the mouth while out of the sand, or a missile in the mouth in the first 2.5 s of the dive |
 
 ## Open for the owner
 
 1. The names: *Prescience* (the owner's proposal, *Presciencia*) and the achievement *Rider of the Sands* (*Jinete de las arenas*) are provisional.
-2. The kill path of the issue (practice A, the tooth knife as *Cut Ties with Toxic Relationships*) is dropped by the owner's latest words; if it comes back, the mouth would be the only place a negative intention reaches, as the issue's owner details said.
+2. The reward for killing it: the issue's tooth knife (proposed as *Cut Ties with Toxic Relationships*) and the water of life of the issue comment wait for the owner's definition; the kill gives nothing yet.
 3. Whether a tame worm should stay in later runs, or follow the player.
 4. The look: the worm is drawn from boxes of the desert's stone, without a texture of its own; the art pass is still to come.
