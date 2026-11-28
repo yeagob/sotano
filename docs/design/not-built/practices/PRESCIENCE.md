@@ -9,7 +9,7 @@ Status: built in code (`src/content/items/prescience.ts`); this document waits h
 | Path | Mind |
 | Quality | 3 of 4 |
 | Rarity | Unique (issue #347): the fixed reward of one place |
-| Found in | the deep desert: the great worm gives it on the dismount ([WORM](../../built/levels/worm-desert/WORM.md)); its only pool is `secret`, which no draw reads |
+| Found in | the deep desert: the great worm gives it on the dismount, or on its death by three explosions in its mouth, one way per run ([WORM](../../built/levels/worm-desert/WORM.md)); its only pool is `secret`, which no draw reads |
 | Inspired by | Frank Herbert, *Dune* (1965): the prescience the desert gives. Credited only; the title and its terms are never names in the game ([SOURCES](../../../lore/SOURCES.md), `dune`) |
 | Code | `src/content/items/prescience.ts`; the `prescience` stat; the minimap (`knownRooms`, `practiceRooms` in `src/game/minimap.ts`, `Hud.updateMap`, `Hud.drawMap`) |
 
@@ -23,7 +23,7 @@ The owner's brief: see the full maps of every zone with every item, and reveal s
 
 - **Every room.** Every floor's minimap shows all of its rooms from the start, as outlines until they are visited, with their marks (start, treasure, vault, challenge, boss). The vaults behind their hard walls are among them: those are the secrets the map holds today.
 - **Every practice.** A small gold mark sits in the corner of every room that holds a practice: on a pedestal (the boss's too, before it is overcome), shut in a chest, or laid by the Roots.
-- **Unique.** Only the worm of the deep desert gives it, once per run. No chest, pedestal, draw or chooser offers it.
+- **Unique.** Only the worm of the deep desert gives it, once per run, ridden or slain. No chest, pedestal, draw or chooser offers it.
 
 Positive outcome: a floor read at a glance. The player chooses a route to the practices and the vaults instead of searching blind, which saves health and time on every floor that follows.
 
