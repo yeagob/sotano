@@ -4,7 +4,7 @@
 
 Status: built (issue #354). Code: `src/entities/sand-worm.ts` (its rules), `src/render/worm-view.ts` (its look), `Game.wormBefore`, `Game.wormAfter`, `Game.wormIntention` (`src/game/game.ts`). Tests: `tests/sand-worm.test.ts`.
 
-A worm as wide as a house lives under the sand of the deep desert ([README](README.md)). No intention hurts it. It can be calmed, and it can be killed only by three explosions in its mouth. The player reads the sand, climbs onto its back as it leaps, walks it plate by plate to the head, and calms it with good intentions. A calm worm can be steered. Stepping off it gives Prescience and the achievement *Rider of the Sands*; killing it gives Prescience and the achievement *Bane of the Deep*. One way per run.
+A worm as wide as a house lives under the sand of the deep desert ([README](README.md)). No intention hurts it. It can be calmed, and it can be killed only by three explosions in its mouth. The player reads the sand, climbs onto its back as it leaps, walks it plate by plate to the head, and calms it with good intentions. A calm worm can be steered. Stepping off it gives Prescience and the achievement *Rider of the Sands*; killing it leaves its corpse lying in the sand and lays the practice *Cut Ties with Toxic Relationships*, the knife of its tooth, on a pedestal by its mouth, with the achievement *Bane of the Deep*. One way per run.
 
 It is not a projection: it is no pattern of the mind and has no colour tier. It is the desert's own life, like the creatures of the depths, and as they do it answers only positive intentions.
 
@@ -42,8 +42,9 @@ The owner's corrections (2026-11-28): the worm can be killed, but only by explos
 - **A missile as it dives.** A missile (Dr. Launcher) counts only if it enters the mouth in the first 2.5 seconds of its dive. At any other moment a missile that meets the worm bursts on its body and is not counted.
 - **Nothing else.** An explosive anywhere else on the body does nothing to it; negative intentions still do nothing to the body.
 - **Before the third.** A muffled blast, smoke from the mouth, a shake and a toast that counts (`The worm swallowed the blast and shudders: 1 of 3.`).
-- **Its death.** A muffled blast inside it, smoke and fire bursting from the mouth, a shake and a toast ("The worm swallowed the blast…"). A rider is dropped. It sinks and does not rise again this run, and there is no dismount.
-- **What the kill gives.** The practice **Prescience** (with its card, unless it is already held) and the achievement **Bane of the Deep** (*Azote de lo profundo*, `desert.worm.slain`; provisional name). The issue's tooth knife and the water of life of the issue comment are not built: they wait for the owner's definition.
+- **Its death.** A muffled blast inside it, smoke and fire bursting from the mouth, a shake and a toast ("The worm swallowed the blast…"). A rider is dropped, and there is no dismount.
+- **Its corpse.** The huge body does not vanish: it lies in the sand where it died for the rest of the run, each segment settled at its swimming height with no wave (its back two blocks over the sand). It does not move, strike or rise again. It is still solid: it can be stood on, and intentions and blasts are spent on it with no effect.
+- **What the kill gives.** The practice **Cut Ties with Toxic Relationships** (`occamsrazor`), the knife of the worm's tooth, rises on a pedestal on the sand three blocks in front of the dead head's mouth, with a light and a chime; it is taken by touch, as every pedestal practice is. And the achievement **Bane of the Deep** (*Azote de lo profundo*, `desert.worm.slain`; provisional name). The kill does not give Prescience: that is the dismount's (owner, 2026-11-28). The knife is laid once per run, and not at all for a player who already holds it; the achievement comes either way. The practice keeps its effect and its pool exactly as they were (a boss reward too); only its icon changed: a knife made from one of the worm's teeth. The water of life of the issue comment is not built: it waits for the owner's definition.
 - **One way per run.** A worm that gave its dismount no longer counts explosions in its mouth, so it cannot also be slain; a slain worm gives no dismount. Each way has its own achievement.
 
 ## Steering it
@@ -84,10 +85,12 @@ Riding adds no button: it gives new meanings to existing actions, as a Minecraft
 | Steering limit | 120 blocks from the basin's centre |
 | Dive | after 40 s with no rider; 8 s before the next cracks |
 | Death | the third explosion in the mouth, counted across the run: bombs while it is out of the sand, missiles only in the first 2.5 s of the dive |
+| Corpse | stays for the run; its back 2 blocks over the sand |
+| The knife's pedestal | 3 blocks in front of the dead head's face, on the sand |
 
 ## Open for the owner
 
 1. The names: *Prescience* (the owner's proposal, *Presciencia*) and the achievement *Rider of the Sands* (*Jinete de las arenas*) are provisional.
-2. A reward of its own for killing it: the issue's tooth knife (proposed as *Cut Ties with Toxic Relationships*) and the water of life of the issue comment wait for the owner's definition; today the kill gives Prescience and *Bane of the Deep* (provisional).
+2. The water of life of the issue comment waits for the owner's definition. Whether the knife should leave the boss pool and be only the worm's (a unique practice) is for the owner; it is unchanged.
 3. Whether a tame worm should stay in later runs, or follow the player.
 4. The look: the worm is drawn from boxes of the desert's stone, without a texture of its own; the art pass is still to come.

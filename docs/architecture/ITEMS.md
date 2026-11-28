@@ -163,7 +163,7 @@ To make *everything* modifiable, the rule for the core code is: **any behaviour 
 | `illumination` | — (react) | the ending of illumination's card shows, once per run (`friends`, the run's befriended beings); the achievement `sun.illumination` |
 | `presenceMet` | — (react) | a presence is met for the first time on its enemy: its first exchange is done (`presence`, its id); the presences' achievements |
 | `wormDismount` | — (react) | the player stepped off the deep desert's tame worm onto the ground, once per run (`warmth`, the positive intentions its head took); the achievement `desert.worm.ridden` and the gift of Prescience ([WORM](../design/built/levels/worm-desert/WORM.md)) |
-| `wormKilled` | — (react) | the deep desert's worm died of the third explosion in its mouth, once per run (`blasts`, the explosions it swallowed); the achievement `desert.worm.slain` and the gift of Prescience ([WORM](../design/built/levels/worm-desert/WORM.md)) |
+| `wormKilled` | — (react) | the deep desert's worm died of the third explosion in its mouth, once per run (`blasts`, the explosions it swallowed); the achievement `desert.worm.slain`. The game then lays Cut Ties with Toxic Relationships on a pedestal by the mouth (`wormReward` in `src/game/worm-rewards.ts`) ([WORM](../design/built/levels/worm-desert/WORM.md)) |
 
 **Actor events** (`actorDamage`, `contact`, `actorDeath`) cover the player and every projection, so a hook on them must say which actors it is for: `hook('actorDamage', fn, { target: 'player' })` (`'player'`, `'projection'` or `'any'`). The inventory skips the others; the validator and a contract test require it. See [ACTORS.md](ACTORS.md).
 

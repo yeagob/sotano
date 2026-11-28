@@ -200,7 +200,7 @@ The owner's achievement for becoming light. The names are the owner's, provision
 
 ### The deep desert's worm (2, issue #354)
 
-The owner's criteria: two ways, one per run, each with its own achievement, and both give the practice Prescience ([WORM](../levels/worm-desert/WORM.md)). Ridden: stepping off the worm after calming it (the grant is on the dismount, not on the taming). Slain: its death by the third explosion in its mouth. A worm that gave its dismount cannot be slain, and a dead one gives no dismount. Both names are provisional.
+The owner's criteria: two ways, one per run, each with its own achievement and its own practice ([WORM](../levels/worm-desert/WORM.md)): the dismount gives Prescience, the kill lays Cut Ties with Toxic Relationships on a pedestal by the worm's mouth. Ridden: stepping off the worm after calming it (the grant is on the dismount, not on the taming). Slain: its death by the third explosion in its mouth. A worm that gave its dismount cannot be slain, and a dead one gives no dismount. Both names are provisional.
 
 | Id | Criterion | Name (EN) | Name (ES) | Description (EN) | Description (ES) |
 |---|---|---|---|---|---|

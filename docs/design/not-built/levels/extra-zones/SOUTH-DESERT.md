@@ -17,6 +17,6 @@ The south cardinal walk ends in the deep desert, a basin of sand in the south of
 ## Open
 
 1. **The names.** The generic name the owner chooses for the desert and its worm; the practice and the achievement names are provisional.
-2. **The kill's own reward.** Killing the worm is built (three explosions in its mouth, the owner's corrections of 2026-11-28) and gives Prescience and the achievement Bane of the Deep (provisional). The tooth knife (proposed as Cut Ties with Toxic Relationships) and the water of life of the issue comment wait for the owner's definition.
+2. **The water of life.** Killing the worm is built (three explosions in its mouth; its corpse stays) and lays the tooth knife, Cut Ties with Toxic Relationships, on a pedestal by its mouth, with the achievement Bane of the Deep (provisional). The water of life of the issue comment waits for the owner's definition.
 3. **More worms.** "Gusanos" is plural: one worm is built.
 4. **The portal.** The walk is the way in; the portal of the cardinal rooms is still open ([CARDINAL-WALK](../secret-rooms/CARDINAL-WALK.md)).
