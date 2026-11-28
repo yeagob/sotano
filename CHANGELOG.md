@@ -6,6 +6,9 @@ Changes to the tutorial and to the book are listed without their content, so not
 
 ## Unreleased
 
+### Added
+- Something waits far to the south of the tree, past the dunes, for whoever walks that far: a new place, a unique practice and an achievement (#354).
+
 ## 0.3.0-alpha · 2026-11-27
 
 ### Added

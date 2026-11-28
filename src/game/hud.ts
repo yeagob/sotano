@@ -25,7 +25,7 @@ import { applyPaletteCss, hudIconUrl, iconDataUrl, qualityStars } from '../rende
 import { createSpiritRing, paintSpiritRing } from '../render/spirit-ring';
 import { ROOM_ID_STRIDE, type FloorResult } from '../world/floor';
 import { AIR } from '../content/materials';
-import { ARROW_BORDER, ARROW_BORDER_PX, arrowFill, bandRange, MAP_CELL, MAP_PAD, mapPlace as placeOnMap, mapPx, TUNNEL_TONE, tunnelRect, type MapPlace } from './minimap';
+import { ARROW_BORDER, ARROW_BORDER_PX, arrowFill, bandRange, knownRooms, MAP_CELL, MAP_PAD, mapPlace as placeOnMap, mapPx, practiceRooms, PRACTICE_MARK, TUNNEL_TONE, tunnelRect, type MapPlace } from './minimap';
 import { level, tollOf } from '../content/levels';
 import { carriedDef, flaskIcon, flaskRooms, isFlask, POTIONS, type Flask } from '../content/potions';
 import { flaskEffect, flaskName } from '../content/potion-text';
@@ -209,6 +209,8 @@ export class Hud {
   private lastCleared = new Set<number>();
   private mapState: { floor: FloorResult; room: number; visited: Set<number> } | null = null;
   private mapYaw = 0;
+  /** The player holds Prescience: the map shows every room and where the practices lie (issue #354). */
+  private prescient = false;
   /** Where the arrow is (updateMap), and what the map was last drawn from: it redraws only when that changes. */
   private mapPlace: MapPlace | null = null;
   private mapDrawn = '';
@@ -667,8 +669,10 @@ export class Hud {
       }
     }
     const [px, pz] = mapPx(this.mapPlace.u, this.mapPlace.v);
+    // Prescience (issue #354): every room of the floor and where its practices lie
+    this.prescient = g.stats.get('prescience') >= 1;
     const key = `${g.depth}:${this.mapState.room}:${Math.round(px)}:${Math.round(pz)}:${Math.round(this.mapYaw * 64)}:` +
-      `${g.visited.size}:${this.lastCleared.size}:${this.tunnelStamp}`;
+      `${g.visited.size}:${this.lastCleared.size}:${this.tunnelStamp}:${this.prescient}`;
     if (key === this.mapDrawn) return;
     this.mapDrawn = key;
     this.drawMap(floor, this.mapState.room, g.visited);
@@ -684,13 +688,9 @@ export class Hud {
     c.width = w * (cw + gap) + gap + 2 * padX; c.height = h * (ch + gap) + gap + 2 * padZ;
     g.clearRect(0, 0, c.width, c.height);
     g.translate(padX, padZ);
-    const known = new Set<number>();
+    const known = knownRooms(floor, visited, this.prescient, id => Object.values(floor.plan.rooms[id % ROOM_ID_STRIDE].links).map(i => floor.rooms[i as number].id));
+    const holds = this.prescient ? practiceRooms(floor) : null;
     const marks: [string, number, number][] = [];
-    for (const r of floor.rooms) {
-      if (!visited.has(r.id)) continue;
-      known.add(r.id);
-      for (const i of Object.values(floor.plan.rooms[r.id % ROOM_ID_STRIDE].links)) known.add(floor.rooms[i as number].id);
-    }
     for (const r of floor.rooms) {
       if (!known.has(r.id)) continue;
       const x = gap + r.gx * (cw + gap), y = gap + r.gz * (ch + gap);
@@ -727,6 +727,7 @@ export class Hud {
       }
       paint(x, y, rw, rh);
       if (r.type !== 'normal') marks.push([r.type, x + cw / 2, y + ch / 2]);
+      if (holds?.has(r.id)) { g.fillStyle = palCss(PRACTICE_MARK); g.fillRect(x + cw - 3, y + 1, 2, 2); }
     }
     // the tunnels the player dug: a solid light trail over the rock, at least 2 px a column (DECISIONS §10.2, #305)
     if (this.mapTunnels.length && this.tunnelDepth === this.lastDepthOf(floor)) {

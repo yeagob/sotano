@@ -12,7 +12,8 @@ export type StatName =
   | 'moveSpeed' | 'jump' | 'airJumps' | 'wallJumps' | 'reach'
   | 'carry' | 'kick' | 'throw' | 'crush' | 'headbutt'
   | 'maxHearts' | 'invuln' | 'bombRadius' | 'bombDamage' | 'breath' | 'missile' | 'dash' | 'run' | 'crouch' | 'lavaWalk'
-  | 'twinCast' | 'triad' | 'spiral' | 'recipes' | 'walkSlow' | 'magnet' | 'flightDamage' | 'freezeSphere' | 'airShield';
+  | 'twinCast' | 'triad' | 'spiral' | 'recipes' | 'walkSlow' | 'magnet' | 'flightDamage' | 'freezeSphere' | 'airShield'
+  | 'prescience';
 
 export type StatLayer = 'add' | 'mul' | 'final';
 
@@ -63,6 +64,7 @@ export const BASE_STATS: Stats = {
   flightDamage: 0,
   freezeSphere: 0,
   airShield: 0,
+  prescience: 0,   // 1 = the minimap shows every room of the floor and where its practices lie (Prescience, src/game/minimap.ts)
 };
 
 export const STAT_LIMITS: Partial<Record<StatName, [number, number]>> = {
@@ -101,6 +103,7 @@ export const STAT_LIMITS: Partial<Record<StatName, [number, number]>> = {
   flightDamage: [0, 1],
   freezeSphere: [0, 1],
   airShield: [0, 1],
+  prescience: [0, 1],
 };
 
 const times = (v: number) => t('unit.times', { n: fmtNum(v, 2) });
@@ -145,6 +148,7 @@ const STAT_FMT: Record<StatName, (v: number) => string> = {
   flightDamage: v => (v < 1 ? t('unit.off') : t('unit.on')),
   freezeSphere: v => (v < 1 ? t('unit.off') : t('unit.on')),
   airShield: v => (v < 1 ? t('unit.off') : t('unit.on')),
+  prescience: v => (v < 1 ? t('unit.off') : t('unit.on')),
 };
 
 export const statLabel = (n: StatName) => t(`stat.${n}`);

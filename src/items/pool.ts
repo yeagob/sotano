@@ -25,8 +25,12 @@ export const isRootsGift = (item: ItemDef) => (item.pools.roots ?? 0) > 0;
  *  one moves no seed. */
 export const isUnlockGift = (item: ItemDef) => (item.pools.unlock ?? 0) > 0;
 
-/** An item no pool draws: a sky gift, a promised piece, a gift of the Roots or an unlock. */
-export const isHandedOut = (item: ItemDef) => isSkyGift(item) || isPromised(item) || isRootsGift(item) || isUnlockGift(item);
+/** A secret room's fixed reward (its only pool is 'secret', issue #354): its place hands it out by id, never drawn, so
+ *  adding one moves no seed. */
+export const isSecretGift = (item: ItemDef) => (item.pools.secret ?? 0) > 0;
+
+/** An item no pool draws: a sky gift, a promised piece, a gift of the Roots, an unlock or a secret room's reward. */
+export const isHandedOut = (item: ItemDef) => isSkyGift(item) || isPromised(item) || isRootsGift(item) || isUnlockGift(item) || isSecretGift(item);
 
 export class ItemPools {
   private weights = new Map<PoolName, Map<string, number>>();

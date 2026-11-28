@@ -140,6 +140,7 @@ The owner's rule (issue #372): the fight is against your own friends. The Shadow
 | Cut Ties with Toxic Relationships | `occamsrazor` | adapted | The blade, beside its shot |
 | Follow the Omens | `omens` | skipped | Loot |
 | Post-Traumatic Growth | `posttraumatic` | skipped | World: lava |
+| Prescience | `prescience` | skipped | Loot: the map and where the practices lie; the Shadow reads no map |
 | Pressure Valve | `pressurevalve` | copied | Bomb radius +0.8, block damage ×1.6 |
 | Stolen Fire | `prometheus` | adapted | Every fifth shot is a fire seed: 5 more of your damage on its first strand |
 | Rapport | `rapport` | skipped | World: loose cubes |

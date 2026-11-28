@@ -6,7 +6,7 @@ Up: [Mind folder](README.md) · [all practices](../README.md) · [built design](
 |---|---|
 | Path | Mind; also none |
 | Quality | 4 of 4 |
-| Found in | boss rewards |
+| Found in | boss rewards; and on a pedestal by the mouth of the deep desert's worm, once it is killed ([WORM](../../levels/worm-desert/WORM.md), issue #354) |
 | Inspired by | Santiago (Game Glover), the owner's words on toxic relationships (as the code and SOURCES credit it) |
 | Code | `src/content/items/occamsrazor.ts` |
 
@@ -17,6 +17,10 @@ Some people drain you more than they give. Cut them off and keep your energy for
 ## What it does
 
 Adds a blade of light beside your intentions, which keep flying: hold to swing (80% of your fire rate). Each swing cuts every breakable block within 2.5 blocks in front of you (more with size, up to 6) and slices the rubble in two, hits projections for 3x damage and destroys their projectiles.
+
+## Its icon
+
+A knife made from one of the deep desert's worm's teeth (owner, issue #354): a milky curved tooth for a blade, hooked at the tip, its cutting edge lit in the mind path's glow, the tooth's root as a guard and a wrapped grip. Only the icon changed; the effect is the same.
 
 ## Stats and events
 

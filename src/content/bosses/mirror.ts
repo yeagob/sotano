@@ -100,6 +100,7 @@ export const MIRROR_RULES: Readonly<Record<string, MirrorRule>> = {
   occamsrazor: A,
   omens: S('loot'),
   posttraumatic: S('world'),
+  prescience: S('loot'),
   pressurevalve: C,
   prometheus: { how: 'adapted', seed: true },
   rapport: S('world'),

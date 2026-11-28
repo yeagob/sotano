@@ -17,7 +17,7 @@ Walk straight from the surface north, south, east or west, and keep walking for 
 |---|---|---|---|
 | North | An ice zone. Its design is not yet defined | Zone | [NORTH-ICE](../extra-zones/NORTH-ICE.md) |
 | East | The statue, the area's Joel-Clown statue (issue #334), inspired by Silksong | Secret room | [EAST-STATUE](EAST-STATUE.md) |
-| South | The desert of the worms (issue #354) | Zone | [SOUTH-DESERT](../extra-zones/SOUTH-DESERT.md) |
+| South | The desert of the worms (issue #354): built as the deep desert, reached by walking 1 450 blocks south, with no portal | Zone | [worm-desert](../../../built/levels/worm-desert/README.md) (built), [SOUTH-DESERT](../extra-zones/SOUTH-DESERT.md) (open) |
 | West | A temple in the style of Muslim temples: the labyrinth (issue #335, Maze 3D) | Secret room | [WEST-LABYRINTH](WEST-LABYRINTH.md) |
 
 The export lists these four among the secret rooms, so each one carries fixed unique items and its own achievement ([README](README.md#shared-rules)). The north and the south are zones, so their form is still open.

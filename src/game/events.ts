@@ -208,6 +208,12 @@ export interface GameEvents {
   /** Every variation of every projection has been seen (its three tiers, hostile and allied; COMPLETION.md §2, issue #360):
    *  `projections` is how many projections that is. Emitted once, by the game, while `bestiary.full` is locked. React only. */
   bestiaryComplete: { projections: number };
+  /** The player stepped off the deep desert's worm after calming it (worm-desert/README.md, issue #354): the dismount that gives
+   *  Prescience. `warmth` is the positive intentions the worm's head took. Once per run at most, by the game. React only. */
+  wormDismount: { warmth: number };
+  /** The deep desert's worm died of the third explosion in its mouth (worm-desert/WORM.md, issue #354): the kill that gives
+   *  Prescience. `blasts` is the explosions it swallowed. Once per run at most, by the game. React only. */
+  wormKilled: { blasts: number };
 }
 
 /** A rebound of an intention, as the `intentBounce` event carries it. */

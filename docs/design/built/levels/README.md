@@ -22,6 +22,7 @@ Code: the floor structure in `src/world/floor.ts` and `src/world/floorplan.ts`, 
 | [rooms/](rooms/README.md) | The room templates, their height and ceilings, rooms bigger than their cell, challenge rooms and doors |
 | [SURFACE.md](SURFACE.md) | The surface round the tree: the plain, the ring of mountains, its ledges, stairs and passes (issue #10) |
 | [OUTER-VOID.md](OUTER-VOID.md) | The Outer Void past the surface: endless undulating ground, trees, lakes, digging and the lava trap (issue #330), and its four far biomes: sea and stilt village, desert, mountains and temple, ice |
+| [worm-desert/](worm-desert/README.md) | The deep desert, 1 600 blocks south: a basin of sand to the bedrock, falling sand, and its great worm, ridden and calmed (issue #354) |
 | [giant-tree/](giant-tree/README.md) | The giant tree above the surface: seven stories, the trunk, the branches, the canopy and the stars |
 | [totality/](totality/README.md) | Totality, the last stretch of the sky above the crown: the climb, the updraft, the Earth and the Sun in view, and the entrance to the Sun |
 

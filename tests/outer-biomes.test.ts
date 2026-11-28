@@ -76,7 +76,8 @@ describe('the Outer Void\'s biomes: sea to the east, desert to the south, mounta
 
   it('the south is a desert: dunes of sand over stone, no trees, no water', () => {
     const m = make(0xBEEF);
-    const [x0, z0] = at(SOUTH, 1600);
+    // short of the worm's deep basin (1 450 to 1 750 south, tests/worm-desert.test.ts), where the sand goes to the bedrock
+    const [x0, z0] = at(SOUTH, 1350);
     let lo = Infinity, hi = -Infinity;
     for (let z = z0 - 50; z <= z0 + 50; z++) for (let x = x0 - 50; x <= x0 + 50; x++) {
       const h = m.height(x, z);
@@ -209,7 +210,8 @@ describe('the Outer Void\'s biomes: sea to the east, desert to the south, mounta
   it('the lava sea stays sealed under the biomes, at least ten blocks of soil over it', () => {
     const m = make(0xBEEF);
     const v = m.biomes.village;
-    for (const [x0, z0] of [at(NORTH, 1500), at(SOUTH, 1500), at(WEST, 1350), [v.x, v.z] as [number, number]])
+    // the south point is short of the worm's basin, which has no lava sea (tests/worm-desert.test.ts)
+    for (const [x0, z0] of [at(NORTH, 1500), at(SOUTH, 1350), at(WEST, 1350), [v.x, v.z] as [number, number]])
       for (let z = z0 - 10; z <= z0 + 10; z++) for (let x = x0 - 10; x <= x0 + 10; x++) {
         expect(m.height(x, z) - LAVA_TOP).toBeGreaterThanOrEqual(10);
         expect(m.block(x, SURFACE_Y + BEDROCK, z)).toBe(MAT.bedrock);

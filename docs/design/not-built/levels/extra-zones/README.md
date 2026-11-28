@@ -17,7 +17,7 @@ The built surface ends its ground at the far plain: past the passes, the plain b
 |---|---|---|
 | [OUTER-VOID.md](OUTER-VOID.md) | decided in part (the four cardinal elements; no ground at the far plain's edge), proposal (the rest) | The endless terrain past the far plain (issue #330), where the cardinal elements stand |
 | [NORTH-ICE.md](NORTH-ICE.md) | decided (destination), design not defined | The ice zone to the north |
-| [SOUTH-DESERT.md](SOUTH-DESERT.md) | decided (destination), design not defined | The desert of the worms to the south (issue #354) |
+| [SOUTH-DESERT.md](SOUTH-DESERT.md) | built in part ([worm-desert](../../../built/levels/worm-desert/README.md)); names and the kill path open | The desert of the worms to the south (issue #354) |
 
 ## Open
 
