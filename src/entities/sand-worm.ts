@@ -32,6 +32,10 @@ export const WORM = {
   waveAmp: 1.5, wavePhase: 0.9, waveRate: 1.4,
   /** Swimming speed, untamed and tame (blocks a second), and the turn rate (radians a second). */
   speed: 6, tameSpeed: 8, turn: 0.12,
+  /** A tame worm turns quickly (owner: full speed in any direction inside the desert), radians a second. */
+  tameTurn: 1.5,
+  /** Blocks inside the wall where a heading starts to lose its outward part: wide when wild, narrow when tame. */
+  edgeBand: 30, tameEdgeBand: 6,
   /** The telegraph: seconds, cracked cells, blocks between two cracks, how far from the player the leap starts. */
   telegraphS: 4.5, crackCells: 12, crackStep: 2, emergeDist: 24,
   /** The leap: seconds, how far it carries the head, blocks of arch over the sand. */
@@ -251,10 +255,11 @@ export class SandWorm {
     }
     want = this.confine(h.x, h.z, want);
     const diff = Math.atan2(Math.sin(want - this.heading), Math.cos(want - this.heading));
-    this.heading += Math.max(-WORM.turn * dt, Math.min(WORM.turn * dt, diff));
+    const turn = this.tamed ? WORM.tameTurn : WORM.turn;
+    this.heading += Math.max(-turn * dt, Math.min(turn * dt, diff));
     const speed = this.tamed ? WORM.tameSpeed : WORM.speed;
     let x = h.x + Math.cos(this.heading) * speed * dt, z = h.z + Math.sin(this.heading) * speed * dt;
-    // never out of the basin: the head is held on the steering circle
+    // the desert's edge is a wall: the head is held on the steering circle, and slides along it
     const r = this.fromCentre(x, z);
     if (r > WORM_STEER_R) { x = this.cx + (x - this.cx) * WORM_STEER_R / r; z = this.cz + (z - this.cz) * WORM_STEER_R / r; }
     const y = h.y + (this.swimY(x, z) - h.y) * Math.min(1, dt * 2);
@@ -268,14 +273,15 @@ export class SandWorm {
   confine(x: number, z: number, want: number): number {
     const r = this.fromCentre(x, z);
     this.heldAtEdge = false;
-    if (r < WORM_STEER_R - 30 || r === 0) return want;
+    const band = this.tamed ? WORM.tameEdgeBand : WORM.edgeBand;
+    if (r < WORM_STEER_R - band || r === 0) return want;
     const ux = (x - this.cx) / r, uz = (z - this.cz) / r;
     let wx = Math.cos(want), wz = Math.sin(want);
     const out = wx * ux + wz * uz;
     if (out <= 0) return want;
     this.heldAtEdge = true;
     // drop the outward part (follow the rim), and lean inward the closer it is to the edge
-    const lean = Math.max(0, Math.min(1, (r - (WORM_STEER_R - 30)) / 30));
+    const lean = Math.max(0, Math.min(1, (r - (WORM_STEER_R - band)) / band));
     wx -= ux * out * (1 + lean); wz -= uz * out * (1 + lean);
     if (Math.hypot(wx, wz) < 1e-3) { wx = -uz; wz = ux; }
     return Math.atan2(wz, wx);

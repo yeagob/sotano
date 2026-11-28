@@ -35,7 +35,7 @@ The basin and its worm are in every run. The worm gives its gifts once per run: 
 | Thing | Value |
 |---|---|
 | Centre of the basin | 1 600 blocks due south (+z) of the tree's axis |
-| Radius of the deep sand | 150 blocks (the worm stays within 120) |
+| Radius of the deep sand | 150 blocks: its edge is the worm's wall (the head within 142, the body within 150) |
 | Sand to the bedrock | 100 blocks under the grass |
 | The basin's ground | 2 to 4 blocks above the grass, flattened over the last 40 blocks inside the rim |
 | Falling sand | 48 blocks moved a step at most; 4 096 waiting at most |

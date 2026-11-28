@@ -70,7 +70,7 @@ describe('the deep desert of the worm lies south, and only south (#354)', () => 
     const [cx, cz] = wormDesertCentre(CX, CZ);
     for (let k = 0; k < 32; k++) {
       const a = k / 32 * Math.PI * 2;
-      expect(inWormDesert(CX, CZ, cx + Math.cos(a) * (WORM_STEER_R + 16), cz + Math.sin(a) * (WORM_STEER_R + 16))).toBe(true);
+      expect(inWormDesert(CX, CZ, cx + Math.cos(a) * (WORM_STEER_R + 7.9), cz + Math.sin(a) * (WORM_STEER_R + 7.9))).toBe(true);
     }
   });
 });
