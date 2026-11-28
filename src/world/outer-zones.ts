@@ -24,3 +24,17 @@ export function outerZoneColumn(zone: OuterZone, t: ZoneTerrain): [number, numbe
     case 'port': return [t.biomes.village.x, t.biomes.village.z];
   }
 }
+
+/** How far above the column's ground the stand search starts: over the temple's roof and the village's houses. */
+export const STAND_REACH = 48;
+
+/**
+ * The feet height to stand on at a zone's column: the first cell, going down from `ground + STAND_REACH`, with a solid
+ * block under it and two free cells for the body. `ground` is the column's top block (the surface plus its height);
+ * `solid(y)` reads the world at that column. Falls back to the cell over the ground.
+ */
+export function zoneStandY(ground: number, solid: (y: number) => boolean): number {
+  for (let y = ground + STAND_REACH; y > ground - STAND_REACH; y--)
+    if (solid(y - 1) && !solid(y) && !solid(y + 1)) return y;
+  return ground + 1;
+}
