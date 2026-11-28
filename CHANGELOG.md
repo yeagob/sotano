@@ -9,6 +9,12 @@ Changes to the tutorial and to the book are listed without their content, so not
 ### Added
 - Something waits far to the south of the tree, past the dunes, for whoever walks that far: a new place, a unique practice and an achievement (#354).
 
+### Changed
+- What waits in the south answers its rider faster, goes as far as its land reaches, and a jump on its back no longer leaves you behind (#354).
+
+### Fixed
+- The test bench's secret zone buttons stand you on the ground instead of under it.
+
 ## 0.3.0-alpha · 2026-11-27
 
 ### Added
