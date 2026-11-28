@@ -73,6 +73,7 @@ const SAMPLES: { [K in keyof GameEvents]: () => GameEvents[K] } = {
   presenceMet: () => ({ presence: 'boatman' }),
   branchPracticesAll: () => ({ practices: 6 }),
   illumination: () => ({ friends: 5 }),
+  wormDismount: () => ({ warmth: 12 }),
   bestiaryComplete: () => ({ projections: 40 }),
   heartLost: () => ({ heart: 'blue' }) as const,
   berserkChange: () => ({ on: true }),

@@ -146,3 +146,40 @@ export class TunnelLog {
     return out;
   }
 }
+
+/** The floor as Prescience reads it: its rooms and where its practices lie. */
+export interface PrescientFloor {
+  rooms: readonly Pick<RoomInfo, 'id'>[];
+  pedestals: readonly { room: number; item: string | null; boss: boolean }[];
+  chests: readonly { room: number; item: string | null }[];
+  practices?: readonly { room: number }[];
+  altar?: { room: number } | null;
+}
+
+/**
+ * The rooms the minimap draws (issue #354): the visited ones and their neighbours, or, with Prescience, every room of
+ * the floor from the start, the vaults behind their hard walls included. `links(id)` gives a room's neighbours.
+ */
+export function knownRooms(floor: PrescientFloor, visited: ReadonlySet<number>, prescient: boolean, links: (id: number) => readonly number[]): Set<number> {
+  const known = new Set<number>();
+  for (const r of floor.rooms) {
+    if (prescient) { known.add(r.id); continue; }
+    if (!visited.has(r.id)) continue;
+    known.add(r.id);
+    for (const i of links(r.id)) known.add(i);
+  }
+  return known;
+}
+
+/** With Prescience, the rooms that hold a practice: on a pedestal (a boss's too), shut in a chest, or laid by the Roots. */
+export function practiceRooms(floor: PrescientFloor): Set<number> {
+  const out = new Set<number>();
+  for (const p of floor.pedestals) if (p.item !== null || p.boss) out.add(p.room);
+  for (const c of floor.chests) if (c.item !== null) out.add(c.room);
+  for (const p of floor.practices ?? []) out.add(p.room);
+  if (floor.altar) out.add(floor.altar.room);
+  return out;
+}
+
+/** The practice mark: a 2 × 2 dot in the top right corner of the room's cell, in the practice's gold. */
+export const PRACTICE_MARK: PalToken = 'light.gold';

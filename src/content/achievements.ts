@@ -16,9 +16,10 @@
  * presences' first exchange, `presenceMet` (one per presence, the codex's rule), `branchPracticesAll`, the six practices
  * of the giant tree's branches held in one run (#329), the ending of illumination, `illumination` (issue #351, once
  * per run when the Sun's light is full), and `bestiaryComplete`, emitted once when every variation of every projection
- * has been seen (COMPLETION.md §2, issue #360).
+ * has been seen (COMPLETION.md §2, issue #360), and `wormDismount`, the player stepping off the deep desert's worm after
+ * calming it (issue #354).
  */
-export const ACHIEVEMENT_EVENTS = ['bossOvercome', 'meditationComplete', 'brew', 'cook', 'pageReached', 'playerDied', 'surfaceEnter', 'blockPlaced', 'bookBack', 'bedrockTouch', 'treeStory', 'completionFull', 'projectionConverted', 'projectionDestroyed', 'synergyOn', 'presenceMet', 'branchPracticesAll', 'illumination', 'bestiaryComplete'] as const;
+export const ACHIEVEMENT_EVENTS = ['bossOvercome', 'meditationComplete', 'brew', 'cook', 'pageReached', 'playerDied', 'surfaceEnter', 'blockPlaced', 'bookBack', 'bedrockTouch', 'treeStory', 'completionFull', 'projectionConverted', 'projectionDestroyed', 'synergyOn', 'presenceMet', 'branchPracticesAll', 'illumination', 'bestiaryComplete', 'wormDismount'] as const;
 export type AchievementEvent = (typeof ACHIEVEMENT_EVENTS)[number];
 
 export type WhereValue = string | number | boolean | readonly (string | number)[];
@@ -170,6 +171,9 @@ export const ACHIEVEMENTS: readonly AchievementDef[] = [
   { id: 'sun.illumination', on: 'illumination' },
   // The bestiary complete: every projection seen in Black, Yellow and Red, hostile and as an ally (issue #360) (1).
   { id: BESTIARY_ACHIEVEMENT, on: 'bestiaryComplete' },
+  // The deep desert's worm: stepping off it after calming it (issue #354, the owner's criterion: the dismount, not the
+  // taming) (1).
+  { id: 'desert.worm.ridden', on: 'wormDismount' },
 ];
 
 /** The most achievements the catalogue can hold: the mastery level is capped at this. */

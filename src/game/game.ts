@@ -165,6 +165,10 @@ import { SPIRIT_MAX, type Cell as SkyCell, type RealmGateHost, type RealmHost, t
 import { SkyWorld } from '../sky/world/sky-world';
 import type { Rng } from '../core/rng';
 import { CourseRunner } from '../world/course';
+import { SandWorm, WORM } from '../entities/sand-worm';
+import { WormView } from '../render/worm-view';
+import { SandFall } from '../world/sand-fall';
+import { wormDesertCentre } from '../world/worm-desert';
 import { branchGifts, holdsAllBranchPractices, walkSlowSpot, WALK_SLOW_ITEM } from './branch-gifts';
 import { freezeProjection } from '../core/freeze';
 import { frightenProjection } from '../core/fear';
@@ -543,6 +547,15 @@ export class Game {
   private branchGifts: Pickup[] = [];
   /** The branch courses' moving pieces (src/world/course.ts), one runner per branch once the branch story has grown. */
   private courses: CourseRunner[] = [];
+  /** The deep desert's worm (issue #354, worm-desert/WORM.md): one per run, null in the sandbox and without the Outer Void. */
+  worm: SandWorm | null = null;
+  private wormView: WormView | null = null;
+  /** The plate the rider stood on last frame (-1: off the worm), for the toasts that guide the climb. */
+  private wormSeg = -1;
+  private wormDeafAt = -Infinity;
+  private wormEdgeAt = -Infinity;
+  /** Falling sand (worm-desert/README.md): sand with air under it falls, a budget of blocks a step. */
+  readonly sandFall = new SandFall();
   /** The run held the six branch practices at once (the achievement's moment, emitted once a run). */
   private branchesAll = false;
   /** How many of the tree's water boxes were woken (the galleries' waterfall flows once its story grows). */
@@ -656,7 +669,11 @@ export class Game {
         return routed >= 0 ? routed : this.enemies.at(x, y, z, r, e => this.meets(e, polarity));
       },
       mirrorAxis: id => (this.enemies.get(id)?.def === 'hall-of-mirrors' ? 'z' : null),
-      touched: (x, _y, z, polarity) => this.hearPresences(x, z, polarity),
+      touched: (x, y, z, polarity) => {
+        if (this.wormIntention(x, y, z, polarity)) return true;
+        this.hearPresences(x, z, polarity);
+        return false;
+      },
       hitEnemy: (uid, v, t) => {
         const l = Math.hypot(v.x, v.z) || 1;
         this.intentTouch(uid, t.damage, v.x / l, v.z / l, 'intent', 'intent', t.polarity, true);
@@ -778,6 +795,9 @@ export class Game {
     this.skyAir = null; this.skyWind = null; this.skyWindView?.clear();
     this.story = NaN; this.silenceSeen = false; this.leavesSeen = false; this.stillT = 0;
     this.courses = []; this.branchesAll = false; this.watersWoken = 0;
+    this.sandFall.clear();
+    this.worm = this.newWorm(sandbox !== null);
+    this.wormSeg = -1;
     this.starMarks = { cartographer: new Map(), starReader: null, read: false }; this.starMapSeen = false; this.zone = ''; this.presenceReplies.clear();
     this.childBuilds.clear(); this.gardenGiven.clear(); this.builds = new BuildCount(); this.menderCame = false;
     this.idle.clear();
@@ -1127,6 +1147,7 @@ export class Game {
     this.bus.on('presenceMet', { priority: 300, source, fn: p => this.achieved('presenceMet', p) });
     this.bus.on('branchPracticesAll', { priority: 300, source, fn: p => this.achieved('branchPracticesAll', p) });
     this.bus.on('illumination', { priority: 300, source, fn: p => this.achieved('illumination', p) });
+    this.bus.on('wormDismount', { priority: 300, source, fn: p => this.achieved('wormDismount', p) });
     // the run's friends (ally-tally.ts): every change to the player's side, from the conversion events that exist
     this.bus.on('factionChange', { priority: 300, source: 'allies', fn: p => {
       const kind = allyKindOf(p, (ENEMY_BY_ID.get(p.def) ?? CREATURE_BY_ID.get(p.def))?.kind);
@@ -1478,6 +1499,14 @@ export class Game {
 
   /** The element simulation of a world, with the game's hooks (the same rules in both worlds). */
   private elementSim(world: VoxelSpace, seed: number): ElementSim {
+    const sim = this.newElementSim(world, seed);
+    // falling sand hears every changed cell too (worm-desert/README.md): a cell that turns to air under sand starts it falling
+    const wake = world.onChange;
+    world.onChange = (x, y, z) => { wake?.(x, y, z); this.sandFall.changed(world, x, y, z); };
+    return sim;
+  }
+
+  private newElementSim(world: VoxelSpace, seed: number): ElementSim {
     return new ElementSim(world, {
       seed,
       blocked: (x, y, z) => this.solid(x, y, z),
@@ -1965,6 +1994,105 @@ export class Game {
       this.spawnBurning(b.x, b.z);
     }
     if (t.voidAt(b.x, b.z) && elemDef(this.dw.elemAt(fx0, fy, fz0))?.key === 'lava') this.finishDeath('lava', 'world');
+  }
+
+  // ───────────────────────── the deep desert's worm (issue #354, worm-desert/WORM.md) ─────────────────────────
+
+  /** The run's worm: in every run with the Outer Void, never in the sandbox. Its moves draw from the run's `worm` fork. */
+  private newWorm(sandbox: boolean): SandWorm | null {
+    const t = this.dw.terrain;
+    if (!t || sandbox) return null;
+    const rng = this.rng.fork('worm');
+    const [cx, cz] = wormDesertCentre(t.cx, t.cz);
+    this.wormView ??= new WormView(this.dungeonRoot);
+    return new SandWorm({
+      ground: (x, z) => SURFACE_Y + t.height(Math.floor(x), Math.floor(z)) + 1,
+      random: () => rng.next(),
+      crack: (x, z) => this.wormCrack(x, z),
+    }, cx, cz);
+  }
+
+  /** One cell of the crack line: the top block of the column breaks if it is sand (one block, never a body's cell). */
+  private wormCrack(x: number, z: number) {
+    const t = this.dw.terrain;
+    if (!t) return;
+    const y = SURFACE_Y + t.height(x, z);
+    if (this.world.get(x, y, z) !== MAT.sand || this.bodyIn(x, y, z)) return;
+    this.world.set(x, y, z, AIR);
+    this.particles.burst(x + 0.5, y + 0.9, z + 0.5, mat(MAT.sand).colors[0], 14, 3.5, 0.1);
+    sfx.break(0);
+  }
+
+  /** Whether the cell holds the player's body (falling sand and the cracks wait for it to move). */
+  private bodyIn(x: number, y: number, z: number): boolean {
+    const b = this.player.body;
+    return x + 1 > b.x - b.hw && x < b.x + b.hw && z + 1 > b.z - b.hw && z < b.z + b.hw && y + 1 > b.y && y < b.y + b.h;
+  }
+
+  /** Before the body moves: the worm moves, its leap may hit, and a body on its back is carried with it. */
+  private wormBefore(dt: number) {
+    const w = this.worm, t = this.dw?.terrain;
+    if (!w || !t) return;
+    const b = this.player.body, was = w.state;
+    if (w.seated) {
+      // seated on a tame head, the move control steers (the walk's own direction, relative to the view)
+      const { x: s, y: f } = this.input.move, sin = Math.sin(this.player.yaw), cos = Math.cos(this.player.yaw);
+      w.steer(-sin * f + cos * s, -cos * f - sin * s);
+    }
+    const struck = w.update(dt, this.player.dead ? null : b, t.deepAt(b.x, b.z));
+    if (was === 'hidden' && w.state === 'telegraph') { this.hud.toast('toast.wormRumble'); sfx3.rumble(); this.hud.shake(0.25); }
+    if (was === 'telegraph' && w.state === 'breach') { sfx2.boom(); this.hud.shake(0.6); }
+    if (struck) {
+      const h = w.head, dx = b.x - h.x, dz = b.z - h.z, l = Math.hypot(dx, dz) || 1;
+      if (this.damagePlayer(WORM.strike, 'contact', 'worm', 'world')) this.player.push(dx / l * 12, 7, dz / l * 12);
+    }
+    w.carry(b);
+  }
+
+  /** After the body moved: the back holds it up; the climb's toasts; the dismount gives Prescience and the achievement. */
+  private wormAfter(jumped: boolean) {
+    const w = this.worm;
+    if (!w) return;
+    const ride = w.support(this.player.body, jumped);
+    const seg = w.rider?.seg ?? -1;
+    if (ride === 'mounted' && !w.tamed) this.hud.toast('toast.wormBack');
+    if (seg === 0 && this.wormSeg !== 0 && !w.tamed) this.hud.toast('toast.wormHead', controlParams(activeDevice()));
+    this.wormSeg = seg;
+    if (w.seated && w.heldAtEdge && this.time - this.wormEdgeAt > 6) { this.wormEdgeAt = this.time; this.hud.toast('toast.wormEdge'); }
+    if (ride === 'dismounted') {
+      // the owner's rule: the practice and the achievement come with stepping off, not with the taming
+      this.bus.emit('wormDismount', { warmth: w.warmth });
+      if (!this.inventory.items.some(i => i.def.id === 'prescience')) this.give('prescience');
+    }
+    this.wormView?.update(w);
+  }
+
+  /**
+   * An intention at a point: true when it met the worm's body (it ends there). Only a positive intention on the head,
+   * from a rider on the head, calms it; a negative one does nothing at all, anywhere (the worm cannot be hurt).
+   */
+  private wormIntention(x: number, y: number, z: number, polarity: Polarity): boolean {
+    const w = this.worm;
+    if (!w || !this.below) return false;
+    const r = w.intention(x, y, z, polarity === 'positive');
+    if (r === 'miss') return false;
+    const h = w.segments[0];
+    if (r === 'calm' || r === 'tame') {
+      this.particles.burst(x, y, z, pal('light.gold'), 12, 3, 0.07);
+      sfx.mend();
+    }
+    if (r === 'calm') this.hud.toast('toast.wormCalm', { n: w.warmth, total: WORM.tameHits });
+    else if (r === 'tame') {
+      this.hud.toast('toast.wormTame', controlParams(activeDevice()));
+      this.hud.flash(pal('light.gold'));
+      sfx3.converted();
+      if (h) this.particles.burst(h.x, h.top + 1, h.z, pal('light.core'), 40, 5, 0.1);
+    } else if (polarity === 'negative' && this.time - this.wormDeafAt > 3) {
+      this.wormDeafAt = this.time;
+      this.hud.toast('toast.wormDeaf');
+      sfx.denied();
+    }
+    return true;
   }
 
   private spawnBurning(x: number, z: number) {
@@ -5802,6 +5930,7 @@ export class Game {
     const skyAir = !below && this.realm === 'sky' ? this.skyAirForces() : null;
     if (skyAir) this.skyWind!.advance(dt);
     this.player.airShield = this.stats.get('airShield') >= 1;
+    if (below) this.wormBefore(dt);
     this.player.update(dt, inp, this.stats.all, solid, {
       jump: v => { const ev = this.bus.emit('jump', { velocity: v }); return ev.cancelled ? null : ev.velocity; },
       land: (fall, x, y, z) => {
@@ -5812,7 +5941,9 @@ export class Game {
       bump: speed => this.headBump(speed),
       dashBreak: (x, y, z) => this.dashBreak(x, y, z),
     }, this.playerMedium, below ? { air: this.airForces } : { minJump: 1, air: skyAir ?? undefined });
+    if (below) this.wormAfter(inp.hit('jump'));
     if (below) this.voidTrap();
+    if (below && this.sandFall.pending) this.sandFall.step(this.world, undefined, (x, y, z) => this.bodyIn(x, y, z));
     if (below && b.onGround) this.groundBand = bandOf(b.y);
     if (this.player.dashStarted) this.dashFx();
     if (dashing || this.player.dashStarted) { this.dashTrail(dashFrom); this.dashStrike(dashFrom); }

@@ -33,6 +33,9 @@ export function validateItem(d: ItemDef): string[] {
   if ((d.pools.covenant ?? 0) > 0 && Object.entries(d.pools).some(([p, w]) => p !== 'covenant' && (w ?? 0) > 0)) e.push(`${at}: the covenant pool must be its only pool`);
   if ((d.pools.roots ?? 0) > 0 && Object.entries(d.pools).some(([p, w]) => p !== 'roots' && (w ?? 0) > 0)) e.push(`${at}: the roots pool must be its only pool`);
   if ((d.pools.unlock ?? 0) > 0 && Object.entries(d.pools).some(([p, w]) => p !== 'unlock' && (w ?? 0) > 0)) e.push(`${at}: the unlock pool must be its only pool`);
+  if ((d.pools.secret ?? 0) > 0 && Object.entries(d.pools).some(([p, w]) => p !== 'secret' && (w ?? 0) > 0)) e.push(`${at}: the secret pool must be its only pool`);
+  if (d.rarity !== undefined && d.rarity !== 'special' && d.rarity !== 'unique') e.push(`${at}: rarity must be 'special' or 'unique'`);
+  if (d.rarity === 'unique' && !((d.pools.secret ?? 0) > 0)) e.push(`${at}: a unique practice lives only in the secret pool`);
   // icon: 12×12, every key in the palette
   const rows = d.icon?.rows ?? [];
   if (rows.length !== 12 || rows.some(r => r.length !== 12)) e.push(`${at}: icon must be 12 rows of 12`);

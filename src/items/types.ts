@@ -154,9 +154,13 @@ export interface Effect {
 
 /** 'sky' is the sky realm's gift pool, 'covenant' the Covenant's (the Mender's Thread, COVENANT.md), 'roots' the Roots'
  *  mastery table's (the Book of Secrets, REWARDS §4) and 'unlock' an achievement's (Walk Slowly: an achievement lays it by id
- *  at its place): no pool draws from any of them at random (ItemPools leaves their items out); each item is handed out by
- *  id by its one source. */
-export type PoolName = 'treasure' | 'boss' | 'vault' | 'sky' | 'covenant' | 'roots' | 'unlock';
+ *  at its place) and 'secret' a secret room's (Prescience: the deep desert's worm gives it on the dismount, #354): no pool
+ *  draws from any of them at random (ItemPools leaves their items out); each item is handed out by id by its one source. */
+export type PoolName = 'treasure' | 'boss' | 'vault' | 'sky' | 'covenant' | 'roots' | 'unlock' | 'secret';
+
+/** A practice's rarity (issue #347): 'unique' is the fixed reward of one place (a secret room), 'special' one the owner
+ *  marks special. Neither is ever offered by a chooser of practices. Absent for every ordinary practice. */
+export type Rarity = 'special' | 'unique';
 
 export interface ItemDef extends Effect {
   id: string;
@@ -186,6 +190,8 @@ export interface ItemDef extends Effect {
   color: number;
   /** Isaac-style quality, 0 (weak) to 4 (run-defining). Shown as stars. */
   quality: 0 | 1 | 2 | 3 | 4;
+  /** Unique or special (issue #347): a unique practice lives only in its 'secret' pool and is handed out by its place. */
+  rarity?: Rarity;
   /** 12×12 pixel-art icon: rows of palette keys ('.' = transparent). */
   icon: ItemIcon;
   /** Stacks (docs/design/built/practices/STACKING.md): each held copy counts its own stacks; every

@@ -30,8 +30,8 @@ const boss = (id: string, how: string) => ({ event: 'bossOvercome', payload: { b
 const ids = (defs: readonly AchievementDef[]) => defs.map(d => d.id);
 
 describe('the catalogue (ACHIEVEMENTS §1-2)', () => {
-  it('holds the 78 achievements: the 48 before them (the 40 of #147, the 6 of #179, Made Omh and the hour of meditation), the 7 of the blocks, the projections and the four states of being, and the 19 of the owner\'s list (the fifth state, six synergies, twelve presences), the six branches of the tree (#329), the ending of illumination (#351), the Shadow at the maximum difficulty (#353) and the bestiary complete (#360), and is well formed', () => {
-    expect(ACHIEVEMENTS).toHaveLength(78);
+  it('holds the 79 achievements: the 48 before them (the 40 of #147, the 6 of #179, Made Omh and the hour of meditation), the 7 of the blocks, the projections and the four states of being, and the 19 of the owner\'s list (the fifth state, six synergies, twelve presences), the six branches of the tree (#329), the ending of illumination (#351), the Shadow at the maximum difficulty (#353), the bestiary complete (#360) and the dismount of the deep desert\'s worm (#354), and is well formed', () => {
+    expect(ACHIEVEMENTS).toHaveLength(79);
     expect(catalogueErrors(ACHIEVEMENTS)).toEqual([]);
   });
 
@@ -381,6 +381,15 @@ describe('the tracker (ACHIEVEMENTS §2, MASTERY §1)', () => {
     expect(ids(run(EMPTY, 'presenceMet', { presence: 'unknown' }).unlocked)).toEqual([]);
   });
 
+  it('the deep desert\'s worm (#354): stepping off it after calming it unlocks exactly desert.worm.ridden, once', () => {
+    const first = run(EMPTY, 'wormDismount', { warmth: 12 });
+    expect(ids(first.unlocked)).toEqual(['desert.worm.ridden']);
+    expect(ids(run(first.state, 'wormDismount', { warmth: 12 }).unlocked)).toEqual([]);
+    expect(ACHIEVEMENTS.find(d => d.id === 'desert.worm.ridden')).toEqual({ id: 'desert.worm.ridden', on: 'wormDismount' });
+    for (const c of [EN, ES]) for (const k of ['achievement.desert.worm.ridden.name', 'achievement.desert.worm.ridden.desc'] as const)
+      expect((c.messages as Record<string, string>)[k], k).toBeTruthy();
+  });
+
   it('the six branches of the tree (#329): the six branch practices held in one run unlock exactly tree.branches.all, once', () => {
     const first = run(EMPTY, 'branchPracticesAll', { practices: 6 });
     expect(ids(first.unlocked)).toEqual(['tree.branches.all']);
@@ -403,11 +412,11 @@ describe('the tracker (ACHIEVEMENTS §2, MASTERY §1)', () => {
 });
 
 describe('mastery (MASTERY §1)', () => {
-  it('counts the unlocked catalogue ids: 0 at the start, 78 with every achievement', () => {
+  it('counts the unlocked catalogue ids: 0 at the start, 79 with every achievement', () => {
     expect(mastery(EMPTY)).toBe(0);
     const all: Record<string, number> = {};
     for (const d of ACHIEVEMENTS) all[d.id] = NOW;
-    expect(mastery({ achievements: all })).toBe(78);
+    expect(mastery({ achievements: all })).toBe(79);
   });
 
   it('a book-page achievement counts toward the level like any other', () => {
