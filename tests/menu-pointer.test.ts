@@ -124,6 +124,29 @@ describe('pointer lock on the keyboard and mouse (#356)', () => {
     expect(requests).toBe(1);
   });
 
+  it('plays with mouse movement and buttons if the browser rejects pointer lock, and pauses on release', async () => {
+    const denied = new InputClass({ requestPointerLock: () => Promise.reject(new Error('denied')) } as unknown as HTMLElement);
+    denied.resume();
+    await Promise.resolve();
+    expect(denied.playing).toBe(true);
+    fire(winH, 'mousemove', { movementX: 12, movementY: -5 });
+    expect(denied.lookDX).toBe(12);
+    fire(docH, 'mousedown', { target: canvas, button: 0 });
+    expect(denied.mouse.has(0)).toBe(true);
+    denied.release();
+    expect(denied.playing).toBe(false);
+  });
+
+  it('does not resume after a rejected lock request if the player already paused', async () => {
+    let reject!: (error: Error) => void;
+    const denied = new InputClass({ requestPointerLock: () => new Promise<void>((_, fail) => { reject = fail; }) } as unknown as HTMLElement);
+    denied.resume();
+    denied.release();
+    reject(new Error('denied'));
+    await Promise.resolve();
+    expect(denied.playing).toBe(false);
+  });
+
   it('the pause from the pause key releases the lock', () => {
     press(canvas); lockNow(true);
     input.release();
