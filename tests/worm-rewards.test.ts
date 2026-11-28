@@ -28,7 +28,7 @@ describe('what the deep desert\'s worm gives, by the way it was met (#354, owner
   it('the knife keeps its effect: only its icon is the worm\'s tooth', () => {
     const knife = ITEM_BY_ID.get(WORM_KILL_PRACTICE)!;
     expect(knife.weapon).toEqual({ id: 'blade', priority: 10 });
-    expect(knife.pools).toEqual({ boss: 1 });
+    expect(knife.pools).toEqual({ secret: 1 });
     expect(knife.icon.rows).toHaveLength(12);
   });
 });

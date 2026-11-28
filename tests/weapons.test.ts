@@ -113,12 +113,10 @@ describe('active weapon', () => {
     expect(WEAPONS_KEEPING_SHOT.has('greatcut')).toBe(false);
   });
 
-  it('both weapons are quality 4 and drop only from bosses', () => {
-    for (const id of ['occamsrazor', 'kiai']) {
-      const d = ITEMS.find(i => i.id === id)!;
-      expect(d.quality).toBe(4);
-      expect(d.pools).toEqual({ boss: 1 });
-    }
+  it('both weapons are quality 4; the blade is the worm\'s secret gift only, kiai drops from bosses', () => {
+    for (const id of ['occamsrazor', 'kiai']) expect(ITEMS.find(i => i.id === id)!.quality).toBe(4);
+    expect(ITEMS.find(i => i.id === 'kiai')!.pools).toEqual({ boss: 1 });
+    expect(ITEMS.find(i => i.id === 'occamsrazor')!.pools).toEqual({ secret: 1 });
   });
 
   it('the chorus and choir synergies are gone: the shot practices reach the beam themselves', () => {
