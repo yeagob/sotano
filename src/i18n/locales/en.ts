@@ -434,6 +434,7 @@ const messages = {
   'toast.wormHead': 'You stand on its head. Send it good intentions ({cast}).',
   'toast.wormCalm': 'The worm grows calm: {n} of {total}.',
   'toast.wormDeaf': 'Intentions do not harm the worm. Only good ones reach it, from its head.',
+  'toast.wormSwallow': 'The worm swallowed the blast and shudders: {n} of {total}.',
   'toast.wormDead': 'The worm swallowed the blast. It sinks into the sand and will not rise again.',
   'toast.wormTame': 'The worm is calm. Steer it with {move}; {jump} to step off.',
   'toast.wormEdge': 'The worm will not leave the deep sand.',

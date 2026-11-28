@@ -1,6 +1,6 @@
 // The great worm of the deep desert (issue #354, docs/design/built/levels/worm-desert/WORM.md). One creature, not a
-// projection: no intention hurts it; it is calmed by good ones, or killed only by an explosive in its mouth (a bomb it
-// swallows, or a missile that enters its mouth as it starts its dive). Pure rules, no Game and no THREE, so the tests
+// projection: no intention hurts it; it is calmed by good ones, or killed only by three explosions in its mouth (bombs it
+// swallows, or missiles that enter its mouth as it starts its dive), counted across the run. Pure rules, no Game and no THREE, so the tests
 // drive it.
 //
 // The worm is a chain of box segments that follow the head's trail (follow the leader). It swims through the sand
@@ -11,7 +11,7 @@
 //   telegraph ──▶ breach (the head leaps out of the sand toward the player, the body arches behind it)
 //   breach ──▶ cruise (the back swims over the sand: a platform the width of the body)
 //   cruise ──▶ dive (no rider for CRUISE_S, or after the reward) ──▶ hidden, or gone once it has given its gift
-//   breach, cruise or dive ──▶ dead (an explosive in its mouth): gone for the rest of the run
+//   breach, cruise or dive ──▶ dead (the third explosion in its mouth): gone for the rest of the run
 //
 // Riding: while the body touches the back it is carried with it. Positive intentions that hit the head, fired while
 // the rider stands on the head, calm it; at TAME_HITS it is tame and the rider steers it from the head, inside the
@@ -44,6 +44,8 @@ export const WORM = {
   tameHits: 12,
   /** Seconds from the start of its dive in which a missile that enters its mouth kills it (owner: "as it starts its dive"). */
   mouthDiveS: 2.5,
+  /** Explosions in its mouth that kill it, counted across the run (owner: at least three; one or two do not). */
+  mouthBlasts: 3,
   /** The mouth: how far it reaches behind and in front of the head's front face (blocks), and its inset from the edge. */
   mouthDepth: 1.5, mouthInset: 1,
   /** Half hearts the leaping head takes from a body it meets (a warning blow, never a kill from full health). */
@@ -63,7 +65,7 @@ export const RIDE_CONTROLS = { climb: ['move', 'jump'], calm: ['cast', 'polarity
 export type WormState = 'hidden' | 'telegraph' | 'breach' | 'cruise' | 'dive' | 'gone' | 'dead';
 
 /** An explosive at a point: in its mouth and deadly (killed), on its body (it ends there, harmless), or elsewhere. */
-export type ExplosiveHit = 'miss' | 'body' | 'killed';
+export type ExplosiveHit = 'miss' | 'body' | 'swallowed' | 'killed';
 
 /** A segment's spine point, heading (unit, toward the head) and the top of its plate. 0 is the head. */
 export interface WormSegment { x: number; y: number; z: number; hx: number; hz: number; top: number }
@@ -439,14 +441,20 @@ export class SandWorm {
     return u >= face - WORM.mouthDepth && u <= face + WORM.mouthDepth && Math.abs(w) <= rim && Math.abs(y - mid) <= rim;
   }
 
+  /** Explosions that entered its mouth this run (MOUTH_BLASTS kill it). */
+  mouthBlasts = 0;
+
   /**
-   * An explosive at a point (the owner's rule): a bomb in its mouth is swallowed and kills it, at any time it is out of
-   * the sand; a missile in its mouth kills it only as it starts its dive (the first MOUTH_DIVE_S of the dive). Anywhere
-   * else on the body an explosive does nothing to it.
+   * An explosive at a point (the owner's rule): an explosion in its mouth counts once, a bomb at any time it is out of
+   * the sand, a missile only as it starts its dive (the first MOUTH_DIVE_S of the dive); the count is kept for the run,
+   * and the MOUTH_BLASTS-th kills it. Anywhere else on the body an explosive does nothing to it and is not counted.
+   * The caller spends the explosive on any answer but 'miss', so each one is counted once.
    */
   explosive(x: number, y: number, z: number, kind: 'bomb' | 'missile'): ExplosiveHit {
     if (!this.visible) return 'miss';
     if (this.mouthAt(x, y, z) && (kind === 'bomb' || (this.state === 'dive' && this.t <= WORM.mouthDiveS))) {
+      this.mouthBlasts++;
+      if (this.mouthBlasts < WORM.mouthBlasts) return 'swallowed';
       this.kill();
       return 'killed';
     }

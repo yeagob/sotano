@@ -253,7 +253,7 @@ describe('riding the worm is mapped on every device (#354, sotano-controls)', ()
   });
 });
 
-describe('the worm dies only of an explosive in its mouth (#354, owner correction)', () => {
+describe('the worm dies only of three explosions in its mouth (#354, owner corrections)', () => {
   /** A point in the mouth: just inside the head's front face, at its middle height. */
   const mouth = (worm: SandWorm) => {
     const s = worm.segments[0];
@@ -266,14 +266,20 @@ describe('the worm dies only of an explosive in its mouth (#354, owner correctio
     return r;
   };
 
-  it('a bomb in its mouth is swallowed and kills it, and the desert stays quiet for the run', () => {
+  it('needs three: one bomb in its mouth does nothing, two do nothing, the third kills it', () => {
     const { worm, body } = swimming();
+    expect(WORM.mouthBlasts).toBe(3);
     expect(worm.mouthAt(...mouth(worm))).toBe(true);
+    expect(worm.explosive(...mouth(worm), 'bomb')).toBe('swallowed');
+    expect(worm.dead).toBe(false);
+    expect(worm.visible).toBe(true);
+    expect(worm.explosive(...mouth(worm), 'bomb')).toBe('swallowed');
+    expect(worm.dead).toBe(false);
+    expect(worm.mouthBlasts).toBe(2);
     expect(worm.explosive(...mouth(worm), 'bomb')).toBe('killed');
     expect(worm.dead).toBe(true);
     expect(worm.visible).toBe(false);
     expect(worm.segments.length).toBe(0);
-    expect(worm.rider).toBeNull();
     // never rises again, and gives no dismount
     let events = 0;
     for (let i = 0; i < 60 * 120; i++) if (frame(worm, body) !== 'none') events++;
@@ -282,39 +288,59 @@ describe('the worm dies only of an explosive in its mouth (#354, owner correctio
     expect(worm.rewarded).toBe(false);
   });
 
-  it('a bomb on its body, behind the mouth, does nothing to it', () => {
+  it('explosions on its body, behind the mouth, are not counted and do nothing', () => {
     const { worm } = swimming();
-    const s = worm.segments[4];
-    expect(worm.explosive(s.x, s.top - 1, s.z, 'bomb')).toBe('body');
-    const h = worm.segments[0];
-    // inside the head but behind the mouth: still the body
-    expect(worm.explosive(h.x, h.top - 1, h.z, 'bomb')).toBe('body');
+    const s = worm.segments[4], h = worm.segments[0];
+    for (let i = 0; i < 10; i++) {
+      expect(worm.explosive(s.x, s.top - 1, s.z, 'bomb')).toBe('body');
+      expect(worm.explosive(h.x, h.top - 1, h.z, 'bomb')).toBe('body');
+    }
+    expect(worm.mouthBlasts).toBe(0);
     expect(worm.dead).toBe(false);
   });
 
-  it('a missile in its mouth kills it only as it starts its dive', () => {
+  it('a missile counts only as the worm starts its dive; bombs and missiles add to one count', () => {
     const { worm, body } = swimming();
-    // swimming: a missile in the mouth is spent on the body
+    // swimming: a missile in the mouth is spent on the body, not counted
     expect(worm.explosive(...mouth(worm), 'missile')).toBe('body');
-    expect(worm.dead).toBe(false);
-    // no rider for CRUISE_S: it dives; at the start of the dive the missile kills it
+    expect(worm.mouthBlasts).toBe(0);
+    // a bomb counts while it swims
+    expect(worm.explosive(...mouth(worm), 'bomb')).toBe('swallowed');
     until(worm, body, 'dive');
     expect(worm.t).toBeLessThanOrEqual(WORM.mouthDiveS);
+    expect(worm.explosive(...mouth(worm), 'missile')).toBe('swallowed');
+    expect(worm.mouthBlasts).toBe(2);
     expect(worm.explosive(...mouth(worm), 'missile')).toBe('killed');
     expect(worm.dead).toBe(true);
   });
 
-  it('a missile in its mouth late in the dive does not kill it', () => {
+  it('a missile in its mouth late in the dive is not counted', () => {
     const { worm, body } = swimming();
     until(worm, body, 'dive');
     while (worm.state === 'dive' && worm.t <= WORM.mouthDiveS) frame(worm, body);
-    if (worm.state === 'dive') expect(worm.explosive(...mouth(worm), 'missile')).not.toBe('killed');
-    expect(worm.dead).toBe(false);
+    if (worm.state === 'dive') expect(worm.explosive(...mouth(worm), 'missile')).not.toBe('swallowed');
+    expect(worm.mouthBlasts).toBe(0);
+  });
+
+  it('keeps the count across its dives for the whole run', () => {
+    const { worm, body } = swimming();
+    expect(worm.explosive(...mouth(worm), 'bomb')).toBe('swallowed');
+    expect(worm.explosive(...mouth(worm), 'bomb')).toBe('swallowed');
+    // it dives, rests and rises again: the two still count
+    until(worm, body, 'dive');
+    until(worm, body, 'hidden');
+    until(worm, body, 'cruise');
+    expect(worm.mouthBlasts).toBe(2);
+    for (let i = 0; i < 60; i++) frame(worm, body);
+    expect(worm.explosive(...mouth(worm), 'bomb')).toBe('killed');
   });
 
   it('a rider on its back is dropped when it dies, with no reward', () => {
     const { worm, body } = swimming();
     standOn(worm, body, 3);
+    worm.explosive(...mouth(worm), 'bomb');
+    worm.explosive(...mouth(worm), 'bomb');
+    expect(worm.rider).not.toBeNull();
     expect(worm.explosive(...mouth(worm), 'bomb')).toBe('killed');
     expect(worm.rider).toBeNull();
     body.y = GROUND; body.onGround = true;
@@ -327,5 +353,6 @@ describe('the worm dies only of an explosive in its mouth (#354, owner correctio
     until(worm, body, 'cruise');
     const h = worm.segments[0];
     expect(worm.explosive(h.x + 300, h.top, h.z, 'missile')).toBe('miss');
+    expect(worm.mouthBlasts).toBe(0);
   });
 });

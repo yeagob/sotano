@@ -408,6 +408,7 @@ export const ES: Catalog = {
     'toast.wormHead': 'Estás sobre su cabeza. Envíale intenciones buenas ({cast}).',
     'toast.wormCalm': 'El gusano se calma: {n} de {total}.',
     'toast.wormDeaf': 'Las intenciones no dañan al gusano. Solo le llegan las buenas, desde su cabeza.',
+    'toast.wormSwallow': 'El gusano se tragó la explosión y se estremece: {n} de {total}.',
     'toast.wormDead': 'El gusano se tragó la explosión. Se hunde en la arena y no volverá a salir.',
     'toast.wormTame': 'El gusano está en calma. Guíalo con {move}; {jump} para bajar.',
     'toast.wormEdge': 'El gusano no sale de la arena profunda.',

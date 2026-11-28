@@ -4,7 +4,7 @@ Each idea the game is built on: where it comes from (ids from [SOURCES.md](SOURC
 
 | Concept | Sources | In the game |
 |---|---|---|
-| **What cannot be fought can be ridden** | `dune` | The deep desert's great worm: no intention hurts it (only an explosive in its mouth kills it); good intentions from its head calm it, and a calm worm carries you ([WORM](../design/built/levels/worm-desert/WORM.md)) |
+| **What cannot be fought can be ridden** | `dune` | The deep desert's great worm: no intention hurts it (only three explosions in its mouth kill it); good intentions from its head calm it, and a calm worm carries you ([WORM](../design/built/levels/worm-desert/WORM.md)) |
 | **Foresight from above** | `dune` | Prescience: having ridden the worm, the map of every floor shows all its rooms and where its practices lie ([PRESCIENCE](../design/not-built/practices/PRESCIENCE.md)) |
 | **No one is illuminated alone** | `lathe-of-heaven` | The ending of illumination: the friends of the run rise into the Sun with the player ([ILLUMINATION.md](../design/built/levels/totality/ILLUMINATION.md)) |
 | **Intention alters reality** | `as-a-man-thinketh`, `kybalion` (mentalism) | The core verb: intentions break the world's blocks |

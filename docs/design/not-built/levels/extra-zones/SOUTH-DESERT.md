@@ -11,7 +11,7 @@ The south cardinal walk ends in the deep desert, a basin of sand in the south of
 ## Decided and built
 
 - **The place.** Inside the Outer Void, due south, 1 450 to 1 750 blocks from the tree (open question 4 of the earlier text: inside the Void, not beyond it).
-- **The worm.** One worm: calmed by positive intentions from its head, ridden, steered inside the desert, and its gifts given on the dismount; killed only by an explosive in its mouth (a swallowed bomb, or a missile as it starts its dive).
+- **The worm.** One worm: calmed by positive intentions from its head, ridden, steered inside the desert, and its gifts given on the dismount; killed only by three explosions in its mouth, counted across the run (swallowed bombs, or missiles as it starts its dive).
 - **The rules of a secret room.** A fixed unique practice (Prescience) and an achievement (Rider of the Sands), once per run.
 
 ## Open
