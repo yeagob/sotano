@@ -1176,6 +1176,8 @@ export const ES: Catalog = {
     'achievement.brew.first.name': 'Primera destilación',
     'achievement.brew.first.desc': 'Destila una poción en un alambique por primera vez.',
     'achievement.desert.worm.ridden.name': 'Jinete de las arenas',
+    'achievement.desert.worm.slain.name': 'Azote de lo profundo',
+    'achievement.desert.worm.slain.desc': 'Haz que el gran gusano del desierto profundo se trague tres explosiones.',
     'achievement.desert.worm.ridden.desc': 'Calma al gran gusano del desierto profundo desde su cabeza y luego baja de su lomo.',
     'achievement.cook.first.name': 'Un plato caliente',
     'achievement.cook.first.desc': 'Prepara una comida en una cocina por primera vez.',

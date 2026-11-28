@@ -17,9 +17,9 @@
  * of the giant tree's branches held in one run (#329), the ending of illumination, `illumination` (issue #351, once
  * per run when the Sun's light is full), and `bestiaryComplete`, emitted once when every variation of every projection
  * has been seen (COMPLETION.md §2, issue #360), and `wormDismount`, the player stepping off the deep desert's worm after
- * calming it (issue #354).
+ * calming it, and `wormKilled`, its death by the third explosion in its mouth (issue #354).
  */
-export const ACHIEVEMENT_EVENTS = ['bossOvercome', 'meditationComplete', 'brew', 'cook', 'pageReached', 'playerDied', 'surfaceEnter', 'blockPlaced', 'bookBack', 'bedrockTouch', 'treeStory', 'completionFull', 'projectionConverted', 'projectionDestroyed', 'synergyOn', 'presenceMet', 'branchPracticesAll', 'illumination', 'bestiaryComplete', 'wormDismount'] as const;
+export const ACHIEVEMENT_EVENTS = ['bossOvercome', 'meditationComplete', 'brew', 'cook', 'pageReached', 'playerDied', 'surfaceEnter', 'blockPlaced', 'bookBack', 'bedrockTouch', 'treeStory', 'completionFull', 'projectionConverted', 'projectionDestroyed', 'synergyOn', 'presenceMet', 'branchPracticesAll', 'illumination', 'bestiaryComplete', 'wormDismount', 'wormKilled'] as const;
 export type AchievementEvent = (typeof ACHIEVEMENT_EVENTS)[number];
 
 export type WhereValue = string | number | boolean | readonly (string | number)[];
@@ -174,6 +174,9 @@ export const ACHIEVEMENTS: readonly AchievementDef[] = [
   // The deep desert's worm: stepping off it after calming it (issue #354, the owner's criterion: the dismount, not the
   // taming) (1).
   { id: 'desert.worm.ridden', on: 'wormDismount' },
+  // The deep desert's worm, the other way: killing it with three explosions in its mouth (issue #354, the owner's
+  // criterion). One of the two in a run: a worm that gave its dismount cannot be killed, and a dead one gives none (1).
+  { id: 'desert.worm.slain', on: 'wormKilled' },
 ];
 
 /** The most achievements the catalogue can hold: the mastery level is capped at this. */

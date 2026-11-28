@@ -356,3 +356,20 @@ describe('the worm dies only of three explosions in its mouth (#354, owner corre
     expect(worm.mouthBlasts).toBe(0);
   });
 });
+
+describe('one way per run: ridden or slain (#354)', () => {
+  it('a worm that gave its dismount no longer counts explosions in its mouth, so it cannot also be slain', () => {
+    const { worm, body } = rig();
+    until(worm, body, 'cruise');
+    for (let i = 0; i < 300; i++) frame(worm, body);
+    standOn(worm, body, 0);
+    for (let i = 0; i < WORM.tameHits; i++) { const h = worm.segments[0]; worm.intention(h.x, h.top - 1, h.z, true); }
+    frame(worm, body);
+    expect(worm.support(body, true)).toBe('dismounted');
+    expect(worm.state).toBe('dive');
+    const s = worm.segments[0], at = [s.x + s.hx * (WORM.plate / 2 - 0.5), s.top - WORM.radius, s.z + s.hz * (WORM.plate / 2 - 0.5)] as const;
+    for (let i = 0; i < 5; i++) expect(worm.explosive(...at, 'bomb')).not.toBe('killed');
+    expect(worm.mouthBlasts).toBe(0);
+    expect(worm.dead).toBe(false);
+  });
+});

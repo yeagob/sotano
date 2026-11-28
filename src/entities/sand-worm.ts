@@ -452,7 +452,8 @@ export class SandWorm {
    */
   explosive(x: number, y: number, z: number, kind: 'bomb' | 'missile'): ExplosiveHit {
     if (!this.visible) return 'miss';
-    if (this.mouthAt(x, y, z) && (kind === 'bomb' || (this.state === 'dive' && this.t <= WORM.mouthDiveS))) {
+    // one way per run: a worm that gave its dismount is leaving, and its mouth no longer counts
+    if (!this.rewarded && this.mouthAt(x, y, z) && (kind === 'bomb' || (this.state === 'dive' && this.t <= WORM.mouthDiveS))) {
       this.mouthBlasts++;
       if (this.mouthBlasts < WORM.mouthBlasts) return 'swallowed';
       this.kill();

@@ -1181,6 +1181,8 @@ const messages = {
   'achievement.brew.first.name': 'First Distillation',
   'achievement.brew.first.desc': 'Brew a potion in an alembic for the first time.',
   'achievement.desert.worm.ridden.name': 'Rider of the Sands',
+  'achievement.desert.worm.slain.name': 'Bane of the Deep',
+  'achievement.desert.worm.slain.desc': 'Make the great worm of the deep desert swallow three explosions.',
   'achievement.desert.worm.ridden.desc': 'Calm the great worm of the deep desert from its head, then step off its back.',
   'achievement.cook.first.name': 'A Warm Meal',
   'achievement.cook.first.desc': 'Cook a meal in a kitchen for the first time.',

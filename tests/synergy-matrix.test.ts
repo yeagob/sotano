@@ -74,6 +74,7 @@ const SAMPLES: { [K in keyof GameEvents]: () => GameEvents[K] } = {
   branchPracticesAll: () => ({ practices: 6 }),
   illumination: () => ({ friends: 5 }),
   wormDismount: () => ({ warmth: 12 }),
+  wormKilled: () => ({ blasts: 3 }),
   bestiaryComplete: () => ({ projections: 40 }),
   heartLost: () => ({ heart: 'blue' }) as const,
   berserkChange: () => ({ on: true }),

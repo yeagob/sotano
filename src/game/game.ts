@@ -1148,6 +1148,7 @@ export class Game {
     this.bus.on('branchPracticesAll', { priority: 300, source, fn: p => this.achieved('branchPracticesAll', p) });
     this.bus.on('illumination', { priority: 300, source, fn: p => this.achieved('illumination', p) });
     this.bus.on('wormDismount', { priority: 300, source, fn: p => this.achieved('wormDismount', p) });
+    this.bus.on('wormKilled', { priority: 300, source, fn: p => this.achieved('wormKilled', p) });
     // the run's friends (ally-tally.ts): every change to the player's side, from the conversion events that exist
     this.bus.on('factionChange', { priority: 300, source: 'allies', fn: p => {
       const kind = allyKindOf(p, (ENEMY_BY_ID.get(p.def) ?? CREATURE_BY_ID.get(p.def))?.kind);
@@ -2077,6 +2078,9 @@ export class Game {
     this.hud.shake(0.8);
     this.hud.toast('toast.wormDead');
     this.wormView?.update(this.worm);
+    // the owner's rule: the kill gives Prescience too, and its own achievement
+    this.bus.emit('wormKilled', { blasts: this.worm?.mouthBlasts ?? 0 });
+    if (!this.inventory.items.some(i => i.def.id === 'prescience')) this.give('prescience');
   }
 
   /** After the body moved: the back holds it up; the climb's toasts; the dismount gives Prescience and the achievement. */
