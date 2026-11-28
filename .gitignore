@@ -8,3 +8,6 @@ dist
 
 # Local git worktrees (per-session checkouts)
 .claude/worktrees/
+
+# Playwright recordings, clips and other local output (sotano-recordings): never committed
+.local/
