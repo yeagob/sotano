@@ -11,7 +11,7 @@
 //   telegraph ──▶ breach (the head leaps out of the sand toward the player, the body arches behind it)
 //   breach ──▶ cruise (the back swims over the sand: a platform the width of the body)
 //   cruise ──▶ dive (no rider for CRUISE_S, or after the reward) ──▶ hidden, or gone once it has given its gift
-//   breach, cruise or dive ──▶ dead (the third explosion in its mouth): gone for the rest of the run
+//   breach, cruise or dive ──▶ dead (the third explosion in its mouth): its corpse lies in the sand for the rest of the run
 //
 // Riding: while the body touches the back it is carried with it. Positive intentions that hit the head, fired while
 // the rider stands on the head, calm it; at TAME_HITS it is tame and the rider steers it from the head, inside the
@@ -46,6 +46,8 @@ export const WORM = {
   mouthDiveS: 2.5,
   /** Explosions in its mouth that kill it, counted across the run (owner: at least three; one or two do not). */
   mouthBlasts: 3,
+  /** Blocks between the dead head's face and the pedestal of the kill's practice. */
+  pedestalGap: 3,
   /** The mouth: how far it reaches behind and in front of the head's front face (blocks), and its inset from the edge. */
   mouthDepth: 1.5, mouthInset: 1,
   /** Half hearts the leaping head takes from a body it meets (a warning blow, never a kill from full health). */
@@ -309,6 +311,8 @@ export class SandWorm {
 
   /** Places the segments on the trail (called after every step). */
   private layout() {
+    // a dead worm's body lies where it fell: its segments are never laid again
+    if (this.dead) return;
     this.segs = [];
     if (!this.visible || !this.trail.length) return;
     for (let k = 0; k < WORM.segments; k++) {
@@ -361,7 +365,7 @@ export class SandWorm {
   support(b: WormBody, jumped: boolean): RideEvent {
     const was = this.rider;
     if (was && this.seated && jumped) return this.dismountTo(b);
-    if (!this.visible) {
+    if (!this.solid) {
       this.rider = null;
       return this.leftTame(b);
     }
@@ -451,7 +455,8 @@ export class SandWorm {
    * The caller spends the explosive on any answer but 'miss', so each one is counted once.
    */
   explosive(x: number, y: number, z: number, kind: 'bomb' | 'missile'): ExplosiveHit {
-    if (!this.visible) return 'miss';
+    if (!this.solid) return 'miss';
+    if (this.dead) return this.segmentAt(x, y, z, 0.3) >= 0 ? 'body' : 'miss';
     // one way per run: a worm that gave its dismount is leaving, and its mouth no longer counts
     if (!this.rewarded && this.mouthAt(x, y, z) && (kind === 'bomb' || (this.state === 'dive' && this.t <= WORM.mouthDiveS))) {
       this.mouthBlasts++;
@@ -464,15 +469,38 @@ export class SandWorm {
 
   get dead(): boolean { return this.state === 'dead'; }
 
+  /** Whether a body is there to meet: the living worm out of the sand, or its corpse (owner: the corpse stays). */
+  get solid(): boolean { return this.visible || this.dead; }
+
+  /**
+   * The worm dies: its huge body lies down in the sand where it fell and stays there for the run, still, harmless and
+   * solid (it can be stood on). Each segment settles to its swimming height with no wave, half sunk in the sand.
+   */
   private kill() {
     this.rider = null;
     this.rodeTame = false;
     this.enter('dead');
-    this.segs = [];
+    this.segs = this.segs.map(s => {
+      const y = this.swimY(s.x, s.z) - 1;
+      return { ...s, y, top: y + WORM.radius };
+    });
+  }
+
+  /**
+   * Where the kill's practice lies (owner: on a pedestal near the worm's mouth): on the ground, PEDESTAL_GAP blocks in
+   * front of the dead head's face, so it is clear of the body. Null while the worm lives.
+   */
+  pedestalSpot(): { x: number; y: number; z: number } | null {
+    const s = this.segs[0];
+    if (!this.dead || !s) return null;
+    const d = WORM.plate / 2 + WORM.pedestalGap;
+    const x = Math.floor(s.x + s.hx * d), z = Math.floor(s.z + s.hz * d);
+    return { x, y: this.host.ground(x + 0.5, z + 0.5), z };
   }
 
   intention(x: number, y: number, z: number, positive: boolean): 'miss' | 'nothing' | 'calm' | 'tame' {
-    if (!this.visible) return 'miss';
+    if (!this.solid) return 'miss';
+    if (this.dead) return this.segmentAt(x, y, z, 0.3) >= 0 ? 'nothing' : 'miss';
     const k = this.segmentAt(x, y, z, 0.3);
     if (k < 0) return 'miss';
     if (!positive || k !== 0 || this.rider?.seg !== 0 || this.tamed) return 'nothing';

@@ -278,14 +278,49 @@ describe('the worm dies only of three explosions in its mouth (#354, owner corre
     expect(worm.mouthBlasts).toBe(2);
     expect(worm.explosive(...mouth(worm), 'bomb')).toBe('killed');
     expect(worm.dead).toBe(true);
-    expect(worm.visible).toBe(false);
-    expect(worm.segments.length).toBe(0);
     // never rises again, and gives no dismount
     let events = 0;
     for (let i = 0; i < 60 * 120; i++) if (frame(worm, body) !== 'none') events++;
     expect(events).toBe(0);
     expect(worm.state).toBe('dead');
     expect(worm.rewarded).toBe(false);
+  });
+
+  it('its corpse stays lying in the sand where it died: whole, still, solid and harmless', () => {
+    const { worm, body } = swimming();
+    for (let i = 0; i < 3; i++) worm.explosive(...mouth(worm), 'bomb');
+    expect(worm.dead).toBe(true);
+    expect(worm.visible).toBe(false);
+    expect(worm.solid).toBe(true);
+    const corpse = worm.segments.map(s => ({ ...s }));
+    expect(corpse.length).toBe(WORM.segments);
+    // lying in the sand: the back a little over the ground, no wave
+    for (const s of corpse) expect(s.top).toBeCloseTo(GROUND + WORM.backRise - 1, 5);
+    // two minutes on, with a body beside it, it has not moved, struck or risen
+    body.x = corpse[0].x + 30; body.z = corpse[0].z; body.y = GROUND; body.onGround = true;
+    let hits = 0;
+    for (let i = 0; i < 60 * 120; i++) { if (worm.update(DT, body, true)) hits++; worm.support(body, false); }
+    expect(hits).toBe(0);
+    expect(worm.segments.map(s => ({ ...s }))).toEqual(corpse);
+    // it can be stood on, and it takes intentions and blasts without answering them
+    standOn(worm, body, 6);
+    const s = worm.segments[6];
+    expect(worm.intention(s.x, s.top - 1, s.z, false)).toBe('nothing');
+    expect(worm.intention(s.x, s.top - 1, s.z, true)).toBe('nothing');
+    expect(worm.explosive(...mouth(worm), 'bomb')).toBe('body');
+    expect(worm.mouthBlasts).toBe(3);
+  });
+
+  it('lays the kill\'s pedestal on the ground in front of its mouth, clear of the body; none while it lives', () => {
+    const { worm } = swimming();
+    expect(worm.pedestalSpot()).toBeNull();
+    for (let i = 0; i < 3; i++) worm.explosive(...mouth(worm), 'bomb');
+    const at = worm.pedestalSpot()!;
+    const h = worm.segments[0];
+    const face = [h.x + h.hx * WORM.plate / 2, h.z + h.hz * WORM.plate / 2];
+    expect(Math.hypot(at.x + 0.5 - face[0], at.z + 0.5 - face[1])).toBeLessThanOrEqual(WORM.pedestalGap + 1.5);
+    expect(at.y).toBe(GROUND);
+    expect(worm.segmentAt(at.x + 0.5, at.y + 0.5, at.z + 0.5)).toBe(-1);
   });
 
   it('explosions on its body, behind the mouth, are not counted and do nothing', () => {

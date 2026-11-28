@@ -169,6 +169,7 @@ import { SandWorm, WORM } from '../entities/sand-worm';
 import { WormView } from '../render/worm-view';
 import { SandFall } from '../world/sand-fall';
 import { wormDesertCentre } from '../world/worm-desert';
+import { wormReward } from './worm-rewards';
 import { branchGifts, holdsAllBranchPractices, walkSlowSpot, WALK_SLOW_ITEM } from './branch-gifts';
 import { freezeProjection } from '../core/freeze';
 import { frightenProjection } from '../core/fear';
@@ -552,6 +553,8 @@ export class Game {
   private wormView: WormView | null = null;
   /** The plate the rider stood on last frame (-1: off the worm), for the toasts that guide the climb. */
   private wormSeg = -1;
+  /** The kill's pedestal was laid this run (once per run). */
+  private wormKnifeLaid = false;
   private wormDeafAt = -Infinity;
   private wormEdgeAt = -Infinity;
   /** Falling sand (worm-desert/README.md): sand with air under it falls, a budget of blocks a step. */
@@ -798,6 +801,7 @@ export class Game {
     this.sandFall.clear();
     this.worm = this.newWorm(sandbox !== null);
     this.wormSeg = -1;
+    this.wormKnifeLaid = false;
     this.starMarks = { cartographer: new Map(), starReader: null, read: false }; this.starMapSeen = false; this.zone = ''; this.presenceReplies.clear();
     this.childBuilds.clear(); this.gardenGiven.clear(); this.builds = new BuildCount(); this.menderCame = false;
     this.idle.clear();
@@ -2069,7 +2073,8 @@ export class Game {
     this.hud.toast('toast.wormSwallow', { n: this.worm?.mouthBlasts ?? 0, total: WORM.mouthBlasts });
   }
 
-  /** The worm swallowed its last explosive and dies: a muffled blast inside it, and the desert is quiet for the run. */
+  /** The worm swallowed its last explosive and dies: a muffled blast inside it, its corpse stays lying in the sand, and
+   *  the kill's practice rises on a pedestal by its mouth (worm-rewards.ts). */
   private wormKilled(x: number, y: number, z: number) {
     this.wormSeg = -1;
     this.particles.burst(x, y, z, pal('el.smoke'), 40, 6, 0.14);
@@ -2078,9 +2083,18 @@ export class Game {
     this.hud.shake(0.8);
     this.hud.toast('toast.wormDead');
     this.wormView?.update(this.worm);
-    // the owner's rule: the kill gives Prescience too, and its own achievement
+    // the owner's rule: the kill gives its own achievement and the tooth knife on a pedestal by the mouth (not Prescience)
+    const r = wormReward('slain', id => this.inventory.has(id), this.wormKnifeLaid);
     this.bus.emit('wormKilled', { blasts: this.worm?.mouthBlasts ?? 0 });
-    if (!this.inventory.items.some(i => i.def.id === 'prescience')) this.give('prescience');
+    const at = this.worm?.pedestalSpot(), def = r.pedestal ? ITEM_BY_ID.get(r.pedestal) : undefined;
+    if (at && def) {
+      this.wormKnifeLaid = true;
+      this.dw.set(at.x, at.y, at.z, MAT.pedestal);
+      this.pickups.add('item', at.x + 0.5, at.y + 1, at.z + 0.5, -1, def);
+      this.particles.burst(at.x + 0.5, at.y + 1.6, at.z + 0.5, def.color, 28, 3, 0.08);
+      this.particles.burst(at.x + 0.5, at.y + 1.6, at.z + 0.5, pal('light.core'), 14, 2, 0.06);
+      sfx3.reveal();
+    }
   }
 
   /** After the body moved: the back holds it up; the climb's toasts; the dismount gives Prescience and the achievement. */
@@ -2095,8 +2109,9 @@ export class Game {
     if (w.seated && w.heldAtEdge && this.time - this.wormEdgeAt > 6) { this.wormEdgeAt = this.time; this.hud.toast('toast.wormEdge'); }
     if (ride === 'dismounted') {
       // the owner's rule: the practice and the achievement come with stepping off, not with the taming
+      const r = wormReward('ridden', id => this.inventory.has(id), this.wormKnifeLaid);
       this.bus.emit('wormDismount', { warmth: w.warmth });
-      if (!this.inventory.items.some(i => i.def.id === 'prescience')) this.give('prescience');
+      if (r.give) this.give(r.give);
     }
     this.wormView?.update(w);
   }
