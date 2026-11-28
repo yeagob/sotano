@@ -8,6 +8,7 @@ import { ITEMS } from '../content/items';
 import { LEVELS, tollOf, type LevelDef } from '../content/levels';
 import type { MessageKey } from '../i18n/locales/en';
 import { SPIRIT_MAX } from '../sky/types';
+import { OUTER_ZONES, type OuterZone } from '../world/outer-zones';
 
 /** The flag is `?test`; without it nothing of the bench is loaded or built. */
 export function testBenchOn(params: URLSearchParams): boolean {
@@ -39,10 +40,13 @@ export interface BenchGame {
   debugFloor(k: number): boolean;
   debugSky(): void;
   debugSkyFloor(k: number): boolean;
+  debugZone(zone: OuterZone): boolean;
   refillSpirit(): void;
   give(id: string): void;
   grant(id: string): boolean;
 }
+
+export { OUTER_ZONES, type OuterZone };
 
 export class TestBench {
   private godOn = false;
@@ -81,6 +85,9 @@ export class TestBench {
   sky() { this.game.debugSky(); }
 
   skyFloor(k: number): boolean { return this.game.debugSkyFloor(k); }
+
+  /** Stands the player on a secret zone of the Outer Void (OUTER_ZONES); false when the game refuses. */
+  zone(z: OuterZone): boolean { return this.game.debugZone(z); }
 
   refillSpirit() { this.game.refillSpirit(); }
 

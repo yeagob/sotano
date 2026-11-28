@@ -9,7 +9,7 @@ import { onLocaleChange, t } from '../i18n';
 import { enemyText, itemText } from '../i18n/content';
 import type { MessageKey } from '../i18n/locales/en';
 import { SPIRIT_MAX } from '../sky/types';
-import { TestBench, bossesOf, dungeonGuide, skyGuide, type BenchGame, type BenchHelpers, type GuideEntry, type GuideRow } from './test-bench';
+import { OUTER_ZONES, TestBench, bossesOf, dungeonGuide, skyGuide, type BenchGame, type BenchHelpers, type GuideEntry, type GuideRow } from './test-bench';
 
 /** How often god mode is kept applied and the status line redrawn. */
 const TICK_MS = 250;
@@ -146,6 +146,15 @@ export function mountTestPanel(game: BenchGame, helpers: BenchHelpers): TestBenc
       if (!bench.skyFloor(6) && status) status.textContent = t('test.where.busy');
     }));
     panel.append(floors);
+
+    panel.append(el('h3', undefined, t('test.zones')), el('p', undefined, t('test.zones.hint')));
+    const zones = el('div', 'grid');
+    for (const z of OUTER_ZONES) {
+      zones.append(button(t(`test.zone.${z}` as MessageKey), () => {
+        if (!bench.zone(z) && status) status.textContent = t('test.where.busy');
+      }));
+    }
+    panel.append(zones);
 
     panel.append(el('h3', undefined, t('test.sky')));
     panel.append(button(t('test.sky.refill'), () => { bench.refillSpirit(); refresh(); }), el('p', undefined, t('test.sky.hint')));
