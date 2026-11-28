@@ -6,7 +6,7 @@ Up: [Mind folder](README.md) · [all practices](../README.md) · [built design](
 |---|---|
 | Path | Mind; also none |
 | Quality | 4 of 4 |
-| Found in | boss rewards; and on a pedestal by the mouth of the deep desert's worm, once it is killed ([WORM](../../levels/worm-desert/WORM.md), issue #354) |
+| Found in | the worm's secret gift only (owner, 2026-11-28: it left the boss pools); on a pedestal by the mouth of the deep desert's worm, once it is killed ([WORM](../../levels/worm-desert/WORM.md), issue #354) |
 | Inspired by | Santiago (Game Glover), the owner's words on toxic relationships (as the code and SOURCES credit it) |
 | Code | `src/content/items/occamsrazor.ts` |
 

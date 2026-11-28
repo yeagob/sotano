@@ -6,6 +6,8 @@ Changes to the tutorial and to the book are listed without their content, so not
 
 ## Unreleased
 
+- Cut Ties with Toxic Relationships is found only as the worm's knife: it left the boss pools, so seeds change (#354).
+
 ### Added
 - Something waits far to the south of the tree, past the dunes, for whoever walks that far: a new place, a unique practice and an achievement (#354).
 
