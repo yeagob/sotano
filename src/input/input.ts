@@ -74,6 +74,7 @@ export class Input {
   private lastTouch = -1e9;
   private expectUnlock = false;
   private skipLookEvent = false;
+  private lockAttempt = 0;
   private stickWake = 0;
   /** Fartlek and Child's Pose on the pad: the stick-click toggles (L3 running, R3 crouching). The run latch ends when the stick returns to centre. */
   private runLatch = false;
@@ -108,7 +109,7 @@ export class Input {
     document.addEventListener('mousedown', e => {
       if (performance.now() - this.lastTouch < 1000) return;
       this.use('keyboard');
-      if (!this.locked) { if (!this.engaged && !this.modal && capturesMouse(e.target)) this.lock(); return; }
+      if (!this.locked && !this.engaged) { if (!this.modal && capturesMouse(e.target)) this.lock(); return; }
       if (!this.mouse.has(e.button)) this.mousePressed.add(e.button);
       this.mouse.add(e.button);
     });
@@ -129,7 +130,7 @@ export class Input {
       this.expectUnlock = false;
     });
     addEventListener('mousemove', e => {
-      if (!this.locked) return;
+      if (!this.locked && !(this.engaged && current === 'keyboard')) return;
       // Firefox can report a jump for the first move after the lock is taken (measured from the
       // cursor's old spot), so that event is dropped and no single event may exceed LOOK_EVENT_MAX
       if (this.skipLookEvent) { this.skipLookEvent = false; return; }
@@ -170,10 +171,14 @@ export class Input {
   }
 
   lock() {
+    const attempt = ++this.lockAttempt;
+    const fallback = () => {
+      if (attempt === this.lockAttempt && !this.locked && !this.modal) this.engaged = true;
+    };
     try {
       const p = this.el.requestPointerLock() as unknown as Promise<void> | undefined;
-      p?.catch?.(() => {});
-    } catch { /* not allowed right now */ }
+      p?.catch?.(fallback);
+    } catch { fallback(); }
   }
 
   resume() {
@@ -201,7 +206,9 @@ export class Input {
   }
 
   release() {
+    this.lockAttempt++;
     this.engaged = false;
+    this.mouse.clear(); this.keys.clear();
     if (this.locked) document.exitPointerLock?.();
   }
 

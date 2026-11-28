@@ -50,3 +50,7 @@ Opening the screen releases the lock on purpose (`Input.unlockFor()`), so the cu
 ## The Sanctuary (context `meditation`)
 
 The Boundary's meditation app takes the arrow keys (move between the choices), Enter or a click (choose; in a sitting, pause and resume), N (next part), M (sound on or off), C (calm visuals on or off), V (the spoken guidance on or off) and Esc (one screen back; not now on the first screen; the leave sheet in a sitting). The mouse is free while it is open and a click never captures it. Hovering a choice selects it.
+
+## Pointer lock unavailable
+
+The play button requests pointer lock from its click. If the browser denies it, play continues with an unlocked pointer: mouse movement and buttons still work within the window, and Escape pauses. Looking is limited by the screen edges until the pointer is repositioned. Leaving the window pauses as usual. A pending denied request cannot resume a game that was paused in the meantime.

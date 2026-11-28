@@ -6,6 +6,8 @@ Changes to the tutorial and to the book are listed without their content, so not
 
 ## Unreleased
 
+- The game can start when the browser denies pointer lock, with mouse movement available inside the window.
+
 - Cut Ties with Toxic Relationships is found only as the worm's knife: it left the boss pools, so seeds change (#354).
 
 ### Added
