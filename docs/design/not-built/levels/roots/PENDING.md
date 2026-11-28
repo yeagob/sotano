@@ -24,7 +24,7 @@ The pictures for pages 3 to 6 that are still missing (`sky`, `seal`, `omen`, `ro
 
 ## Achievements still to define
 
-The catalogue has 78 achievements: 77 entries in the list and the final one, which the completion percentage unlocks ([ACHIEVEMENTS](../../../built/progression/ACHIEVEMENTS.md)). The other **22** (the cap is 100, so 100 less the 78 that ship) are in GitHub issue **#179**; the register of the 78 is #363. They enter the catalogue only when the owner defines them, one by one, with their criterion. No placeholder is added to fill the slots. The data model takes them without a change ([ACHIEVEMENTS §2](../../../built/progression/ACHIEVEMENTS.md)).
+The catalogue has 79 achievements: 78 entries in the list and the final one, which the completion percentage unlocks ([ACHIEVEMENTS](../../../built/progression/ACHIEVEMENTS.md)). The last to enter is the deep desert's worm (#354, the owner's criterion). The other **22** of GitHub issue **#179** were counted as 100 less 78: with the worm's they make 101, one over the cap, which the owner must settle (one of the 22 may be this one); the register of the 79 is #363. They enter the catalogue only when the owner defines them, one by one, with their criterion. No placeholder is added to fill the slots. The data model takes them without a change ([ACHIEVEMENTS §2](../../../built/progression/ACHIEVEMENTS.md)).
 
 The two other issues that touch progress are out of this folder: the completion percentage (#180) and the unlockables (#113).
 

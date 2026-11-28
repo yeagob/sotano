@@ -1,22 +1,22 @@
-Up: [Extra zones](README.md) · Status: decided (the destination, the export of 2026-11-25 and the owner's answer of 2026-11-26), design not defined. Issue #354.
+Up: [Extra zones](README.md) · Status: built in part (issue #354). What is built moved to [built/levels/worm-desert](../../../built/levels/worm-desert/README.md); what is left open is below.
 
 # The desert of the worms (south)
 
-The south cardinal walk ends at its element in the Outer Void, and the portal there opens onto a desert ([CARDINAL-WALK](../secret-rooms/CARDINAL-WALK.md)). The backlog calls it "Gusanos de Dune" (issue #354). It is the only cardinal link the export states outright.
+The south cardinal walk ends in the deep desert, a basin of sand in the south of the Outer Void where a great worm lives. The place, its sand and its worm are built: [the deep desert](../../../built/levels/worm-desert/README.md) and [the great worm](../../../built/levels/worm-desert/WORM.md). The backlog called it "Gusanos de Dune" (issue #354).
 
 ## The name must change
 
-"Dune" is the title of Frank Herbert's novel of 1965, which is not in the public domain. It is a caution in [SOURCES](../../../../lore/SOURCES.md) (`dune`). The desert cannot carry that title in the game. Its name is generic, and the owner chooses it. The worms may echo the novel's image only as a paraphrase: a desert of worms, never the novel's terms.
+"Dune" is the title of Frank Herbert's novel of 1965, which is not in the public domain. It is a caution in [SOURCES](../../../../lore/SOURCES.md) (`dune`). The game names the place "the deep desert" and its creature "the great worm", generic words, until the owner chooses. The novel is credited only, in the `inspiredBy` of Prescience.
 
-## What is known
+## Decided and built
 
-- **The destination.** A desert of worms, from the export and the owner's answer of 2026-11-26.
-- **The rules of a secret room.** The desert is one of the four cardinal destinations, so it carries fixed unique items and its own achievement ([secret rooms, shared rules](../secret-rooms/README.md#shared-rules)).
-- **Sand.** A desert's sand is an element proposal that is not built ([SAND](../../elements/SAND.md)).
+- **The place.** Inside the Outer Void, due south, 1 450 to 1 750 blocks from the tree (open question 4 of the earlier text: inside the Void, not beyond it).
+- **The worm.** One worm, unkillable: calmed by positive intentions from its head, ridden, steered inside the desert, and its gifts given on the dismount.
+- **The rules of a secret room.** A fixed unique practice (Prescience) and an achievement (Rider of the Sands), once per run.
 
 ## Open
 
-1. **The name.** The generic name the owner chooses for the desert and its worms.
-2. **The whole design.** Its shape, its challenge, its items and its achievement.
-3. **The worms.** How they move, and whether they are burrowers ([BURROWING](../../creatures/BURROWING.md)).
-4. **The place.** Whether it lies inside the Outer Void or beyond it ([README](README.md#open)).
+1. **The names.** The generic name the owner chooses for the desert and its worm; the practice and the achievement names are provisional.
+2. **The kill path.** The issue's first text gave a second practice for killing the worm (the tooth knife, proposed as Cut Ties with Toxic Relationships). The owner's latest words make the worm unkillable, so it is not built. If it returns, it needs the owner's rule for the mouth (the only place a negative intention reaches, in the owner's details of 2026-11-26).
+3. **More worms.** "Gusanos" is plural: one worm is built.
+4. **The portal.** The walk is the way in; the portal of the cardinal rooms is still open ([CARDINAL-WALK](../secret-rooms/CARDINAL-WALK.md)).

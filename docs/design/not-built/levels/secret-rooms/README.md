@@ -2,7 +2,7 @@ Up: [Levels (not built)](../README.md) · Status: decided in part, proposal in p
 
 # Secret rooms
 
-A secret room is a room the official dungeon does not show. Each one has its own way in, its own fixed unique items and its own achievement. Nothing here is built: there is no portal, no secret room and no walking trigger in the code.
+A secret room is a room the official dungeon does not show. Each one has its own way in, its own fixed unique items and its own achievement. Only the south destination is built: the deep desert, reached by walking south, with its worm, its unique practice and its achievement ([worm-desert](../../../built/levels/worm-desert/README.md), issue #354). There is no portal, no other secret room and no other walking trigger in the code.
 
 Four of them are the **cardinal rooms**. From the surface, walking straight north, south, east or west for long enough reaches an element of the Outer Void, and that element opens a portal onto a destination ([CARDINAL-WALK](CARDINAL-WALK.md)). The owner has decided the four destinations: an ice zone to the north, the statue to the east, the labyrinth temple to the west and the desert of the worms to the south. The other rooms are reached in ways the design has not yet set.
 

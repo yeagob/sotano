@@ -1,6 +1,6 @@
 # Achievements
 
-Up: [progression](README.md) · Status: built (issue #147, owner's decisions 8 and 10). The 78 entries are in `src/content/achievements.ts` (the 46 of #147 and #179, the hour of meditation, §1, the 7 of the blocks, the projections and the states of being, §1, the 19 of the owner's approved list, §1, the six branches of the tree, §1, issue #329, the ending of illumination of #351, §1, the Shadow at the maximum difficulty of #353, §1, and the bestiary complete of #360, §1). The final one of #180, "Made Omh", is a constant of the same file, which the completion percentage unlocks. The names are the shipped proposal, awaiting the owner's word ([pending](../../not-built/levels/roots/PENDING.md#names-awaiting-the-owner)).
+Up: [progression](README.md) · Status: built (issue #147, owner's decisions 8 and 10). The 79 entries are in `src/content/achievements.ts` (the 46 of #147 and #179, the hour of meditation, §1, the 7 of the blocks, the projections and the states of being, §1, the 19 of the owner's approved list, §1, the six branches of the tree, §1, issue #329, the ending of illumination of #351, §1, the Shadow at the maximum difficulty of #353, §1, the bestiary complete of #360, §1, and the dismount of the deep desert's worm of #354, §1). The final one of #180, "Made Omh", is a constant of the same file, which the completion percentage unlocks. The names are the shipped proposal, awaiting the owner's word ([pending](../../not-built/levels/roots/PENDING.md#names-awaiting-the-owner)).
 
 An achievement is a moment the game recognises once and keeps for ever: the first time a boss is destroyed or turned to your side, a meditation sat three times, a first potion, a first meal, a page of the hidden book reached. Each one raises the Roots' [mastery level](MASTERY.md) by one and tells the player what the Roots gained.
 
@@ -63,7 +63,7 @@ Why these names: each answers the boss's pattern (`pattern` in its definition), 
 
 #### The Shadow at the maximum difficulty (1, issue #353)
 
-The owner's direction: with the maximum global difficulty, defeat the Shadow (El Espejo, #339). The maximum difficulty (2) is reached at mastery level 100, which this achievement would itself be needed for; the owner's answer to that loop (2026-11-26): **from mastery level 99 on, the maximum counts**. So it unlocks when the Shadow is overcome in any way (destroyed, turned to your side, or the stillness ending) in a run carved at mastery level 99 or more ([DIFFICULTY](DIFFICULTY.md)). The level is the one the run started with, read once at run start; a level earned during the run counts from the next. A run started on the debug level (`S.mastery`) counts as level 0. It unlocks beside the Shadow's own destroyed or converted achievement, both on the same event. It cannot be earned yet: level 99 needs 99 other achievements, and 74 others exist (72 reachable with a book of 9 pages, [MASTERY](MASTERY.md)); it opens as the pending ones of #179 enter.
+The owner's direction: with the maximum global difficulty, defeat the Shadow (El Espejo, #339). The maximum difficulty (2) is reached at mastery level 100, which this achievement would itself be needed for; the owner's answer to that loop (2026-11-26): **from mastery level 99 on, the maximum counts**. So it unlocks when the Shadow is overcome in any way (destroyed, turned to your side, or the stillness ending) in a run carved at mastery level 99 or more ([DIFFICULTY](DIFFICULTY.md)). The level is the one the run started with, read once at run start; a level earned during the run counts from the next. A run started on the debug level (`S.mastery`) counts as level 0. It unlocks beside the Shadow's own destroyed or converted achievement, both on the same event. It cannot be earned yet: level 99 needs 99 other achievements, and 75 others exist (73 reachable with a book of 9 pages, [MASTERY](MASTERY.md)); it opens as the pending ones of #179 enter.
 
 | Id | Boss | Name (EN) | Name (ES) | Description (EN) | Description (ES) |
 |---|---|---|---|---|---|
@@ -198,6 +198,14 @@ The owner's achievement for becoming light. The names are the owner's, provision
 |---|---|---|---|---|---|
 | `bestiary.full` | `bestiaryComplete`: every variation of every projection seen (its three tiers, hostile and as an ally), emitted once | Know Thyself | Conócete a ti mismo | Complete the bestiary: see every projection in black, yellow and red, hostile and as an ally. | Completa el bestiario: ve cada proyección en negro, amarillo y rojo, hostil y como aliada. |
 
+### The deep desert's worm (1, issue #354)
+
+The owner's criterion: stepping off the worm after calming it. The grant is on the dismount, not on the taming ([WORM](../levels/worm-desert/WORM.md)). The name is provisional.
+
+| Id | Criterion | Name (EN) | Name (ES) | Description (EN) | Description (ES) |
+|---|---|---|---|---|---|
+| `desert.worm.ridden` | `wormDismount`: the rider stepped off a tame worm onto the ground, once per run | Rider of the Sands | Jinete de las arenas | Calm the great worm of the deep desert from its head, then step off its back. | Calma al gran gusano del desierto profundo desde su cabeza y luego baja de su lomo. |
+
 The owner's direction (#360): completing the bestiary is an achievement. The bestiary and the achievement read the same record, `firsts.bestiary`, and the same moment a variation counts as seen ([COMPLETION](COMPLETION.md) §2). The name is a proposal, pending the owner's word: the old maxim, because every projection is a pattern of one's own, met in all its forms and turned to one's side.
 
 **What "met" means.** A presence is met when the player finishes its first exchange with it: the gift taken, the choice answered, the toll paid, the ore given, or the Child's build finished. This is the rule the codex already keeps (`meet` in `game.ts`, CODEX.md): the tag `met` is set only there, so the event `presenceMet` is emitted at the same point, the first time that enemy is met. The presence's card opening is not the moment, because a player can open a card and decline it.
@@ -215,7 +223,7 @@ interface AchievementDef {
 }
 ```
 
-The 78 entries are written as data: `{ id: 'boss.resistance.destroyed', on: 'bossOvercome', where: { boss: 'resistance', how: 'destroyed' } }`, `{ id: 'boss.shadow.converted', on: 'bossOvercome', where: { boss: 'shadow', how: ['converted', 'stillness'] } }`, `{ id: 'meditation.ground', on: 'meditationComplete', where: { meditation: 'ground' }, times: 3 }`, `{ id: 'brew.first', on: 'brew' }`, `{ id: 'cook.first', on: 'cook' }`, `{ id: 'book.page.7', on: 'pageReached', where: { page: 7 } }`. The tracker (`src/game/achievements.ts`) matches `where` against the payload, counts matches per id in the save when `times` > 1, and unlocks the id when the count is reached. The game feeds it through `listenAchievements` (`game.ts`), which has one listener per name in `ACHIEVEMENT_EVENTS`; an event the tracker is not listening to never unlocks anything. A new achievement for #179 is a new entry and two message keys (`achievement.<id>.name`, `achievement.<id>.desc`); it needs new code only if no existing event says what it waits for. Then the event is added: its payload in `GameEvents` (`src/game/events.ts`), its name in `ACHIEVEMENT_EVENTS`, its emit site, a sample in the synergy matrix (`tests/synergy-matrix.test.ts`, which checks each `where` field against it), and a listener in `listenAchievements`.
+The 79 entries are written as data: `{ id: 'boss.resistance.destroyed', on: 'bossOvercome', where: { boss: 'resistance', how: 'destroyed' } }`, `{ id: 'boss.shadow.converted', on: 'bossOvercome', where: { boss: 'shadow', how: ['converted', 'stillness'] } }`, `{ id: 'meditation.ground', on: 'meditationComplete', where: { meditation: 'ground' }, times: 3 }`, `{ id: 'brew.first', on: 'brew' }`, `{ id: 'cook.first', on: 'cook' }`, `{ id: 'book.page.7', on: 'pageReached', where: { page: 7 } }`. The tracker (`src/game/achievements.ts`) matches `where` against the payload, counts matches per id in the save when `times` > 1, and unlocks the id when the count is reached. The game feeds it through `listenAchievements` (`game.ts`), which has one listener per name in `ACHIEVEMENT_EVENTS`; an event the tracker is not listening to never unlocks anything. A new achievement for #179 is a new entry and two message keys (`achievement.<id>.name`, `achievement.<id>.desc`); it needs new code only if no existing event says what it waits for. Then the event is added: its payload in `GameEvents` (`src/game/events.ts`), its name in `ACHIEVEMENT_EVENTS`, its emit site, a sample in the synergy matrix (`tests/synergy-matrix.test.ts`, which checks each `where` field against it), and a listener in `listenAchievements`.
 
 New events the 46 need (`src/game/events.ts`):
 
@@ -238,6 +246,7 @@ New events the 46 need (`src/game/events.ts`):
 | `presenceMet` | `{ presence: string }` | In `Game.meet`, the first time a presence's enemy is met: its first exchange is done (its id, as in `src/content/presences`). Once per presence and encounter |
 | `branchPracticesAll` | `{ practices: number }` | In `Game.updateLoop`, the first frame of a run in which the inventory holds every practice of `BRANCH_PRACTICES` (`src/world/branches.ts`). It fires once a run (`branchesAll`) |
 | `bestiaryComplete` | `{ projections: number }` | In `Game.showCompletion`, once, when every variation of every projection has been seen (`bestiaryComplete` in `completion.ts`) and `bestiary.full` is still locked; never in the sandbox or the lab |
+| `wormDismount` | `{ warmth: number }` | In `Game.wormAfter`, when the rider steps off a tame worm onto the ground (`SandWorm.support`), once per run; `warmth` is the positive intentions its head took. There is no worm in the sandbox or the lab. React only |
 
 Rules the tracker keeps:
 
@@ -267,7 +276,7 @@ When an achievement is earned the player sees, in one corner notice: its name, i
 
 - "The first ten improvements are earned sequentially, at most one boss step per run": replaced by decision 8 and its correction (two achievements per boss, destroyed and converted; every first time counts, several per run, any order).
 - "A first clear of each sky plant grants its improvement": out of scope (decision 11).
-- "Keep later objectives as explicitly pending entries": the catalogue holds only the 78 defined ones (the 46, the hour of meditation, the seven of the blocks, the projections and the states of being, the nineteen of the owner's list, the six branches of the tree, the ending of illumination, the Shadow at the maximum difficulty, the bestiary complete, and "Made Omh", the final one that the completion percentage unlocks at 100%); the others are pending in #179 and enter as data when the owner defines them ([pending](../../not-built/levels/roots/PENDING.md#achievements-still-to-define)).
+- "Keep later objectives as explicitly pending entries": the catalogue holds only the 79 defined ones (the 46, the hour of meditation, the seven of the blocks, the projections and the states of being, the nineteen of the owner's list, the six branches of the tree, the ending of illumination, the Shadow at the maximum difficulty, the bestiary complete, the dismount of the deep desert's worm, and "Made Omh", the final one that the completion percentage unlocks at 100%); the others are pending in #179 and enter as data when the owner defines them ([pending](../../not-built/levels/roots/PENDING.md#achievements-still-to-define)).
 
 ## Not decided
 

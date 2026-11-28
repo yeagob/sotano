@@ -22,6 +22,7 @@ The ideas for practices, parts and their uses that are decided or proposed and a
 | [LIKE-WATER.md](LIKE-WATER.md) | Status: built in code, waits for the owner's acceptance | Emotion, quality 3, the elephant's gift. A positive hit on a block leaves water for 3 s |
 | [SHIELD.md](SHIELD.md) | Status: built in code, waits for the owner's acceptance | Will, quality 4, the lion's gift. Invulnerable while in the air |
 | [SPIRAL-GROWTH.md](SPIRAL-GROWTH.md) | Status: built in code, awaiting the owner's acceptance before it moves to built/practices | Body, quality 4. Fire rate ×2; each intention flies as a helix of three strands (one full, two at 40%). Double Helix with Bilateral Stimulation |
+| [PRESCIENCE.md](PRESCIENCE.md) | Status: built in code, waits for the owner's acceptance (name provisional) | Mind, quality 3, unique: the deep desert's worm gives it on the dismount. The map shows every room and where its practices lie |
 | [DOUBLE-JUMP.md](DOUBLE-JUMP.md) | Status: built in code, awaiting the owner's acceptance before it moves to built/practices | Body, quality 3. One more air jump (2× a ground jump, no forward push); with the Triple Jump, four jumps in all. The name is provisional |
 
 ## Decided design rule
