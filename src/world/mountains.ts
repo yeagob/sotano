@@ -31,6 +31,7 @@ import {
   TRAP_DEPTH, TREE_REACH, canopyAt, groundHeight, groundRelief, reliefRamp, rootOf, rootRoll, trunkOf,
 } from './void';
 import { BIOME, BIOME_R, Biomes, ICE_CRUST, PEAK_HIGH, SAND_DEPTH, SPIRE_CHANCE, type Structure } from './biomes';
+import { DEEP_SAND, basinBlend, basinHeight, inWormDesert, wormDesertDistance } from './worm-desert';
 
 /** The tree's height above the grass (the top of its canopy): nothing on the surface is taller. */
 export const PEAK = TREE_ZONES.heaven;
@@ -89,7 +90,7 @@ export interface Ridge {
 }
 
 /** A chunk column's ground: heights with a one-column border, the top block of each inner column. */
-interface Column { heights: Int16Array; tops: Uint8Array; voids: Uint8Array; lo: number; hi: number; vlo: number; vhi: number }
+interface Column { heights: Int16Array; tops: Uint8Array; voids: Uint8Array; deep: Uint8Array; lo: number; hi: number; vlo: number; vhi: number }
 
 interface RootInfo { top: number; kind: number; trunk: number; spire: boolean }
 
@@ -180,7 +181,10 @@ export class Mountains {
     const dx = x - this.cx, dz = z - this.cz, r = Math.hypot(dx, dz);
     if (r > EDGE_R) {
       if (r <= BIOME_R) return groundHeight(this.noise, x, z, reliefRamp(r, EDGE_R));
-      const h = this.biomes.height(x, z, groundRelief(this.noise, x, z, reliefRamp(r, EDGE_R)));
+      let h = this.biomes.height(x, z, groundRelief(this.noise, x, z, reliefRamp(r, EDGE_R)));
+      // the worm's basin (worm-desert/README.md): the dunes flatten into a low swell of deep sand
+      const k = basinBlend(wormDesertDistance(this.cx, this.cz, x, z));
+      if (k > 0) h += (basinHeight(x, z) - h) * k;
       return Math.max(RELIEF_LOW, Math.min(PEAK_HIGH, Math.round(h)));
     }
     if (r <= PLAIN_R || r >= FOOT_R) return 0;
@@ -214,7 +218,7 @@ export class Mountains {
     const key = colKey(ccx, ccz);
     let c = this.columns.get(key);
     if (c) { this.columns.delete(key); this.columns.set(key, c); return c; }
-    const heights = new Int16Array(W * W), tops = new Uint8Array(CHUNK * CHUNK), voids = new Uint8Array(CHUNK * CHUNK);
+    const heights = new Int16Array(W * W), tops = new Uint8Array(CHUNK * CHUNK), voids = new Uint8Array(CHUNK * CHUNK), deep = new Uint8Array(CHUNK * CHUNK);
     const x0 = ccx * CHUNK - 1, z0 = ccz * CHUNK - 1;
     let lo = Infinity, hi = -Infinity, vlo = Infinity, vhi = -Infinity;
     for (let j = 0; j < W; j++) for (let i = 0; i < W; i++) {
@@ -230,13 +234,14 @@ export class Mountains {
       const h = heights[i + W * j], x = x0 + i, z = z0 + j, k = (i - 1) + CHUNK * (j - 1);
       const v = this.voidAt(x, z), kind = v ? this.biomes.kind(x, z) : BIOME.void;
       voids[k] = v ? 1 + kind : 0;
+      if (v && inWormDesert(this.cx, this.cz, x, z)) { deep[k] = 1; lo = Math.min(lo, this.surfaceY - DEEP_SAND); }
       if (this.onStair(x, z)) { tops[k] = MAT.dirt; continue; }
       let steep = 0;
       for (const [di, dj] of NEIGHBOURS) steep = Math.max(steep, Math.abs(heights[i + di + W * (j + dj)] - h));
       tops[k] = v ? this.biomes.top(kind, x, z, h, steep <= 1) : h <= GRASS_LINE && steep <= 1 ? MAT.grass : MAT.stone;
       if (v && (tops[k] === MAT.grass || kind === BIOME.ice)) vhi = Math.max(vhi, this.surfaceY + h + CROWN + TREE_REACH);
     }
-    c = { heights, tops, voids, lo, hi, vlo, vhi };
+    c = { heights, tops, voids, deep, lo, hi, vlo, vhi };
     this.columns.set(key, c);
     if (this.columns.size > COLUMN_CAP) this.columns.delete(this.columns.keys().next().value as number);
     return c;
@@ -288,6 +293,12 @@ export class Mountains {
 
   private cell(col: Column, lx: number, lz: number, y: number): number {
     const i = lx + CHUNK * lz, h = col.heights[(lx + 1) + W * (lz + 1)], top = this.surfaceY + h, d = y - this.surfaceY;
+    if (col.deep[i]) {
+      // deep sand down to the bedrock: no lava sea under the worm's basin (owner: no hell under the desert)
+      if (d === -DEEP_SAND) return MAT.bedrock;
+      if (d > -DEEP_SAND && y <= top) return MAT.sand;
+      return d > SEA || d < -DEEP_SAND ? AIR : WATER_CELL;
+    }
     if (col.voids[i]) {
       if (d === BEDROCK) return MAT.bedrock;
       if (d >= LAVA_FLOOR && d <= LAVA_TOP) return LAVA_CELL;
@@ -403,12 +414,18 @@ export class Mountains {
   }
 
   breakable(x: number, y: number, z: number): boolean {
-    return this.voidAt(x, z) && y - this.surfaceY > LAVA_TOP;
+    if (!this.voidAt(x, z)) return false;
+    return y - this.surfaceY > (this.deepAt(x, z) ? -DEEP_SAND : LAVA_TOP);
+  }
+
+  /** Whether the column (x, z) is the worm's deep sand (worm-desert/README.md): no lava under it, no lava trap. */
+  deepAt(x: number, z: number): boolean {
+    return this.voidAt(x, z) && inWormDesert(this.cx, this.cz, Math.floor(x), Math.floor(z));
   }
 
   trapped(x: number, y: number, z: number): boolean {
     const fx = Math.floor(x), fz = Math.floor(z);
-    return this.voidAt(fx, fz) && Math.floor(y) <= this.surfaceY + this.height(fx, fz) - TRAP_DEPTH;
+    return this.voidAt(fx, fz) && !this.deepAt(fx, fz) && Math.floor(y) <= this.surfaceY + this.height(fx, fz) - TRAP_DEPTH;
   }
 
   shaft(x: number, y: number, z: number): [number, number, number][] {
