@@ -147,6 +147,11 @@ export class SandWorm {
    * One step. `body` is the player's (null when the player is not in this world); `inDesert`: its feet stand in the
    * basin. Returns whether the head met the body during the leap this step (the game deals the blow).
    */
+  /** Each plate's velocity on the ground (blocks a second), measured each step: what a body that jumps off it keeps. */
+  private segVel: [number, number][] = [];
+  /** The motion a body that jumped off the back keeps in the air (null once it lands). */
+  private drift: [number, number] | null = null;
+
   update(dt: number, body: WormBody | null, inDesert: boolean): boolean {
     this.clock += dt;
     this.t += dt;
@@ -193,7 +198,13 @@ export class SandWorm {
       }
       default: break;
     }
+    const before = this.segs;
     this.layout();
+    // each plate's own motion over the ground (a curving body moves each plate its own way)
+    this.segVel = this.segs.map((s, k) => {
+      const p = before[k];
+      return p && dt > 0 && this.visible ? [(s.x - p.x) / dt, (s.z - p.z) / dt] as [number, number] : [0, 0] as [number, number];
+    });
     return hit;
   }
 
@@ -354,9 +365,14 @@ export class SandWorm {
    * Before the body moves: a body that stood on the back is carried with it (its place on its plate moves with the
    * plate), and a seated rider is held on the head. Returns false when it carried nothing.
    */
-  carry(b: WormBody): boolean {
+  carry(b: WormBody, dt = 0): boolean {
     const r = this.rider, s = r ? this.segs[r.seg] : undefined;
-    if (!r || !s) return false;
+    if (!r || !s) {
+      // a body that jumped off the back keeps the worm's motion while it is in the air, as from a moving train, so a
+      // jump from plate to plate lands on the worm, not behind it
+      if (this.drift && !b.onGround) { b.x += this.drift[0] * dt; b.z += this.drift[1] * dt; return true; }
+      return false;
+    }
     const [x, z] = this.world(s, r.u, r.w);
     b.x = x; b.z = z;
     if (b.vy <= 0) b.y = s.top;
@@ -398,9 +414,13 @@ export class SandWorm {
       if (gap >= -WORM.over - (b.vy <= 0 ? Math.max(0, -b.vy) * 0.05 : 0) && b.vy <= 0 && (s.top > bestTop || k === was?.seg) && best !== was?.seg) { best = k; bestTop = s.top; }
     }
     if (best < 0) {
+      // leaving the back into the air keeps the worm's motion until the body lands somewhere (carry)
+      if (was && !b.onGround) this.drift = [...(this.segVel[was.seg] ?? [0, 0])] as [number, number];
+      else if (b.onGround) this.drift = null;
       this.rider = null;
       return this.leftTame(b);
     }
+    this.drift = null;
     const s = this.segs[best], [u, w] = this.local(s, b.x, b.z);
     b.y = s.top; b.vy = 0; b.onGround = true;
     this.rider = { seg: best, u, w };

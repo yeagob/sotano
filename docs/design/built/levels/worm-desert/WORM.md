@@ -24,6 +24,7 @@ It is not a projection: it is no pattern of the mind and has no colour tier. It 
 
 - **Climbing on.** The back is a platform the whole width of the body. A body that lands on it, or walks on to it where it meets the sand, is attached: while it touches the back it moves with the worm.
 - **Plate to plate.** The plates rise and fall in a slow wave that runs along the back (1.5 blocks each way). A plate more than a step higher than the one you stand on is a wall: you jump to it when the wave brings it low enough. The way to the head is a run of timed jumps from segment to segment.
+- **Jumping on its back.** A body that jumps from a plate keeps that plate's motion in the air, as from a moving train, so a jump from segment to segment lands on the worm, not behind it.
 - **The head.** The front segment is the head. Standing on it, the rider can calm the worm.
 - **Falling off.** A rider who falls or jumps off an untamed worm lands on the sand, with no harm, and can climb on again while it swims.
 

@@ -19,7 +19,7 @@ function rig(seed = 7) {
 /** One frame of a body that does not walk: the worm moves, carries it, gravity pulls, the back holds it. */
 function frame(worm: SandWorm, b: WormBody, jumped = false) {
   worm.update(DT, b, true);
-  worm.carry(b);
+  worm.carry(b, DT);
   if (!b.onGround || b.y > GROUND) { b.vy -= 28 * DT; b.y += b.vy * DT; }
   b.onGround = false;
   if (b.y <= GROUND) { b.y = GROUND; b.vy = 0; b.onGround = true; }
@@ -92,6 +92,26 @@ describe('the worm of the deep desert (#354)', () => {
     // attached: one second later the body has moved with the worm and is still on its back
     expect(Math.hypot(body.x - x0, body.z - z0)).toBeGreaterThan(WORM.speed * 0.6);
     expect(worm.rider).not.toBeNull();
+    expect(body.y).toBeGreaterThan(GROUND + 1);
+  });
+
+  it('a body that jumps on the back keeps the worm\'s motion in the air and lands on the back again', () => {
+    const { worm, body } = rig();
+    until(worm, body, 'cruise');
+    for (let i = 0; i < 300; i++) frame(worm, body);
+    standOn(worm, body, 5);
+    for (let i = 0; i < 10; i++) frame(worm, body);
+    let landed = false, airborne = 0;
+    const x0 = body.x, z0 = body.z;
+    body.vy = 8.4; body.onGround = false;
+    for (let i = 0; i < 120 && !landed; i++) {
+      frame(worm, body);
+      if (worm.rider) landed = airborne > 5; else airborne++;
+    }
+    expect(airborne).toBeGreaterThan(5);
+    expect(landed).toBe(true);
+    // carried through the air at the worm's speed (about 6 blocks a second for the jump's half second and more)
+    expect(Math.hypot(body.x - x0, body.z - z0)).toBeGreaterThan(WORM.speed * airborne / 60 * 0.7);
     expect(body.y).toBeGreaterThan(GROUND + 1);
   });
 
