@@ -24,6 +24,7 @@ It is not a projection: it is no pattern of the mind and has no colour tier. It 
 
 - **Climbing on.** The back is a platform the whole width of the body. A body that lands on it, or walks on to it where it meets the sand, is attached: while it touches the back it moves with the worm.
 - **Plate to plate.** The plates rise and fall in a slow wave that runs along the back (1.5 blocks each way). A plate more than a step higher than the one you stand on is a wall: you jump to it when the wave brings it low enough. The way to the head is a run of timed jumps from segment to segment.
+- **Jumping on its back.** A body that jumps from a plate keeps that plate's motion in the air, as from a moving train, so a jump from segment to segment lands on the worm, not behind it.
 - **The head.** The front segment is the head. Standing on it, the rider can calm the worm.
 - **Falling off.** A rider who falls or jumps off an untamed worm lands on the sand, with no harm, and can climb on again while it swims.
 
@@ -49,9 +50,9 @@ The owner's corrections (2026-11-28): the worm can be killed, but only by explos
 
 ## Steering it
 
-When it is tame, a toast says how to steer it. Seated on its head, the rider no longer walks: **move steers** the worm in the direction pressed, relative to the view, and it turns slowly (a long, heavy body). It swims faster when tame (8 blocks a second, 6 when wild).
+When it is tame, a toast says how to steer it. Seated on its head, the rider no longer walks: **move steers** the worm in the direction pressed, relative to the view. A tame worm answers quickly (owner): it turns at 1.5 radians a second, so it reverses its course at full speed in about two seconds and goes anywhere in the desert at full speed (8 blocks a second). A wild worm keeps its slow, heavy turn (0.12 radians a second, 6 blocks a second).
 
-**Only inside the desert.** The worm is never steered, nor wanders, farther than 120 blocks from the basin's centre. Near the edge it loses the outward part of a heading and follows the rim, then leans inward; a toast says that the worm will not leave the deep sand.
+**Only inside the desert: its edge is an invisible wall** (owner). The limit is the desert's edge, 150 blocks from the basin's centre: the head is never steered farther than 142 blocks (the edge less the worm's half width), so the whole body stays on the deep sand. Steered outward, a tame worm runs up to the wall at full speed and slides along it; in the last 6 blocks (30 when wild) a heading loses its outward part and leans inward. A toast says that the worm will not leave the deep sand.
 
 ## The dismount
 
@@ -80,9 +81,9 @@ Riding adds no button: it gives new meanings to existing actions, as a Minecraft
 | Leap | 2.6 s, 44 blocks forward, 18 blocks of arch |
 | Strike | one heart, once per leap, only to a body not riding it |
 | Back | 3 blocks over the sand; plates rise and fall 1.5 blocks |
-| Speed | 6 blocks a second wild, 8 tame; turns at 0.12 radians a second |
+| Speed | 6 blocks a second wild, 8 tame; turns at 0.12 radians a second wild, 1.5 tame |
 | Calm | 12 positive intentions on the head, from the head |
-| Steering limit | 120 blocks from the basin's centre |
+| Steering limit | the desert's edge (150 blocks from the centre) is a wall: the head within 142, the body within 150 |
 | Dive | after 40 s with no rider; 8 s before the next cracks |
 | Death | the third explosion in the mouth, counted across the run: bombs while it is out of the sand, missiles only in the first 2.5 s of the dive |
 | Corpse | stays for the run; its back 2 blocks over the sand |

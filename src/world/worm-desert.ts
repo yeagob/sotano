@@ -7,8 +7,11 @@
 export const WORM_DESERT_DIST = 1600;
 /** The basin's radius: inside it the sand is deep. */
 export const WORM_DESERT_R = 150;
-/** The worm is never steered (or wanders) farther than this from the centre: the deep sand always lies under it. */
-export const WORM_STEER_R = 120;
+/**
+ * The desert's edge is an invisible wall (owner): the worm's head is never steered (and never wanders) farther than this
+ * from the centre. It is the edge less the worm's half width (8), so the whole body stays on the deep sand.
+ */
+export const WORM_STEER_R = WORM_DESERT_R - 8;
 /** Blocks of sand from the grass level down to the bedrock (owner: about 100). */
 export const DEEP_SAND = 100;
 /** Over this many blocks inside the rim the dunes flatten into the basin's low swell. */

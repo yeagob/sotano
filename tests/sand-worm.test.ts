@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { Rng } from '../src/core/rng';
 import { RIDE_CONTROLS, SandWorm, WORM, type WormBody, type WormHost } from '../src/entities/sand-worm';
 import { BINDINGS, DEVICES, contextsFor } from '../src/input/bindings';
-import { WORM_STEER_R } from '../src/world/worm-desert';
+import { WORM_DESERT_R, WORM_STEER_R } from '../src/world/worm-desert';
 
 const GROUND = 20;
 const DT = 1 / 60;
@@ -19,7 +19,7 @@ function rig(seed = 7) {
 /** One frame of a body that does not walk: the worm moves, carries it, gravity pulls, the back holds it. */
 function frame(worm: SandWorm, b: WormBody, jumped = false) {
   worm.update(DT, b, true);
-  worm.carry(b);
+  worm.carry(b, DT);
   if (!b.onGround || b.y > GROUND) { b.vy -= 28 * DT; b.y += b.vy * DT; }
   b.onGround = false;
   if (b.y <= GROUND) { b.y = GROUND; b.vy = 0; b.onGround = true; }
@@ -95,6 +95,26 @@ describe('the worm of the deep desert (#354)', () => {
     expect(body.y).toBeGreaterThan(GROUND + 1);
   });
 
+  it('a body that jumps on the back keeps the worm\'s motion in the air and lands on the back again', () => {
+    const { worm, body } = rig();
+    until(worm, body, 'cruise');
+    for (let i = 0; i < 300; i++) frame(worm, body);
+    standOn(worm, body, 5);
+    for (let i = 0; i < 10; i++) frame(worm, body);
+    let landed = false, airborne = 0;
+    const x0 = body.x, z0 = body.z;
+    body.vy = 8.4; body.onGround = false;
+    for (let i = 0; i < 120 && !landed; i++) {
+      frame(worm, body);
+      if (worm.rider) landed = airborne > 5; else airborne++;
+    }
+    expect(airborne).toBeGreaterThan(5);
+    expect(landed).toBe(true);
+    // carried through the air at the worm's speed (about 6 blocks a second for the jump's half second and more)
+    expect(Math.hypot(body.x - x0, body.z - z0)).toBeGreaterThan(WORM.speed * airborne / 60 * 0.7);
+    expect(body.y).toBeGreaterThan(GROUND + 1);
+  });
+
   it('stops a body against a plate that rises above its step, so the back is climbed by jumps', () => {
     const { worm, body } = rig();
     until(worm, body, 'cruise');
@@ -155,31 +175,55 @@ describe('the worm of the deep desert (#354)', () => {
     expect(worm.seated).toBe(true);
   });
 
-  it('a tame worm is steered from its head, and never out of the desert', () => {
+  it('a tame worm is steered from its head up to the desert\'s edge, an invisible wall, and never past it', () => {
     const { worm, body } = rig();
     until(worm, body, 'cruise');
     for (let i = 0; i < 300; i++) frame(worm, body);
     standOn(worm, body, 0);
     for (let i = 0; i < WORM.tameHits; i++) { const h = worm.segments[0]; worm.intention(h.x, h.top - 1, h.z, true); }
     // steer east, then keep pressing outward for two minutes
-    let farthest = 0, sawEdge = false;
+    let farthest = 0, sawEdge = false, bodyFar = 0;
     for (let i = 0; i < 60 * 120; i++) {
       const h = worm.head;
       const out = Math.hypot(h.x, h.z) > 1 ? [h.x, h.z] : [1, 0];
       worm.steer(out[0], out[1]);
       frame(worm, body);
       farthest = Math.max(farthest, Math.hypot(worm.head.x, worm.head.z));
+      for (const s of worm.segments) bodyFar = Math.max(bodyFar, Math.hypot(s.x, s.z) + WORM.radius);
       sawEdge ||= worm.heldAtEdge;
       expect(worm.seated, `frame ${i}`).toBe(true);
     }
     expect(sawEdge).toBe(true);
+    // the limit is the desert's edge: the head rides against it, and the whole body stays on the deep sand
+    expect(WORM_STEER_R).toBe(WORM_DESERT_R - WORM.radius);
     expect(farthest).toBeLessThanOrEqual(WORM_STEER_R + 1e-6);
-    expect(farthest).toBeGreaterThan(WORM_STEER_R - 31);
+    expect(farthest).toBeGreaterThan(WORM_STEER_R - 1);
+    expect(bodyFar).toBeLessThanOrEqual(WORM_DESERT_R + 0.5);
     // and it turns where it is told: steering north turns the heading north
     worm.steer(0, -1);
     const z0 = worm.head.z;
     for (let i = 0; i < 60 * 20; i++) { worm.steer(0, -1); frame(worm, body); }
     expect(worm.head.z).toBeLessThan(z0);
+  });
+
+  it('a tame worm turns quickly: it reverses its course at full speed in under three seconds, a wild one does not', () => {
+    expect(WORM.tameTurn).toBeGreaterThanOrEqual(WORM.turn * 10);
+    const { worm, body } = rig();
+    until(worm, body, 'cruise');
+    for (let i = 0; i < 300; i++) frame(worm, body);
+    standOn(worm, body, 0);
+    for (let i = 0; i < WORM.tameHits; i++) { const h = worm.segments[0]; worm.intention(h.x, h.top - 1, h.z, true); }
+    // put it in the middle of the desert, then ask for the opposite of where it goes
+    for (let i = 0; i < 60 * 30; i++) { const h = worm.head; worm.steer(-h.x, -h.z); frame(worm, body); }
+    const dir = () => { const s = worm.segments[0]; return [s.hx, s.hz]; };
+    const [hx, hz] = dir();
+    let t = 0;
+    for (; t < 3 * 60; t++) { worm.steer(-hx, -hz); frame(worm, body); const [x, z] = dir(); if (x * -hx + z * -hz > 0.95) break; }
+    expect(t / 60).toBeLessThan(3);
+    const moved = { x: worm.head.x, z: worm.head.z };
+    frame(worm, body);
+    expect(Math.hypot(worm.head.x - moved.x, worm.head.z - moved.z) * 60).toBeCloseTo(WORM.tameSpeed, 0);
+    expect(Math.PI / WORM.turn).toBeGreaterThan(20);
   });
 
   it('gives nothing for leaving an untamed worm, and the dismount exactly once after taming', () => {

@@ -32,6 +32,10 @@ export const WORM = {
   waveAmp: 1.5, wavePhase: 0.9, waveRate: 1.4,
   /** Swimming speed, untamed and tame (blocks a second), and the turn rate (radians a second). */
   speed: 6, tameSpeed: 8, turn: 0.12,
+  /** A tame worm turns quickly (owner: full speed in any direction inside the desert), radians a second. */
+  tameTurn: 1.5,
+  /** Blocks inside the wall where a heading starts to lose its outward part: wide when wild, narrow when tame. */
+  edgeBand: 30, tameEdgeBand: 6,
   /** The telegraph: seconds, cracked cells, blocks between two cracks, how far from the player the leap starts. */
   telegraphS: 4.5, crackCells: 12, crackStep: 2, emergeDist: 24,
   /** The leap: seconds, how far it carries the head, blocks of arch over the sand. */
@@ -143,6 +147,11 @@ export class SandWorm {
    * One step. `body` is the player's (null when the player is not in this world); `inDesert`: its feet stand in the
    * basin. Returns whether the head met the body during the leap this step (the game deals the blow).
    */
+  /** Each plate's velocity on the ground (blocks a second), measured each step: what a body that jumps off it keeps. */
+  private segVel: [number, number][] = [];
+  /** The motion a body that jumped off the back keeps in the air (null once it lands). */
+  private drift: [number, number] | null = null;
+
   update(dt: number, body: WormBody | null, inDesert: boolean): boolean {
     this.clock += dt;
     this.t += dt;
@@ -189,7 +198,13 @@ export class SandWorm {
       }
       default: break;
     }
+    const before = this.segs;
     this.layout();
+    // each plate's own motion over the ground (a curving body moves each plate its own way)
+    this.segVel = this.segs.map((s, k) => {
+      const p = before[k];
+      return p && dt > 0 && this.visible ? [(s.x - p.x) / dt, (s.z - p.z) / dt] as [number, number] : [0, 0] as [number, number];
+    });
     return hit;
   }
 
@@ -251,10 +266,11 @@ export class SandWorm {
     }
     want = this.confine(h.x, h.z, want);
     const diff = Math.atan2(Math.sin(want - this.heading), Math.cos(want - this.heading));
-    this.heading += Math.max(-WORM.turn * dt, Math.min(WORM.turn * dt, diff));
+    const turn = this.tamed ? WORM.tameTurn : WORM.turn;
+    this.heading += Math.max(-turn * dt, Math.min(turn * dt, diff));
     const speed = this.tamed ? WORM.tameSpeed : WORM.speed;
     let x = h.x + Math.cos(this.heading) * speed * dt, z = h.z + Math.sin(this.heading) * speed * dt;
-    // never out of the basin: the head is held on the steering circle
+    // the desert's edge is a wall: the head is held on the steering circle, and slides along it
     const r = this.fromCentre(x, z);
     if (r > WORM_STEER_R) { x = this.cx + (x - this.cx) * WORM_STEER_R / r; z = this.cz + (z - this.cz) * WORM_STEER_R / r; }
     const y = h.y + (this.swimY(x, z) - h.y) * Math.min(1, dt * 2);
@@ -268,14 +284,15 @@ export class SandWorm {
   confine(x: number, z: number, want: number): number {
     const r = this.fromCentre(x, z);
     this.heldAtEdge = false;
-    if (r < WORM_STEER_R - 30 || r === 0) return want;
+    const band = this.tamed ? WORM.tameEdgeBand : WORM.edgeBand;
+    if (r < WORM_STEER_R - band || r === 0) return want;
     const ux = (x - this.cx) / r, uz = (z - this.cz) / r;
     let wx = Math.cos(want), wz = Math.sin(want);
     const out = wx * ux + wz * uz;
     if (out <= 0) return want;
     this.heldAtEdge = true;
     // drop the outward part (follow the rim), and lean inward the closer it is to the edge
-    const lean = Math.max(0, Math.min(1, (r - (WORM_STEER_R - 30)) / 30));
+    const lean = Math.max(0, Math.min(1, (r - (WORM_STEER_R - band)) / band));
     wx -= ux * out * (1 + lean); wz -= uz * out * (1 + lean);
     if (Math.hypot(wx, wz) < 1e-3) { wx = -uz; wz = ux; }
     return Math.atan2(wz, wx);
@@ -348,9 +365,14 @@ export class SandWorm {
    * Before the body moves: a body that stood on the back is carried with it (its place on its plate moves with the
    * plate), and a seated rider is held on the head. Returns false when it carried nothing.
    */
-  carry(b: WormBody): boolean {
+  carry(b: WormBody, dt = 0): boolean {
     const r = this.rider, s = r ? this.segs[r.seg] : undefined;
-    if (!r || !s) return false;
+    if (!r || !s) {
+      // a body that jumped off the back keeps the worm's motion while it is in the air, as from a moving train, so a
+      // jump from plate to plate lands on the worm, not behind it
+      if (this.drift && !b.onGround) { b.x += this.drift[0] * dt; b.z += this.drift[1] * dt; return true; }
+      return false;
+    }
     const [x, z] = this.world(s, r.u, r.w);
     b.x = x; b.z = z;
     if (b.vy <= 0) b.y = s.top;
@@ -392,9 +414,13 @@ export class SandWorm {
       if (gap >= -WORM.over - (b.vy <= 0 ? Math.max(0, -b.vy) * 0.05 : 0) && b.vy <= 0 && (s.top > bestTop || k === was?.seg) && best !== was?.seg) { best = k; bestTop = s.top; }
     }
     if (best < 0) {
+      // leaving the back into the air keeps the worm's motion until the body lands somewhere (carry)
+      if (was && !b.onGround) this.drift = [...(this.segVel[was.seg] ?? [0, 0])] as [number, number];
+      else if (b.onGround) this.drift = null;
       this.rider = null;
       return this.leftTame(b);
     }
+    this.drift = null;
     const s = this.segs[best], [u, w] = this.local(s, b.x, b.z);
     b.y = s.top; b.vy = 0; b.onGround = true;
     this.rider = { seg: best, u, w };

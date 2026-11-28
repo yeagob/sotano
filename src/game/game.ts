@@ -105,7 +105,7 @@ import {
 } from '../world/floor';
 import type { VoxelSpace } from '../world/space';
 import { CHUNK, type VoxelWorld } from '../world/world';
-import { outerZoneColumn, type OuterZone } from '../world/outer-zones';
+import { outerZoneColumn, zoneStandY, type OuterZone } from '../world/outer-zones';
 import { ElementSim } from '../world/elements';
 import { GiantTree, TREE_STORIES, TREE_ZONES } from '../world/tree';
 import { inLeaves, LEAVES_GIFT_SPOT } from '../world/crown';
@@ -1650,7 +1650,9 @@ export class Game {
     const m = this.dw?.terrain;
     if (this.sandbox || this.gate.busy || !this.below || !m) return false;
     const [x, z] = outerZoneColumn(zone, m);
-    this.teleport(x + 0.5, m.topAt(x, z) + 1, z + 0.5);
+    // the column's top block is the surface plus its height (topAt is the top block's material, not its height)
+    const y = zoneStandY(m.surfaceY + m.height(x, z), yy => this.dw.solid(x, yy, z));
+    this.teleport(x + 0.5, y, z + 0.5);
     return true;
   }
 
@@ -2073,7 +2075,7 @@ export class Game {
         if (hit === 'swallowed') { d.remove(i); this.wormSwallowed(x, y, z); }
       }
     }
-    w.carry(b);
+    w.carry(b, dt);
   }
 
   /** An explosion in the worm's mouth that does not kill it yet: a muffled blast, and the count (MOUTH_BLASTS kill it). */
