@@ -105,6 +105,7 @@ import {
 } from '../world/floor';
 import type { VoxelSpace } from '../world/space';
 import { CHUNK, type VoxelWorld } from '../world/world';
+import { outerZoneColumn, type OuterZone } from '../world/outer-zones';
 import { ElementSim } from '../world/elements';
 import { GiantTree, TREE_STORIES, TREE_ZONES } from '../world/tree';
 import { inLeaves, LEAVES_GIFT_SPOT } from '../world/crown';
@@ -1607,6 +1608,16 @@ export class Game {
   /** `?sky` (main.ts): the run starts on the sky's deck, as if the built tree had been climbed. */
   debugSky() {
     if (this.below) this.gate.start({ to: 'sky', at: this.skyBounds().deck, float: true });
+  }
+
+  /** The test bench's zone buttons: stands the player on the surface of an Outer Void zone (world/outer-zones.ts),
+   *  from underground or the surface. False in the sky, in the sandbox, while a fade runs, or with no surface. */
+  debugZone(zone: OuterZone): boolean {
+    const m = this.dw?.terrain;
+    if (this.sandbox || this.gate.busy || !this.below || !m) return false;
+    const [x, z] = outerZoneColumn(zone, m);
+    this.teleport(x + 0.5, m.topAt(x, z) + 1, z + 0.5);
+    return true;
   }
 
   debugSkyFloor(k: number): boolean {
