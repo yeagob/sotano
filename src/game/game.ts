@@ -2046,7 +2046,27 @@ export class Game {
       const h = w.head, dx = b.x - h.x, dz = b.z - h.z, l = Math.hypot(dx, dz) || 1;
       if (this.damagePlayer(WORM.strike, 'contact', 'worm', 'world')) this.player.push(dx / l * 12, 7, dz / l * 12);
     }
+    // a loose bomb in its mouth is swallowed, and it kills the worm (the owner's rule: explosives in the mouth only)
+    if (w.visible) {
+      const d = this.debris, n = d.pos.length / 3;
+      for (let i = 0; i < n; i++) {
+        if (!d.isAlive(i) || !d.isBomb(i)) continue;
+        const x = d.pos[i * 3], y = d.pos[i * 3 + 1], z = d.pos[i * 3 + 2];
+        if (w.explosive(x, y, z, 'bomb') === 'killed') { d.remove(i); this.wormKilled(x, y, z); break; }
+      }
+    }
     w.carry(b);
+  }
+
+  /** The worm swallowed an explosive and dies: a muffled blast inside it, and the desert is quiet for the run. */
+  private wormKilled(x: number, y: number, z: number) {
+    this.wormSeg = -1;
+    this.particles.burst(x, y, z, pal('el.smoke'), 40, 6, 0.14);
+    this.particles.burst(x, y, z, pal('el.fire.base'), 24, 5, 0.1);
+    sfx2.boom();
+    this.hud.shake(0.8);
+    this.hud.toast('toast.wormDead');
+    this.wormView?.update(this.worm);
   }
 
   /** After the body moved: the back holds it up; the climb's toasts; the dismount gives Prescience and the achievement. */
@@ -3618,6 +3638,16 @@ export class Game {
 
   /** Missiles fly; each one that meets something explodes there (a bomb blast, or love if positive). */
   private updateMissiles(dt: number) {
+    if (!this.missiles.list.length) return;
+    // a missile that enters the worm's mouth as it starts its dive kills it; one that meets its body bursts there
+    const w = this.below ? this.worm : null;
+    if (w?.visible) for (let k = this.missiles.list.length - 1; k >= 0; k--) {
+      const m = this.missiles.list[k], hit = w.explosive(m.x, m.y, m.z, 'missile');
+      if (hit === 'miss') continue;
+      this.missiles.list.splice(k, 1);
+      if (hit === 'killed') this.wormKilled(m.x, m.y, m.z);
+      else { this.particles.burst(m.x, m.y, m.z, pal('el.smoke'), 20, 4, 0.1); sfx2.boom(); }
+    }
     if (!this.missiles.list.length) return;
     const ends = this.missiles.update(dt, {
       solid: (x, y, z) => this.solid(x, y, z),

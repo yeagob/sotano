@@ -126,12 +126,13 @@ describe('the worm of the deep desert (#354)', () => {
     // a rider away from the head: nothing
     standOn(worm, body, 4);
     expect(worm.intention(...at(), true)).toBe('nothing');
-    // a rider on the head, a negative intention: nothing; a thousand of them: still nothing, the worm cannot die
+    // a rider on the head, a negative intention: nothing; a thousand of them: still nothing, no intention kills it
     standOn(worm, body, 0);
     for (let i = 0; i < 1000; i++) expect(worm.intention(...at(), false)).toBe('nothing');
     expect(worm.warmth).toBe(0);
     expect(worm.visible).toBe(true);
     expect(Object.keys(worm)).not.toContain('hp');
+    expect(worm.dead).toBe(false);
     // a positive one on the body (not the head), from the head: nothing
     const s3 = worm.segments[3];
     expect(worm.intention(s3.x, s3.top - 1, s3.z, true)).toBe('nothing');
@@ -249,5 +250,82 @@ describe('riding the worm is mapped on every device (#354, sotano-controls)', ()
       expect((b!.gamepad.buttons?.length ?? 0) + (b!.gamepad.stick ? 1 : 0), `${v} gamepad`).toBeGreaterThan(0);
       expect(b!.touch.control, `${v} touch`).not.toBe('none');
     }
+  });
+});
+
+describe('the worm dies only of an explosive in its mouth (#354, owner correction)', () => {
+  /** A point in the mouth: just inside the head's front face, at its middle height. */
+  const mouth = (worm: SandWorm) => {
+    const s = worm.segments[0];
+    return [s.x + s.hx * (WORM.plate / 2 - 0.5), s.top - WORM.radius, s.z + s.hz * (WORM.plate / 2 - 0.5)] as const;
+  };
+  const swimming = () => {
+    const r = rig();
+    until(r.worm, r.body, 'cruise');
+    for (let i = 0; i < 120; i++) frame(r.worm, r.body);
+    return r;
+  };
+
+  it('a bomb in its mouth is swallowed and kills it, and the desert stays quiet for the run', () => {
+    const { worm, body } = swimming();
+    expect(worm.mouthAt(...mouth(worm))).toBe(true);
+    expect(worm.explosive(...mouth(worm), 'bomb')).toBe('killed');
+    expect(worm.dead).toBe(true);
+    expect(worm.visible).toBe(false);
+    expect(worm.segments.length).toBe(0);
+    expect(worm.rider).toBeNull();
+    // never rises again, and gives no dismount
+    let events = 0;
+    for (let i = 0; i < 60 * 120; i++) if (frame(worm, body) !== 'none') events++;
+    expect(events).toBe(0);
+    expect(worm.state).toBe('dead');
+    expect(worm.rewarded).toBe(false);
+  });
+
+  it('a bomb on its body, behind the mouth, does nothing to it', () => {
+    const { worm } = swimming();
+    const s = worm.segments[4];
+    expect(worm.explosive(s.x, s.top - 1, s.z, 'bomb')).toBe('body');
+    const h = worm.segments[0];
+    // inside the head but behind the mouth: still the body
+    expect(worm.explosive(h.x, h.top - 1, h.z, 'bomb')).toBe('body');
+    expect(worm.dead).toBe(false);
+  });
+
+  it('a missile in its mouth kills it only as it starts its dive', () => {
+    const { worm, body } = swimming();
+    // swimming: a missile in the mouth is spent on the body
+    expect(worm.explosive(...mouth(worm), 'missile')).toBe('body');
+    expect(worm.dead).toBe(false);
+    // no rider for CRUISE_S: it dives; at the start of the dive the missile kills it
+    until(worm, body, 'dive');
+    expect(worm.t).toBeLessThanOrEqual(WORM.mouthDiveS);
+    expect(worm.explosive(...mouth(worm), 'missile')).toBe('killed');
+    expect(worm.dead).toBe(true);
+  });
+
+  it('a missile in its mouth late in the dive does not kill it', () => {
+    const { worm, body } = swimming();
+    until(worm, body, 'dive');
+    while (worm.state === 'dive' && worm.t <= WORM.mouthDiveS) frame(worm, body);
+    if (worm.state === 'dive') expect(worm.explosive(...mouth(worm), 'missile')).not.toBe('killed');
+    expect(worm.dead).toBe(false);
+  });
+
+  it('a rider on its back is dropped when it dies, with no reward', () => {
+    const { worm, body } = swimming();
+    standOn(worm, body, 3);
+    expect(worm.explosive(...mouth(worm), 'bomb')).toBe('killed');
+    expect(worm.rider).toBeNull();
+    body.y = GROUND; body.onGround = true;
+    expect(worm.support(body, false)).toBe('none');
+  });
+
+  it('explosives far from it miss, and nothing explodes into a hidden worm', () => {
+    const { worm, body } = rig();
+    expect(worm.explosive(0, GROUND, 0, 'bomb')).toBe('miss');
+    until(worm, body, 'cruise');
+    const h = worm.segments[0];
+    expect(worm.explosive(h.x + 300, h.top, h.z, 'missile')).toBe('miss');
   });
 });
